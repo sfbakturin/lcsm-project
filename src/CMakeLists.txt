@@ -1,0 +1,10 @@
+﻿ADD_LIBRARY(${PROJECT_NAME}
+    Model/Circuit/Constant.cpp
+    Model/Circuit/Ground.cpp
+    Model/Circuit/Power.cpp
+    Model/Circuit/Pin.cpp
+    Model/Circuit/Splitter.cpp
+    Model/Circuit/Transistor.cpp
+    Model/Circuit/TransmissionGate.cpp
+    Model/Value.cpp
+)
