@@ -5,21 +5,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Splitter::Splitter() noexcept : m_widthIn(Width::W2), m_widthOut(2)
-{
-	for (std::size_t i = 0; i < m_widthOut; i++)
-		m_connectors[i] = i;
-}
-sim::Splitter::Splitter(sim::Width widthIn) noexcept : m_widthIn(widthIn), m_widthOut(2)
-{
-	ResetConnectors();
-}
-sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) noexcept : m_widthIn(widthIn), m_widthOut(widthOut)
+sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) : m_widthIn(widthIn), m_widthOut(widthOut)
 {
 	ResetConnectors();
 }
 
-sim::Splitter::Splitter(const sim::Splitter &other) noexcept : m_widthIn(other.m_widthIn), m_widthOut(other.m_widthOut)
+sim::Splitter::Splitter(const sim::Splitter &other) : m_widthIn(other.m_widthIn), m_widthOut(other.m_widthOut)
 {
 	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
 		m_connectors[i] = other.m_connectors[i];
@@ -30,7 +21,7 @@ sim::Splitter::Splitter(sim::Splitter &&other) noexcept : m_widthIn(other.m_widt
 		m_connectors[i] = other.m_connectors[i];
 }
 
-sim::Splitter &sim::Splitter::operator=(const sim::Splitter &other) noexcept
+sim::Splitter &sim::Splitter::operator=(const sim::Splitter &other)
 {
 	if (this != &other)
 		sim::Splitter(other).Swap(*this);

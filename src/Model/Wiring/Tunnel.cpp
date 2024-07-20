@@ -3,10 +3,10 @@
 
 #include <utility>
 
-sim::Tunnel::Tunnel(const sim::Tunnel &other) noexcept : m_tunnel(other.m_tunnel) {}
+sim::Tunnel::Tunnel(const sim::Tunnel &other) : m_tunnel(other.m_tunnel) {}
 sim::Tunnel::Tunnel(sim::Tunnel &&other) noexcept : m_tunnel(std::move(other.m_tunnel)) {}
 
-sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other) noexcept
+sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other)
 {
 	if (this != &other)
 		sim::Tunnel(other).Swap(*this);

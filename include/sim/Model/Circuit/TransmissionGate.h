@@ -11,12 +11,12 @@ namespace sim
 	class TransmissionGate : public CircuitComponent
 	{
 	  public:
-		TransmissionGate() noexcept;
+		TransmissionGate() = default;
 
-		TransmissionGate(const TransmissionGate &other) noexcept;
+		TransmissionGate(const TransmissionGate &other);
 		TransmissionGate(TransmissionGate &&other) noexcept;
 
-		TransmissionGate &operator=(const TransmissionGate &other) noexcept = default;
+		TransmissionGate &operator=(const TransmissionGate &other) = default;
 		TransmissionGate &operator=(TransmissionGate &&other) noexcept = default;
 
 		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;

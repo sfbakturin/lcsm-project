@@ -10,11 +10,11 @@ namespace sim
 	class Tunnel : public WiringComponent
 	{
 	  public:
-		Tunnel() noexcept = default;
-		Tunnel(const Tunnel &other) noexcept;
+		Tunnel() = default;
+		Tunnel(const Tunnel &other);
 		Tunnel(Tunnel &&other) noexcept;
 
-		Tunnel &operator=(const Tunnel &other) noexcept;
+		Tunnel &operator=(const Tunnel &other);
 		Tunnel &operator=(Tunnel &&other) noexcept;
 
 		void Swap(Tunnel &other) noexcept;

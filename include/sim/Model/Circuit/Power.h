@@ -13,13 +13,12 @@ namespace sim
 	class Power : public Constant
 	{
 	  public:
-		Power() noexcept;
-		Power(Width width) noexcept;
+		Power(Width width = Width::W1);
 
-		Power(const Power &other) noexcept;
+		Power(const Power &other);
 		Power(Power &&other) noexcept;
 
-		Power &operator=(const Power &other) noexcept;
+		Power &operator=(const Power &other);
 		Power &operator=(Power &&other) noexcept;
 
 		void Swap(Power &other) noexcept;

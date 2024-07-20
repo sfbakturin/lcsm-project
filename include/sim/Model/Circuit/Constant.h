@@ -12,14 +12,12 @@ namespace sim
 	class Constant : public CircuitComponent
 	{
 	  public:
-		Constant() noexcept;
-		Constant(Width width) noexcept;
-		Constant(Width width, std::uint64_t value) noexcept;
+		Constant(Width width = Width::W1, std::uint64_t value = 1);
 
-		Constant(const Constant &other) noexcept;
+		Constant(const Constant &other);
 		Constant(Constant &&other) noexcept;
 
-		Constant &operator=(const Constant &other) noexcept;
+		Constant &operator=(const Constant &other);
 		Constant &operator=(Constant &&other) noexcept;
 
 		void Swap(Constant &other) noexcept;

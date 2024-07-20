@@ -17,13 +17,12 @@ namespace sim
 	class Transistor : public CircuitComponent
 	{
 	  public:
-		Transistor() noexcept;
-		Transistor(TransistorType type) noexcept;
+		Transistor(TransistorType type = TransistorType::P);
 
-		Transistor(const Transistor &other) noexcept;
+		Transistor(const Transistor &other);
 		Transistor(Transistor &&other) noexcept;
 
-		Transistor &operator=(const Transistor &other) noexcept;
+		Transistor &operator=(const Transistor &other);
 		Transistor &operator=(Transistor &&other);
 
 		void Swap(Transistor &other) noexcept;

@@ -4,13 +4,12 @@
 
 #include <utility>
 
-sim::Ground::Ground() noexcept : sim::Constant(sim::Width::W1, sim::Ground::GROUND_VALUE) {}
-sim::Ground::Ground(sim::Width width) noexcept : sim::Constant(width, sim::Ground::GROUND_VALUE) {}
+sim::Ground::Ground(sim::Width width) : sim::Constant(width, sim::Ground::GROUND_VALUE) {}
 
-sim::Ground::Ground(const sim::Ground &other) noexcept : sim::Constant(static_cast< sim::Constant >(other)) {}
+sim::Ground::Ground(const sim::Ground &other) : sim::Constant(static_cast< sim::Constant >(other)) {}
 sim::Ground::Ground(sim::Ground &&other) noexcept : sim::Constant(std::move(other)) {}
 
-sim::Ground &sim::Ground::operator=(const sim::Ground &other) noexcept
+sim::Ground &sim::Ground::operator=(const sim::Ground &other)
 {
 	if (this != &other)
 		sim::Ground(other).Swap(*this);

@@ -13,13 +13,12 @@ namespace sim
 	class Ground : public Constant
 	{
 	  public:
-		Ground() noexcept;
-		Ground(Width width) noexcept;
+		Ground(Width width = Width::W1);
 
-		Ground(const Ground &other) noexcept;
+		Ground(const Ground &other);
 		Ground(Ground &&other) noexcept;
 
-		Ground &operator=(const Ground &other) noexcept;
+		Ground &operator=(const Ground &other);
 		Ground &operator=(Ground &&other) noexcept;
 
 		void Swap(Ground &other) noexcept;

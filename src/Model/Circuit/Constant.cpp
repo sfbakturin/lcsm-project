@@ -4,14 +4,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Constant::Constant() noexcept : m_width(sim::Width::W1), m_value(1) {}
-sim::Constant::Constant(sim::Width width) noexcept : m_width(width), m_value(1) {}
-sim::Constant::Constant(sim::Width width, std::uint64_t value) noexcept : m_width(width), m_value(value) {}
+sim::Constant::Constant(sim::Width width, std::uint64_t value) : m_width(width), m_value(value) {}
 
-sim::Constant::Constant(const sim::Constant &other) noexcept : m_width(other.m_width), m_value(other.m_value) {}
+sim::Constant::Constant(const sim::Constant &other) : m_width(other.m_width), m_value(other.m_value) {}
 sim::Constant::Constant(sim::Constant &&other) noexcept : m_width(other.m_width), m_value(other.m_value) {}
 
-sim::Constant &sim::Constant::operator=(const sim::Constant &other) noexcept
+sim::Constant &sim::Constant::operator=(const sim::Constant &other)
 {
 	if (this != &other)
 	{

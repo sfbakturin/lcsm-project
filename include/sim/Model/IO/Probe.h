@@ -9,7 +9,7 @@ namespace sim
 	class Probe : public IOComponent
 	{
 	  public:
-		Probe() noexcept = default;
+		Probe() = default;
 
 		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
 		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;

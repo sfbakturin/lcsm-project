@@ -3,13 +3,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Button::Button() noexcept : m_activeOnPress(true) {}
-sim::Button::Button(bool activeOnPress) noexcept : m_activeOnPress(activeOnPress) {}
+sim::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress) {}
 
-sim::Button::Button(const sim::Button &other) noexcept : m_activeOnPress(other.m_activeOnPress) {}
+sim::Button::Button(const sim::Button &other) : m_activeOnPress(other.m_activeOnPress) {}
 sim::Button::Button(sim::Button &&other) noexcept : m_activeOnPress(other.m_activeOnPress) {}
 
-sim::Button &sim::Button::operator=(const sim::Button &other) noexcept
+sim::Button &sim::Button::operator=(const sim::Button &other)
 {
 	if (this != &other)
 		sim::Button(other).Swap(*this);

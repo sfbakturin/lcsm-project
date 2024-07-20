@@ -11,15 +11,12 @@ namespace sim
 	class Pin : public Constant
 	{
 	  public:
-		Pin() noexcept;
-		Pin(bool output) noexcept;
-		Pin(bool output, Width width) noexcept;
-		Pin(bool output, Width width, std::uint64_t value) noexcept;
+		Pin(bool output = false, Width width = Width::W1, std::uint64_t value = 0);
 
-		Pin(const Pin &other) noexcept;
+		Pin(const Pin &other);
 		Pin(Pin &&other) noexcept;
 
-		Pin &operator=(const Pin &other) noexcept;
+		Pin &operator=(const Pin &other);
 		Pin &operator=(Pin &&other) noexcept;
 
 		void Swap(Pin &other) noexcept;

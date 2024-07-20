@@ -14,14 +14,12 @@ namespace sim
 	class Splitter : public CircuitComponent
 	{
 	  public:
-		Splitter() noexcept;
-		Splitter(Width widthIn) noexcept;
-		Splitter(Width widthIn, std::size_t widthOut) noexcept;
+		Splitter(Width widthIn = Width::W2, std::size_t widthOut = 2);
 
-		Splitter(const Splitter &other) noexcept;
+		Splitter(const Splitter &other);
 		Splitter(Splitter &&other) noexcept;
 
-		Splitter &operator=(const Splitter &other) noexcept;
+		Splitter &operator=(const Splitter &other);
 		Splitter &operator=(Splitter &&other) noexcept;
 
 		void Swap(Splitter &other) noexcept;

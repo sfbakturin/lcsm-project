@@ -21,6 +21,9 @@
     Model/IO/Probe.cpp
 
     Model/Value.cpp
+
+    SimContext.cpp
+    SimBuilder.cpp
 )
 
 IF(MSVC)

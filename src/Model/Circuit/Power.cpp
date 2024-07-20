@@ -4,13 +4,12 @@
 
 #include <utility>
 
-sim::Power::Power() noexcept : sim::Constant(sim::Width::W1, sim::Power::POWER_VALUE) {}
-sim::Power::Power(sim::Width width) noexcept : sim::Constant(width, sim::Power::POWER_VALUE) {}
+sim::Power::Power(sim::Width width) : sim::Constant(width, sim::Power::POWER_VALUE) {}
 
-sim::Power::Power(const sim::Power &other) noexcept : sim::Constant(static_cast< sim::Constant >(other)) {}
+sim::Power::Power(const sim::Power &other) : sim::Constant(static_cast< sim::Constant >(other)) {}
 sim::Power::Power(sim::Power &&other) noexcept : sim::Constant(std::move(other)) {}
 
-sim::Power &sim::Power::operator=(const sim::Power &other) noexcept
+sim::Power &sim::Power::operator=(const sim::Power &other)
 {
 	if (this != &other)
 		sim::Power(other).Swap(*this);

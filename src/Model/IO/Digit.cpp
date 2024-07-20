@@ -3,13 +3,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Digit::Digit() noexcept : m_hasDecimalPoint(true) {}
-sim::Digit::Digit(bool hasDecimalPoint) noexcept : m_hasDecimalPoint(hasDecimalPoint) {}
+sim::Digit::Digit(bool hasDecimalPoint) : m_hasDecimalPoint(hasDecimalPoint) {}
 
-sim::Digit::Digit(const sim::Digit &other) noexcept : m_hasDecimalPoint(other.m_hasDecimalPoint) {}
+sim::Digit::Digit(const sim::Digit &other) : m_hasDecimalPoint(other.m_hasDecimalPoint) {}
 sim::Digit::Digit(sim::Digit &&other) noexcept : m_hasDecimalPoint(other.m_hasDecimalPoint) {}
 
-sim::Digit &sim::Digit::operator=(const sim::Digit &other) noexcept
+sim::Digit &sim::Digit::operator=(const sim::Digit &other)
 {
 	if (this != &other)
 		sim::Digit(other).Swap(*this);

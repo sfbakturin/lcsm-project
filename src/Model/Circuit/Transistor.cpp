@@ -3,13 +3,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Transistor::Transistor() noexcept : m_type(sim::TransistorType::P) {}
-sim::Transistor::Transistor(TransistorType type) noexcept : m_type(type) {}
+sim::Transistor::Transistor(TransistorType type) : m_type(type) {}
 
-sim::Transistor::Transistor(const sim::Transistor &other) noexcept : m_type(other.m_type) {}
+sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type) {}
 sim::Transistor::Transistor(sim::Transistor &&other) noexcept : m_type(other.m_type) {}
 
-sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other) noexcept
+sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other)
 {
 	if (this != &other)
 		sim::Transistor(other).Swap(*this);

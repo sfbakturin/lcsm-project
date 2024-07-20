@@ -9,13 +9,12 @@ namespace sim
 	class Digit : public IOComponent
 	{
 	  public:
-		Digit() noexcept;
-		Digit(bool hasDecimalPoint) noexcept;
+		Digit(bool hasDecimalPoint = true);
 
-		Digit(const Digit &other) noexcept;
+		Digit(const Digit &other);
 		Digit(Digit &&other) noexcept;
 
-		Digit &operator=(const Digit &other) noexcept;
+		Digit &operator=(const Digit &other);
 		Digit &operator=(Digit &other) noexcept;
 
 		void Swap(Digit &other) noexcept;

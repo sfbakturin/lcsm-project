@@ -5,12 +5,6 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Clock::Clock() noexcept : m_highDuration(1), m_lowDuration(1), m_phaseOffset(0) {}
-sim::Clock::Clock(unsigned highDuration) noexcept : m_highDuration(highDuration), m_lowDuration(1), m_phaseOffset(0) {}
-sim::Clock::Clock(unsigned highDuration, unsigned lowDuration) noexcept :
-	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(0)
-{
-}
 sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) noexcept :
 	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {

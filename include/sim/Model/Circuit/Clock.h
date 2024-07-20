@@ -11,15 +11,12 @@ namespace sim
 	class Clock : public CircuitComponent
 	{
 	  public:
-		Clock() noexcept;
-		Clock(unsigned highDuration) noexcept;
-		Clock(unsigned highDuration, unsigned lowDuration) noexcept;
-		Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) noexcept;
+		Clock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
 
-		Clock(const Clock &other) noexcept;
+		Clock(const Clock &other);
 		Clock(Clock &&other) noexcept;
 
-		Clock &operator=(const Clock &other) noexcept;
+		Clock &operator=(const Clock &other);
 		Clock &operator=(Clock &&other) noexcept;
 
 		void Swap(Clock &other) noexcept;
