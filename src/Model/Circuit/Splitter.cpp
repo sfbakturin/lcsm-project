@@ -75,13 +75,13 @@ void sim::Splitter::ConnectIn(const sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Splitter element have only 1 input.");
-	m_wireIn.Val().ConnectWire(wire);
+	m_wireIn.ConnectWire(wire);
 }
 void sim::Splitter::ConnectOut(const sim::wire_t &wire, std::size_t i)
 {
 	if (i >= m_widthOut)
 		throw std::logic_error("Splitter element has only widthOut output connections.");
-	m_wireOut[i].Val().ConnectWire(wire);
+	m_wireOut[i].ConnectWire(wire);
 }
 
 void sim::Splitter::ConnectBits(const sim::wire_t &wire)

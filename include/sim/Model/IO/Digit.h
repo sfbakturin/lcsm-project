@@ -25,8 +25,8 @@ namespace sim
 
 	  private:
 		bool m_hasDecimalPoint;
-		wire_t m_data;
-		wire_t m_decimalPoint;
+		sim::Wire m_data;
+		sim::Wire m_decimalPoint;
 	};
 }	 // namespace sim
 

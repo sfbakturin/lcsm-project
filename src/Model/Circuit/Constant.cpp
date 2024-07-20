@@ -62,7 +62,7 @@ void sim::Constant::ConnectIn(const sim::wire_t &, std::size_t)
 void sim::Constant::ConnectOut(const sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
-		m_wireOut.Val().ConnectWire(wire);
+		m_wireOut.ConnectWire(wire);
 	throw std::logic_error("Constant element has only one output.");
 }
 

@@ -15,7 +15,7 @@ namespace sim
 		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
 
 	  private:
-		wire_t m_wireIn;
+		sim::Wire m_wireIn;
 	};
 }	 // namespace sim
 

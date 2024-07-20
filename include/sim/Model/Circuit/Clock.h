@@ -2,7 +2,7 @@
 #define SIM_MODEL_CIRCUIT_CLOCK_H
 
 #include <sim/Component/CircuitComponent.h>
-#include <sim/Component/WiringComponent.h>
+#include <sim/Model/Wiring/Wire.h>
 
 #include <cstddef>
 
@@ -41,7 +41,7 @@ namespace sim
 		unsigned m_highDuration;
 		unsigned m_lowDuration;
 		unsigned m_phaseOffset;
-		wire_t m_wireOut;
+		sim::Wire m_wireOut;
 	};
 }	 // namespace sim
 

@@ -30,9 +30,9 @@ void sim::Digit::Swap(sim::Digit &other) noexcept
 void sim::Digit::ConnectIn(const sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
-		m_data.Val().ConnectWire(wire);
+		m_data.ConnectWire(wire);
 	else if (i == 1)
-		m_decimalPoint.Val().ConnectWire(wire);
+		m_decimalPoint.ConnectWire(wire);
 	else
 		throw std::logic_error("Digit element has only 2 inputs.");
 }

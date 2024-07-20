@@ -26,11 +26,11 @@ void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
 
 void sim::Tunnel::ConnectWire(const sim::wire_t &wire)
 {
-	m_wire.Val().ConnectWire(wire);
+	m_wire.ConnectWire(wire);
 }
 void sim::Tunnel::ConnectWire(sim::wire_t &&wire)
 {
-	m_wire.Val().ConnectWire(std::move(wire));
+	m_wire.ConnectWire(std::move(wire));
 }
 
 void sim::Tunnel::Connect(const sim::tunnel_t &tunnel) noexcept

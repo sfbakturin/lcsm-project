@@ -37,8 +37,8 @@ void sim::TransmissionGate::ConnectSrcC(const sim::wire_t &wire)
 void sim::TransmissionGate::Connect(const sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
-		m_base.Val().ConnectWire(wire);
+		m_base.ConnectWire(wire);
 	else if (i - 1 < sim::TransmissionGate::SRC_N)
-		m_srcs[i].Val().ConnectWire(wire);
+		m_srcs[i].ConnectWire(wire);
 	throw std::logic_error("TransmissionGate element has only 4 inout connections.");
 }

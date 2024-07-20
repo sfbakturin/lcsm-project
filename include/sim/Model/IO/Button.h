@@ -25,7 +25,7 @@ namespace sim
 
 	  private:
 		bool m_activeOnPress;
-		wire_t m_wireOut;
+		sim::Wire m_wireOut;
 	};
 }	 // namespace sim
 

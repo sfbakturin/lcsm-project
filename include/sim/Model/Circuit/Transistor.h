@@ -41,8 +41,8 @@ namespace sim
 		void Connect(const wire_t &wire, std::size_t i);
 
 		TransistorType m_type;
-		wire_t m_base;
-		std::array< wire_t, SRC_N > m_srcs;
+		sim::Wire m_base;
+		std::array< sim::Wire, SRC_N > m_srcs;
 	};
 }	 // namespace sim
 

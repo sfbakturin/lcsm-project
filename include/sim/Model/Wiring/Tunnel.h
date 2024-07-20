@@ -26,7 +26,7 @@ namespace sim
 		void Connect(Ref< Tunnel > &&tunnel) noexcept;
 
 	  private:
-		wire_t m_wire;
+		sim::Wire m_wire;
 		Ref< Tunnel > m_tunnel;
 	};
 

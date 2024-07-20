@@ -53,7 +53,7 @@ void sim::Clock::ConnectOut(const sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Clock element has only 1 output.");
-	m_wireOut.Val().ConnectWire(wire);
+	m_wireOut.ConnectWire(wire);
 }
 
 unsigned sim::Clock::GetHighDuration() const noexcept

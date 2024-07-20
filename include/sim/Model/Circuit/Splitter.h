@@ -45,8 +45,8 @@ namespace sim
 		Width m_widthIn;
 		std::size_t m_widthOut;
 		std::array< std::size_t, CONNECTORS_SIZE > m_connectors;
-		wire_t m_wireIn;
-		std::array< wire_t, CONNECTORS_SIZE > m_wireOut;
+		sim::Wire m_wireIn;
+		std::array< sim::Wire, CONNECTORS_SIZE > m_wireOut;
 
 		void ResetConnectors() noexcept;
 	};
