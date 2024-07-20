@@ -11,6 +11,7 @@
     Model/Circuit/Splitter.cpp
     Model/Circuit/Transistor.cpp
     Model/Circuit/TransmissionGate.cpp
+    Model/Circuit/Clock.cpp
 
     Model/Wiring/Wire.cpp
     Model/Wiring/Tunnel.cpp
