@@ -21,3 +21,9 @@
 
     Model/Value.cpp
 )
+
+IF(MSVC)
+    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE /W4)
+ELSE()
+    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+ENDIF()
