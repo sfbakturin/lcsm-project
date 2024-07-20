@@ -27,7 +27,7 @@ void sim::Button::Swap(sim::Button &other) noexcept
 	std::swap(m_activeOnPress, other.m_activeOnPress);
 }
 
-void sim::Button::ConnectIn(const sim::wire_t &wire, std::size_t i)
+void sim::Button::ConnectIn(const sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Button element doesn't have any inputs.");
 }

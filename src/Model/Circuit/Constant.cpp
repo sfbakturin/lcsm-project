@@ -54,7 +54,7 @@ void sim::Constant::SetValue(std::uint64_t newValue) noexcept
 	m_value = newValue;
 }
 
-void sim::Constant::ConnectIn(const sim::wire_t &wire, std::size_t i)
+void sim::Constant::ConnectIn(const sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Constant element doesn't have input.");
 }

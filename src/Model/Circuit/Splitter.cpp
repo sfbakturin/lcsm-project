@@ -104,11 +104,13 @@ void sim::Splitter::ResetConnectors() noexcept
 		m_connectors[i] = sim::Splitter::NO_CONNECT;
 
 	const std::size_t dem = Min(m_widthIn, m_widthOut);
-	const std::size_t n = m_widthIn / dem;
-	const std::size_t remain = n - (n * dem);
+	const std::size_t base = m_widthIn / dem;
+	const std::size_t remain = m_widthIn % dem;
 
-	for (std::size_t i = 0; i < n; i++)
+	for (std::size_t i = 0; i < dem; i++)
 	{
-		/* TODO */
+		m_connectors[i] = base;
+		if (i < remain)
+			m_connectors[i]++;
 	}
 }

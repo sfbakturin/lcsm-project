@@ -36,7 +36,7 @@ void sim::Digit::ConnectIn(const sim::wire_t &wire, std::size_t i)
 	else
 		throw std::logic_error("Digit element has only 2 inputs.");
 }
-void sim::Digit::ConnectOut(const sim::wire_t &wire, std::size_t i)
+void sim::Digit::ConnectOut(const sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Digit element doesn't have any outputs.");
 }

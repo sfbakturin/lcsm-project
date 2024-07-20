@@ -5,8 +5,8 @@
 
 sim::TransmissionGate::TransmissionGate() noexcept {}
 
-sim::TransmissionGate::TransmissionGate(const sim::TransmissionGate &other) noexcept {}
-sim::TransmissionGate::TransmissionGate(sim::TransmissionGate &&other) noexcept {}
+sim::TransmissionGate::TransmissionGate(const sim::TransmissionGate &) noexcept {}
+sim::TransmissionGate::TransmissionGate(sim::TransmissionGate &&) noexcept {}
 
 void sim::TransmissionGate::ConnectIn(const sim::wire_t &wire, std::size_t i)
 {

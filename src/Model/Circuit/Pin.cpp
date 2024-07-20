@@ -13,10 +13,7 @@ sim::Pin::Pin(const sim::Pin &other) noexcept :
 	sim::Constant(static_cast< sim::Constant >(other)), m_output(other.m_output)
 {
 }
-sim::Pin::Pin(sim::Pin &&other) noexcept :
-	sim::Constant(std::move(static_cast< sim::Constant >(other))), m_output(other.m_output)
-{
-}
+sim::Pin::Pin(sim::Pin &&other) noexcept : sim::Constant(std::move(other)), m_output(other.m_output) {}
 
 sim::Pin &sim::Pin::operator=(const sim::Pin &other) noexcept
 {
@@ -35,7 +32,6 @@ sim::Pin &sim::Pin::operator=(sim::Pin &&other) noexcept
 void sim::Pin::Swap(sim::Pin &other) noexcept
 {
 	sim::Constant &left = *this;
-	sim::Constant &right = other;
 	left.Swap(other);
 
 	std::swap(m_output, other.m_output);
