@@ -1,6 +1,7 @@
 #include <sim/Model/Circuit/Constant.h>
 #include <sim/Model/Width.h>
 
+#include <stdexcept>
 #include <utility>
 
 sim::Constant::Constant() noexcept : m_width(sim::Width::W1), m_value(1) {}
@@ -51,4 +52,21 @@ void sim::Constant::SetWidth(sim::Width newWidth) noexcept
 void sim::Constant::SetValue(std::uint64_t newValue) noexcept
 {
 	m_value = newValue;
+}
+
+void sim::Constant::ConnectIn(const sim::wire_t &wire, std::size_t i)
+{
+	throw std::logic_error("Constant element doesn't have input.");
+}
+
+void sim::Constant::ConnectOut(const sim::wire_t &wire, std::size_t i)
+{
+	if (i == 0)
+		m_wireOut.Val().ConnectWire(wire);
+	throw std::logic_error("Constant element has only one output.");
+}
+
+void sim::Constant::Connect(const sim::wire_t &wire)
+{
+	ConnectOut(wire, 0);
 }

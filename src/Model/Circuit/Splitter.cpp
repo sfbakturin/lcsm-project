@@ -1,6 +1,8 @@
-#include <sim/Model/Width.h>
 #include <sim/Model/Circuit/Splitter.h>
+#include <sim/Model/Width.h>
+
 #include <cstddef>
+#include <stdexcept>
 #include <utility>
 
 sim::Splitter::Splitter() noexcept : m_widthIn(Width::W2), m_widthOut(2)
@@ -28,13 +30,13 @@ sim::Splitter::Splitter(sim::Splitter &&other) noexcept : m_widthIn(other.m_widt
 		m_connectors[i] = other.m_connectors[i];
 }
 
-sim::Splitter &sim::Splitter::operator=(const Splitter &other) noexcept
+sim::Splitter &sim::Splitter::operator=(const sim::Splitter &other) noexcept
 {
 	if (this != &other)
 		sim::Splitter(other).Swap(*this);
 	return *this;
 }
-sim::Splitter &sim::Splitter::operator=(Splitter &&other) noexcept
+sim::Splitter &sim::Splitter::operator=(sim::Splitter &&other) noexcept
 {
 	if (this != &other)
 		sim::Splitter(std::move(other)).Swap(*this);
@@ -67,6 +69,28 @@ void sim::Splitter::SetWidthOut(std::size_t newWidthOut) noexcept
 {
 	m_widthOut = newWidthOut;
 	ResetConnectors();
+}
+
+void sim::Splitter::ConnectIn(const sim::wire_t &wire, std::size_t i)
+{
+	if (i != 0)
+		throw std::logic_error("Splitter element have only 1 input.");
+	m_wireIn.Val().ConnectWire(wire);
+}
+void sim::Splitter::ConnectOut(const sim::wire_t &wire, std::size_t i)
+{
+	if (i >= m_widthOut)
+		throw std::logic_error("Splitter element has only widthOut output connections.");
+	m_wireOut[i].Val().ConnectWire(wire);
+}
+
+void sim::Splitter::ConnectBits(const sim::wire_t &wire)
+{
+	ConnectIn(wire, 0);
+}
+void sim::Splitter::ConnectBitN(const sim::wire_t &wire, std::size_t i)
+{
+	ConnectOut(wire, i);
 }
 
 static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept

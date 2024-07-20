@@ -6,7 +6,7 @@ namespace sim
 	class Value
 	{
 	  public:
-		enum class State: unsigned
+		enum class State : unsigned
 		{
 			UNDEFINED,
 			TRUE,
@@ -22,6 +22,6 @@ namespace sim
 	  private:
 		State m_state;
 	};
-}
+}	 // namespace sim
 
 #endif /* SIM_VALUE_H */

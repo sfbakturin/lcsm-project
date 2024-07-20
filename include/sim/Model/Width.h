@@ -1,11 +1,9 @@
 #ifndef SIM_MODEL_WIDTH_H
 #define SIM_MODEL_WIDTH_H
 
-#include <cstddef>
-
 namespace sim
 {
-	enum Width: std::size_t
+	enum Width : unsigned
 	{
 		W1 = 1,
 		W2 = 2,
@@ -20,6 +18,6 @@ namespace sim
 		W32 = 32,
 		W64 = 64
 	};
-}
+}	 // namespace sim
 
 #endif /* SIM_MODEL_WIDTH_H */
