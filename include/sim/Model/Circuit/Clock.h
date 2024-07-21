@@ -11,7 +11,7 @@ namespace sim
 	class Clock : public CircuitComponent
 	{
 	  public:
-		Clock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
+		Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 
 		Clock(const Clock &other);
 		Clock(Clock &&other) noexcept;

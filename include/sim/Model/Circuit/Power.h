@@ -13,7 +13,7 @@ namespace sim
 	class Power : public Constant
 	{
 	  public:
-		Power(Width width = Width::W1);
+		Power(Width width);
 
 		Power(const Power &other);
 		Power(Power &&other) noexcept;

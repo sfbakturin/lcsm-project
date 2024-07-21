@@ -9,7 +9,7 @@ namespace sim
 	class Button : public IOComponent
 	{
 	  public:
-		Button(bool activeOnPress = true);
+		Button(bool activeOnPress);
 
 		Button(const Button &other);
 		Button(Button &&other) noexcept;

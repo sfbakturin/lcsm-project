@@ -5,12 +5,12 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) noexcept :
+sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
-sim::Clock::Clock(const sim::Clock &other) noexcept :
+sim::Clock::Clock(const sim::Clock &other) :
 	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
 {
 }
@@ -19,7 +19,7 @@ sim::Clock::Clock(sim::Clock &&other) noexcept :
 {
 }
 
-sim::Clock &sim::Clock::operator=(const sim::Clock &other) noexcept
+sim::Clock &sim::Clock::operator=(const sim::Clock &other)
 {
 	if (this != &other)
 		sim::Clock(other).Swap(*this);

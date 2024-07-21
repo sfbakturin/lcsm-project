@@ -12,7 +12,7 @@ namespace sim
 	class Constant : public CircuitComponent
 	{
 	  public:
-		Constant(Width width = Width::W1, std::uint64_t value = 1);
+		Constant(Width width, std::uint64_t value);
 
 		Constant(const Constant &other);
 		Constant(Constant &&other) noexcept;

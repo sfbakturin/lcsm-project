@@ -17,7 +17,7 @@ namespace sim
 	class Transistor : public CircuitComponent
 	{
 	  public:
-		Transistor(TransistorType type = TransistorType::P);
+		Transistor(TransistorType type);
 
 		Transistor(const Transistor &other);
 		Transistor(Transistor &&other) noexcept;

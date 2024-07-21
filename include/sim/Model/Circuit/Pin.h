@@ -8,10 +8,10 @@
 
 namespace sim
 {
-	class Pin : public Constant
+	class Pin : public CircuitComponent
 	{
 	  public:
-		Pin(bool output = false, Width width = Width::W1, std::uint64_t value = 0);
+		Pin(bool output, Width width, std::uint64_t value);
 
 		Pin(const Pin &other);
 		Pin(Pin &&other) noexcept;
@@ -21,8 +21,22 @@ namespace sim
 
 		void Swap(Pin &other) noexcept;
 
+		Width GetWidth() const noexcept;
+		std::uint64_t GetValue() const noexcept;
+
+		void SetWidth(Width newWidth) noexcept;
+		void SetValue(std::uint64_t newValue) noexcept;
+
+		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+
+		void Connect(const wire_t &wire);
+
 	  private:
 		bool m_output;
+		Width m_width;
+		std::uint64_t m_value;
+		sim::Wire m_wire;
 	};
 }	 // namespace sim
 

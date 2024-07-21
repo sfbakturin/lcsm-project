@@ -14,7 +14,7 @@ namespace sim
 	class Splitter : public CircuitComponent
 	{
 	  public:
-		Splitter(Width widthIn = Width::W2, std::size_t widthOut = 2);
+		Splitter(Width widthIn, std::size_t widthOut);
 
 		Splitter(const Splitter &other);
 		Splitter(Splitter &&other) noexcept;

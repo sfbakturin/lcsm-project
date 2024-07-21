@@ -9,7 +9,7 @@ namespace sim
 	class Digit : public IOComponent
 	{
 	  public:
-		Digit(bool hasDecimalPoint = true);
+		Digit(bool hasDecimalPoint);
 
 		Digit(const Digit &other);
 		Digit(Digit &&other) noexcept;
