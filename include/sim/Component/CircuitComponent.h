@@ -4,17 +4,12 @@
 #include <sim/Component/Component.h>
 #include <sim/Model/Wiring/Wire.h>
 
-#include <cstddef>
-
 namespace sim
 {
 	class CircuitComponent : public Component
 	{
 	  public:
 		virtual ~CircuitComponent() noexcept = default;
-
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) = 0;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) = 0;
 
 		virtual const CircuitComponent *AsCircuit() const noexcept override;
 		virtual CircuitComponent *AsCircuit() noexcept override;

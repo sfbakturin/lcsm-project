@@ -5,11 +5,12 @@
 
 int main()
 {
-	sim::SimContext ctx;
-	sim::SimBuilder builder(ctx);
+	sim::SimContext context;
+	sim::SimCircuit dummy(context);
+	sim::SimBuilder builder(dummy);
 
-	sim::Pin *input = builder.CreatePin(true);
-	sim::Pin *output = builder.CreatePin(false);
+	sim::Pin *in0 = builder.CreatePin(true);
+	sim::Pin *out0 = builder.CreatePin(false);
 
-	builder.ConnectPin(input, output, 0);
+	builder.ConnectPin(in0, out0, 0);
 }

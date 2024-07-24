@@ -24,6 +24,7 @@
 
     SimContext.cpp
     SimBuilder.cpp
+    SimCircuit.cpp
 )
 
 IF(MSVC)

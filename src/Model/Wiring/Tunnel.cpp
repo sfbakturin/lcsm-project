@@ -1,6 +1,7 @@
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
 
+#include <stdexcept>
 #include <utility>
 
 sim::Tunnel::Tunnel(const sim::Tunnel &other) : m_tunnel(other.m_tunnel) {}
@@ -22,6 +23,19 @@ sim::Tunnel &sim::Tunnel::operator=(sim::Tunnel &&other) noexcept
 void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
 {
 	std::swap(m_tunnel, other.m_tunnel);
+}
+
+void sim::Tunnel::ConnectIn(const sim::wire_t &wire, std::size_t i)
+{
+	if (i != 0)
+		throw std::logic_error("");
+	ConnectWire(wire);
+}
+void sim::Tunnel::ConnectOut(const sim::wire_t &wire, std::size_t i)
+{
+	if (i != 0)
+		throw std::logic_error("");
+	ConnectWire(wire);
 }
 
 void sim::Tunnel::ConnectWire(const sim::wire_t &wire)

@@ -19,6 +19,9 @@ namespace sim
 
 		void Swap(Tunnel &other) noexcept;
 
+		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+
 		virtual void ConnectWire(const wire_t &wire) override;
 		virtual void ConnectWire(wire_t &&wire) override;
 

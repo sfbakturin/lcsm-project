@@ -2,6 +2,7 @@
 #define SIM_SIMBUILDER_H
 
 #include <sim/Component/CircuitComponent.h>
+#include <sim/Component/Component.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/Model/Circuit/Clock.h>
 #include <sim/Model/Circuit/Constant.h>
@@ -15,7 +16,7 @@
 #include <sim/Model/IO/Digit.h>
 #include <sim/Model/IO/Probe.h>
 #include <sim/Model/Width.h>
-#include <sim/SimContext.h>
+#include <sim/SimCircuit.h>
 
 #include <cstddef>
 
@@ -24,12 +25,12 @@ namespace sim
 	class SimBuilder
 	{
 	  public:
-		SimBuilder(SimContext &context) noexcept;
+		SimBuilder(SimCircuit &circuit) noexcept;
 
-		SimBuilder(const SimBuilder &other) noexcept;
+		SimBuilder(const SimBuilder &other) = delete;
 		SimBuilder(SimBuilder &&other) noexcept;
 
-		SimBuilder &operator=(const SimBuilder &other) noexcept;
+		SimBuilder &operator=(const SimBuilder &other) = delete;
 		SimBuilder &operator=(SimBuilder &&other) noexcept;
 
 		void Swap(SimBuilder &other) noexcept;
@@ -46,22 +47,22 @@ namespace sim
 		Digit *CreateDigit(bool hasDecimalPoint = true);
 		Probe *CreateProbe();
 
-		wire_t Connect(CircuitComponent *compOut, std::size_t iOut, CircuitComponent *compIn, std::size_t iIn);
+		Wire *Connect(Component *compOut, std::size_t iOut, Component *compIn, std::size_t iIn);
 
-		wire_t ConnectConstant(Constant *constantOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectGround(Ground *groundOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectPower(Power *powerOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectPin(Pin *pinOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectSplitter(Splitter *splitterOut, std::size_t iOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectTransistor(Transistor *transistorOut, std::size_t iOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectTransmissionGate(TransmissionGate *transmissionGateOut, std::size_t iOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectClock(Clock *clockOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectButton(Button *buttonOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectDigit(Digit *digitOut, CircuitComponent *compIn, std::size_t iIn);
-		wire_t ConnectProbe(Probe *probeOut, CircuitComponent *compIn, std::size_t iIn);
+		Wire *ConnectConstant(Constant *constantOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectGround(Ground *groundOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectPower(Power *powerOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectPin(Pin *pinOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectSplitter(Splitter *splitterOut, std::size_t iOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectTransistor(Transistor *transistorOut, std::size_t iOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectTransmissionGate(TransmissionGate *transmissionGateOut, std::size_t iOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectClock(Clock *clockOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectButton(Button *buttonOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectDigit(Digit *digitOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectProbe(Probe *probeOut, Component *compIn, std::size_t iIn);
 
 	  private:
-		SimContext &m_context;
+		SimCircuit &m_circuit;
 	};
 }	 // namespace sim
 

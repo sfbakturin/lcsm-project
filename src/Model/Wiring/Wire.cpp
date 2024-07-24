@@ -6,6 +6,19 @@
 #include <stdexcept>
 #include <utility>
 
+void sim::Wire::ConnectIn(const sim::wire_t &wire, std::size_t i)
+{
+	if (i != 0)
+		throw std::logic_error("");
+	ConnectWire(wire);
+}
+void sim::Wire::ConnectOut(const sim::wire_t &wire, std::size_t i)
+{
+	if (i != 0)
+		throw std::logic_error("");
+	ConnectWire(wire);
+}
+
 void sim::Wire::ConnectWire(const sim::wire_t &wire)
 {
 	m_wires.push_back(wire);

@@ -18,6 +18,7 @@
 #include <sim/Model/Width.h>
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
+#include <sim/Support/Ref.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -25,7 +26,7 @@
 
 namespace sim
 {
-	class SimBuilder;
+	class SimCircuit;
 
 	class SimContext
 	{
@@ -41,7 +42,9 @@ namespace sim
 		void Swap(SimContext &other) noexcept;
 
 	  private:
-		friend class SimBuilder;
+		friend class SimCircuit;
+
+		void AddCircuit(SimCircuit *circuit);
 
 		Constant *AllocaConstant(Width width, std::uint64_t value);
 		Ground *AllocaGround(Width width);
@@ -58,8 +61,8 @@ namespace sim
 		Wire *AllocaWire();
 		Tunnel *AllocaTunnel();
 
-		std::vector< std::shared_ptr< Component > > m_components;
-		std::vector< std::shared_ptr< WiringComponent > > m_wires;
+		std::vector< Ref< SimCircuit > > m_circuits;
+		std::vector< std::shared_ptr< Component > > m_allocated;
 	};
 }	 // namespace sim
 
