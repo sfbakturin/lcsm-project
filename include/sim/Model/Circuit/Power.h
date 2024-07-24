@@ -2,8 +2,8 @@
 #define SIM_MODEL_CIRCUIT_POWER_H
 
 #include <sim/Component/CircuitComponent.h>
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Constant.h>
-#include <sim/Model/Width.h>
 
 #include <cstdint>
 #include <limits>

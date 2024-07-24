@@ -1,6 +1,7 @@
 #include <sim/Component/Component.h>
 #include <sim/Component/IOComponent.h>
 #include <sim/Component/WiringComponent.h>
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Clock.h>
 #include <sim/Model/Circuit/Constant.h>
 #include <sim/Model/Circuit/Ground.h>
@@ -12,7 +13,6 @@
 #include <sim/Model/IO/Button.h>
 #include <sim/Model/IO/Digit.h>
 #include <sim/Model/IO/Probe.h>
-#include <sim/Model/Width.h>
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/SimCircuit.h>

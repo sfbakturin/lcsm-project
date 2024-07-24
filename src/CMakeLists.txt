@@ -20,11 +20,12 @@
     Model/IO/Digit.cpp
     Model/IO/Probe.cpp
 
-    Model/Value.cpp
-
     SimContext.cpp
     SimBuilder.cpp
     SimCircuit.cpp
+
+    IR/Bit.cpp
+    IR/Value.cpp
 )
 
 IF(MSVC)

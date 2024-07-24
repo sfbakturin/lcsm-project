@@ -2,13 +2,14 @@
 #define SIM_MODEL_CIRCUIT_PIN_H
 
 #include <sim/Component/CircuitComponent.h>
+#include <sim/Component/PinComponent.h>
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Constant.h>
-#include <sim/Model/Width.h>
 #include <sim/Model/Wiring/Wire.h>
 
 namespace sim
 {
-	class Pin : public CircuitComponent
+	class Pin : public CircuitComponent, public PinComponent
 	{
 	  public:
 		Pin(bool output, Width width, std::uint64_t value);

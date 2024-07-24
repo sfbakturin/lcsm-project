@@ -1,5 +1,5 @@
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Splitter.h>
-#include <sim/Model/Width.h>
 
 #include <cstddef>
 #include <stdexcept>

@@ -2,7 +2,7 @@
 #define SIM_MODEL_CIRCUIT_CONSTANT_H
 
 #include <sim/Component/CircuitComponent.h>
-#include <sim/Model/Width.h>
+#include <sim/IR/Width.h>
 #include <sim/Model/Wiring/Wire.h>
 
 #include <cstdint>

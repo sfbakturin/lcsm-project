@@ -1,5 +1,5 @@
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Pin.h>
-#include <sim/Model/Width.h>
 
 #include <stdexcept>
 #include <utility>

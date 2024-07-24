@@ -1,6 +1,6 @@
+#include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Constant.h>
 #include <sim/Model/Circuit/Ground.h>
-#include <sim/Model/Width.h>
 
 #include <utility>
 
