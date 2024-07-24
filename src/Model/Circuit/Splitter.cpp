@@ -91,7 +91,7 @@ static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept
 
 void sim::Splitter::ResetConnectors() noexcept
 {
-	for (std::size_t i = 0; sim::Splitter::CONNECTORS_SIZE; i++)
+	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
 		m_connectors[i] = sim::Splitter::NO_CONNECT;
 
 	const std::size_t dem = Min(m_widthIn, m_widthOut);

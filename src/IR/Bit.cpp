@@ -12,4 +12,5 @@ sim::Bit VerilogToLogisim(sim::VerilogBit bit) noexcept
 	case sim::VERILOG_IMPEDANCE:
 		return sim::LOGISIM_UNDEFINED;
 	}
+	return sim::LOGISIM_ERROR;
 }
