@@ -61,7 +61,7 @@ namespace sim
 		Wire *AllocaWire();
 		Tunnel *AllocaTunnel();
 
-		std::vector< Ref< SimCircuit > > m_circuits;
+		std::vector< support::Ref< SimCircuit > > m_circuits;
 		std::vector< std::shared_ptr< Component > > m_allocated;
 	};
 }	 // namespace sim

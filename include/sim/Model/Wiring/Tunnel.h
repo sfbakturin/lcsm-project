@@ -25,15 +25,15 @@ namespace sim
 		virtual void ConnectWire(const wire_t &wire) override;
 		virtual void ConnectWire(wire_t &&wire) override;
 
-		void Connect(const Ref< Tunnel > &tunnel) noexcept;
-		void Connect(Ref< Tunnel > &&tunnel) noexcept;
+		void Connect(const support::Ref< Tunnel > &tunnel) noexcept;
+		void Connect(support::Ref< Tunnel > &&tunnel) noexcept;
 
 	  private:
 		sim::Wire m_wire;
-		Ref< Tunnel > m_tunnel;
+		support::Ref< Tunnel > m_tunnel;
 	};
 
-	using tunnel_t = Ref< Tunnel >;
+	using tunnel_t = support::Ref< Tunnel >;
 }	 // namespace sim
 
 #endif /* SIM_MODEL_WIRING_TUNNEL_H */

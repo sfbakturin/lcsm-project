@@ -16,23 +16,7 @@
 #include <sim/SimBuilder.h>
 #include <sim/SimCircuit.h>
 
-#include <utility>
-
 sim::SimBuilder::SimBuilder(sim::SimCircuit &circuit) noexcept : m_circuit(circuit) {}
-
-sim::SimBuilder::SimBuilder(sim::SimBuilder &&other) noexcept : m_circuit(other.m_circuit) {}
-
-sim::SimBuilder &sim::SimBuilder::operator=(sim::SimBuilder &&other) noexcept
-{
-	if (this != &other)
-		sim::SimBuilder(std::move(other)).Swap(*this);
-	return *this;
-}
-
-void sim::SimBuilder::Swap(sim::SimBuilder &other) noexcept
-{
-	std::swap(m_circuit, other.m_circuit);
-}
 
 sim::Constant *sim::SimBuilder::CreateConstant(sim::Width width, std::uint64_t value)
 {

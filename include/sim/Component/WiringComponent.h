@@ -20,11 +20,11 @@ namespace sim
 		virtual const WiringComponent *AsWiring() const noexcept override;
 		virtual WiringComponent *AsWiring() noexcept override;
 
-		virtual void ConnectWire(const Ref< WiringComponent > &wire) = 0;
-		virtual void ConnectWire(Ref< WiringComponent > &&wire) = 0;
+		virtual void ConnectWire(const support::Ref< WiringComponent > &wire) = 0;
+		virtual void ConnectWire(support::Ref< WiringComponent > &&wire) = 0;
 	};
 
-	using wire_t = Ref< WiringComponent >;
+	using wire_t = support::Ref< WiringComponent >;
 }	 // namespace sim
 
 #endif /* SIM_COMPONENT_WIRINGCOMPONENT_H */

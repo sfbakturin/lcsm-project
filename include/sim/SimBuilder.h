@@ -28,12 +28,10 @@ namespace sim
 		SimBuilder(SimCircuit &circuit) noexcept;
 
 		SimBuilder(const SimBuilder &other) = delete;
-		SimBuilder(SimBuilder &&other) noexcept;
+		SimBuilder(SimBuilder &&other) noexcept = delete;
 
 		SimBuilder &operator=(const SimBuilder &other) = delete;
-		SimBuilder &operator=(SimBuilder &&other) noexcept;
-
-		void Swap(SimBuilder &other) noexcept;
+		SimBuilder &operator=(SimBuilder &&other) noexcept = delete;
 
 		Constant *CreateConstant(Width width = Width::W1, std::uint64_t value = 0x1);
 		Ground *CreateGround(Width width = Width::W1);

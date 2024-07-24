@@ -27,80 +27,80 @@ sim::SimCircuit::SimCircuit(sim::SimContext &context) : m_context(context)
 sim::Constant *sim::SimCircuit::RegisterConstant(sim::Width width, std::uint64_t value)
 {
 	sim::Constant *constant = m_context.AllocaConstant(width, value);
-	m_comp.push_back(sim::Ref< sim::Component >(constant));
+	m_comp.push_back(sim::support::Ref< sim::Component >(constant));
 	return constant;
 }
 sim::Ground *sim::SimCircuit::RegisterGround(sim::Width width)
 {
 	sim::Ground *ground = m_context.AllocaGround(width);
-	m_comp.push_back(sim::Ref< sim::Component >(ground));
+	m_comp.push_back(sim::support::Ref< sim::Component >(ground));
 	return ground;
 }
 sim::Power *sim::SimCircuit::RegisterPower(sim::Width width)
 {
 	sim::Power *power = m_context.AllocaPower(width);
-	m_comp.push_back(sim::Ref< sim::Component >(power));
+	m_comp.push_back(sim::support::Ref< sim::Component >(power));
 	return power;
 }
 sim::Pin *sim::SimCircuit::RegisterPin(bool output, sim::Width width, std::uint64_t value)
 {
 	sim::Pin *pin = m_context.AllocaPin(output, width, value);
-	m_pin.push_back(sim::Ref< sim::Component >(pin));
+	m_pin.push_back(sim::support::Ref< sim::Component >(pin));
 	return pin;
 }
 sim::Splitter *sim::SimCircuit::RegisterSplitter(sim::Width widthIn, std::size_t widthOut)
 {
 	sim::Splitter *splitter = m_context.AllocaSplitter(widthIn, widthOut);
-	m_comp.push_back(sim::Ref< sim::Component >(splitter));
+	m_comp.push_back(sim::support::Ref< sim::Component >(splitter));
 	return splitter;
 }
 sim::Transistor *sim::SimCircuit::RegisterTransistor(sim::TransistorType type)
 {
 	sim::Transistor *transistor = m_context.AllocaTransistor(type);
-	m_comp.push_back(sim::Ref< sim::Component >(transistor));
+	m_comp.push_back(sim::support::Ref< sim::Component >(transistor));
 	return transistor;
 }
 sim::TransmissionGate *sim::SimCircuit::RegisterTransmissionGate()
 {
 	sim::TransmissionGate *transmissionGate = m_context.AllocaTransmissionGate();
-	m_comp.push_back(sim::Ref< sim::Component >(transmissionGate));
+	m_comp.push_back(sim::support::Ref< sim::Component >(transmissionGate));
 	return transmissionGate;
 }
 sim::Clock *sim::SimCircuit::RegisterClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset)
 {
 	sim::Clock *clock = m_context.AllocaClock(highDuration, lowDuration, phaseOffset);
-	m_comp.push_back(sim::Ref< sim::Component >(clock));
+	m_comp.push_back(sim::support::Ref< sim::Component >(clock));
 	return clock;
 }
 sim::Button *sim::SimCircuit::RegisterButton(bool activeOnPress)
 {
 	sim::Button *button = m_context.AllocaButton(activeOnPress);
-	m_io.push_back(sim::Ref< sim::Component >(button));
+	m_io.push_back(sim::support::Ref< sim::Component >(button));
 	return button;
 }
 sim::Digit *sim::SimCircuit::RegisterDigit(bool hasDecimalPoint)
 {
 	sim::Digit *digit = m_context.AllocaDigit(hasDecimalPoint);
-	m_io.push_back(sim::Ref< sim::Component >(digit));
+	m_io.push_back(sim::support::Ref< sim::Component >(digit));
 	return digit;
 }
 sim::Probe *sim::SimCircuit::RegisterProbe()
 {
 	sim::Probe *probe = m_context.AllocaProbe();
-	m_io.push_back(sim::Ref< sim::Component >(probe));
+	m_io.push_back(sim::support::Ref< sim::Component >(probe));
 	return probe;
 }
 
 sim::Wire *sim::SimCircuit::RegisterWire()
 {
 	sim::Wire *wire = m_context.AllocaWire();
-	m_comp.push_back(sim::Ref< sim::Component >(wire));
+	m_comp.push_back(sim::support::Ref< sim::Component >(wire));
 	return wire;
 }
 
 sim::Tunnel *sim::SimCircuit::RegisterTunnel()
 {
 	sim::Tunnel *tunnel = m_context.AllocaTunnel();
-	m_comp.push_back(sim::Ref< sim::Component >(tunnel));
+	m_comp.push_back(sim::support::Ref< sim::Component >(tunnel));
 	return tunnel;
 }

@@ -57,9 +57,9 @@ namespace sim
 
 		SimContext &m_context;
 
-		std::vector< Ref< Component > > m_pin;
-		std::vector< Ref< Component > > m_io;
-		std::vector< Ref< Component > > m_comp;
+		std::vector< support::Ref< Component > > m_pin;
+		std::vector< support::Ref< Component > > m_io;
+		std::vector< support::Ref< Component > > m_comp;
 	};
 }	 // namespace sim
 

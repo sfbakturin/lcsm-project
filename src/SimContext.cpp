@@ -38,7 +38,7 @@ void sim::SimContext::Swap(sim::SimContext &other) noexcept
 
 void sim::SimContext::AddCircuit(sim::SimCircuit *circuit)
 {
-	m_circuits.push_back(sim::Ref< sim::SimCircuit >(circuit));
+	m_circuits.push_back(sim::support::Ref< sim::SimCircuit >(circuit));
 }
 
 sim::Constant *sim::SimContext::AllocaConstant(sim::Width width, std::uint64_t value)

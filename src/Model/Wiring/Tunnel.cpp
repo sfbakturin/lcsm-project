@@ -28,13 +28,13 @@ void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
 void sim::Tunnel::ConnectIn(const sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
-		throw std::logic_error("");
+		throw std::logic_error("Tunnel element has only 1 inout.");
 	ConnectWire(wire);
 }
 void sim::Tunnel::ConnectOut(const sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
-		throw std::logic_error("");
+		throw std::logic_error("Tunnel element has only 1 inout.");
 	ConnectWire(wire);
 }
 
