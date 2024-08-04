@@ -3,3 +3,10 @@ out/
 .cache/
 .vscode/
 .vs/
+*.filters
+*.vcxproj
+*.cmake
+*.sln
+*.tcl
+CMakeCache.txt
+CMakeFiles/
