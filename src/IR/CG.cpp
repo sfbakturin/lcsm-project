@@ -1,16 +1,16 @@
 #include <sim/IR/CG.h>
 #include <sim/IR/CGObject.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <memory>
 #include <utility>
 
-sim::CG::CG(const sim::support::Ref< sim::CGObject > &target)
+sim::CG::CG(const sim::support::PointerView< sim::CGObject > &target)
 {
 	m_root.SetTarget(target);
 }
 
-sim::CG::CG(sim::support::Ref< sim::CGObject > &&target)
+sim::CG::CG(sim::support::PointerView< sim::CGObject > &&target)
 {
 	m_root.SetTarget(std::move(target));
 }
@@ -29,12 +29,12 @@ void sim::CG::Swap(sim::CG &other) noexcept
 	std::swap(m_root, other.m_root);
 }
 
-void sim::CG::SetTarget(const sim::support::Ref< CGObject > &target) noexcept
+void sim::CG::SetTarget(const sim::support::PointerView< CGObject > &target) noexcept
 {
 	m_root.SetTarget(target);
 }
 
-void sim::CG::SetTarget(sim::support::Ref< CGObject > &&target) noexcept
+void sim::CG::SetTarget(sim::support::PointerView< CGObject > &&target) noexcept
 {
 	m_root.SetTarget(std::move(target));
 }

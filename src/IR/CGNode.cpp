@@ -1,34 +1,34 @@
 #include <sim/IR/CG.h>
 #include <sim/IR/Instruction.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <memory>
 #include <utility>
 
-sim::CGNode::CGNode(const sim::support::Ref< sim::CGObject > &target) : m_target(target) {}
+sim::CGNode::CGNode(const sim::support::PointerView< sim::CGObject > &target) : m_target(target) {}
 
-sim::CGNode::CGNode(sim::support::Ref< sim::CGObject > &&target) : m_target(std::move(target)) {}
+sim::CGNode::CGNode(sim::support::PointerView< sim::CGObject > &&target) : m_target(std::move(target)) {}
 
 sim::CGNode::CGNode(const std::shared_ptr< sim::Instruction > &run) : m_run(run) {}
 
 sim::CGNode::CGNode(std::shared_ptr< sim::Instruction > &&run) : m_run(std::move(run)) {}
 
-sim::CGNode::CGNode(const sim::support::Ref< sim::CGObject > &target, const std::shared_ptr< sim::Instruction > &run) :
+sim::CGNode::CGNode(const sim::support::PointerView< sim::CGObject > &target, const std::shared_ptr< sim::Instruction > &run) :
 	m_target(target), m_run(run)
 {
 }
 
-sim::CGNode::CGNode(const sim::support::Ref< sim::CGObject > &target, std::shared_ptr< sim::Instruction > &&run) :
+sim::CGNode::CGNode(const sim::support::PointerView< sim::CGObject > &target, std::shared_ptr< sim::Instruction > &&run) :
 	m_target(target), m_run(std::move(run))
 {
 }
 
-sim::CGNode::CGNode(sim::support::Ref< sim::CGObject > &&target, const std::shared_ptr< sim::Instruction > &run) :
+sim::CGNode::CGNode(sim::support::PointerView< sim::CGObject > &&target, const std::shared_ptr< sim::Instruction > &run) :
 	m_target(std::move(target)), m_run(run)
 {
 }
 
-sim::CGNode::CGNode(sim::support::Ref< sim::CGObject > &&target, std::shared_ptr< sim::Instruction > &&run) :
+sim::CGNode::CGNode(sim::support::PointerView< sim::CGObject > &&target, std::shared_ptr< sim::Instruction > &&run) :
 	m_target(std::move(target)), m_run(std::move(run))
 {
 }
@@ -92,12 +92,12 @@ void sim::CGNode::SetInstruction(std::shared_ptr< sim::Instruction > &&run) noex
 	m_run = std::move(run);
 }
 
-void sim::CGNode::SetTarget(const sim::support::Ref< sim::CGObject > &target) noexcept
+void sim::CGNode::SetTarget(const sim::support::PointerView< sim::CGObject > &target) noexcept
 {
 	m_target = target;
 }
 
-void sim::CGNode::SetTarget(sim::support::Ref< sim::CGObject > &&target) noexcept
+void sim::CGNode::SetTarget(sim::support::PointerView< sim::CGObject > &&target) noexcept
 {
 	m_target = std::move(target);
 }

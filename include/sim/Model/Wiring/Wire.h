@@ -3,7 +3,7 @@
 
 #include <sim/Component/Component.h>
 #include <sim/Component/WiringComponent.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <vector>
 

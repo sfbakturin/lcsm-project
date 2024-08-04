@@ -7,7 +7,7 @@
 #include <sim/IR/Instruction.h>
 #include <sim/IR/Value.h>
 #include <sim/SimContext.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 #include <unordered_map>
 
 #include <memory>

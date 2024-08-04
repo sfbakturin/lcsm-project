@@ -1,7 +1,7 @@
 #ifndef SIM_COMPONENT_COMPONENT_H
 #define SIM_COMPONENT_COMPONENT_H
 
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 namespace sim
 {
@@ -21,8 +21,8 @@ namespace sim
 		virtual unsigned ID() const noexcept = 0;
 		virtual void Identify(unsigned ID) noexcept = 0;
 
-		virtual void ConnectIn(sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
-		virtual void ConnectOut(sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
+		virtual void ConnectIn(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
+		virtual void ConnectOut(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
 
 		virtual const CircuitComponent *AsCircuit() const noexcept = 0;
 		virtual CircuitComponent *AsCircuit() noexcept = 0;
@@ -34,7 +34,7 @@ namespace sim
 		virtual WiringComponent *AsWiring() noexcept = 0;
 	};
 
-	using component_t = support::Ref< Component >;
+	using component_t = support::PointerView< Component >;
 }	 // namespace sim
 
 #endif /* SIM_COMPONENT_COMPONENT_H */

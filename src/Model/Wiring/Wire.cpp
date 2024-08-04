@@ -1,7 +1,7 @@
 #include <sim/Component/Component.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/Model/Wiring/Wire.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <stdexcept>
 #include <utility>
@@ -10,7 +10,7 @@ sim::Wire::Wire() : m_id(0) {}
 
 sim::Wire::Wire(sim::Component *comp) : m_id(0)
 {
-	Connect(sim::support::Ref< sim::Component >(comp));
+	Connect(sim::support::PointerView< sim::Component >(comp));
 }
 
 unsigned sim::Wire::ID() const noexcept

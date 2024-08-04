@@ -18,7 +18,7 @@
 #include <sim/Model/IO/Probe.h>
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -61,7 +61,7 @@ namespace sim
 		Wire *AllocaWire(unsigned ID);
 		Tunnel *AllocaTunnel(unsigned ID);
 
-		std::vector< support::Ref< SimCircuit > > m_circuits;
+		std::vector< support::PointerView< SimCircuit > > m_circuits;
 		std::vector< std::shared_ptr< Component > > m_allocated;
 	};
 }	 // namespace sim

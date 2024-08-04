@@ -10,7 +10,7 @@
 #include <sim/SimCircuit.h>
 #include <sim/SimContext.h>
 #include <sim/SimEngine.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 #include <unordered_map>
 
 #include <memory>
@@ -36,7 +36,7 @@ void sim::SimEngine::AddCircuit(sim::SimCircuit &circuit)
 
 		// Create subgraph with *Pin* input.
 		sim::CGPinInput *pi = RegisterPinInput(pins.first);
-		sim::CG tree = sim::support::Ref< CGObject >(pi);
+		sim::CG tree = sim::support::PointerView< CGObject >(pi);
 
 		// Write value to *Pin*s wire-connector.
 		sim::CGWire *pw = RegisterWire(pin->GetWire().ID());
@@ -177,7 +177,7 @@ void sim::SimEngine::BuildCircuit(
 		std::shared_ptr< sim::Instruction > bv = std::make_shared< sim::BroadcastValue >(targetCurrent, gw);
 
 		// Create calculation node to broadcast value from *targetRoot* to *Wire* element.
-		sim::CGNode BV(sim::support::Ref< sim::CGObject >(gw), std::move(bv));
+		sim::CGNode BV(sim::support::PointerView< sim::CGObject >(gw), std::move(bv));
 
 		// Connect to parent CGNode.
 		sim::CGNode *added = parentNode->AddConnection(std::move(BV));
@@ -211,12 +211,12 @@ void sim::SimEngine::BuildCircuit(
 
 		// Write from Wire to Pin's inout wire.
 		std::shared_ptr< sim::Instruction > wv = std::make_shared< sim::WriteValue >(targetCurrent, pw);
-		sim::CGNode WV1(sim::support::Ref< sim::CGObject >(pw), std::move(wv));
+		sim::CGNode WV1(sim::support::PointerView< sim::CGObject >(pw), std::move(wv));
 		sim::CGNode *writeToWire = parentNode->AddConnection(std::move(WV1));
 
 		// Write from Pin's inout wire to Pin for external reading.
 		std::shared_ptr< sim::Instruction > wvp = std::make_shared< sim::WriteValue >(pw, po);
-		sim::CGNode WV2(sim::support::Ref< sim::CGObject >(po), std::move(wvp));
+		sim::CGNode WV2(sim::support::PointerView< sim::CGObject >(po), std::move(wvp));
 		writeToWire->AddConnection(std::move(WV2));
 	}
 }

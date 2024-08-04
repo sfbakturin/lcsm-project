@@ -16,7 +16,7 @@
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/SimContext.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -38,7 +38,7 @@ void sim::SimContext::Swap(sim::SimContext &other) noexcept
 
 void sim::SimContext::AddCircuit(sim::SimCircuit *circuit)
 {
-	m_circuits.push_back(sim::support::Ref< sim::SimCircuit >(circuit));
+	m_circuits.push_back(sim::support::PointerView< sim::SimCircuit >(circuit));
 }
 
 sim::Constant *sim::SimContext::AllocaConstant(unsigned ID, sim::Width width, std::uint64_t value)

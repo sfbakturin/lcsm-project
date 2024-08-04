@@ -3,7 +3,7 @@
 
 #include <sim/Component/WiringComponent.h>
 #include <sim/Model/Wiring/Wire.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 namespace sim
 {
@@ -29,8 +29,8 @@ namespace sim
 		virtual void ConnectWire(const wire_t &wire) override;
 		virtual void ConnectWire(wire_t &&wire) override;
 
-		void Connect(const support::Ref< Tunnel > &tunnel) noexcept;
-		void Connect(support::Ref< Tunnel > &&tunnel) noexcept;
+		void Connect(const support::PointerView< Tunnel > &tunnel) noexcept;
+		void Connect(support::PointerView< Tunnel > &&tunnel) noexcept;
 
 		virtual const Wire *AsWire() const noexcept override;
 		virtual Wire *AsWire() noexcept override;
@@ -39,10 +39,10 @@ namespace sim
 		unsigned m_id;
 
 		sim::Wire m_wire;
-		support::Ref< Tunnel > m_tunnel;
+		support::PointerView< Tunnel > m_tunnel;
 	};
 
-	using tunnel_t = support::Ref< Tunnel >;
+	using tunnel_t = support::PointerView< Tunnel >;
 }	 // namespace sim
 
 #endif /* SIM_MODEL_WIRING_TUNNEL_H */

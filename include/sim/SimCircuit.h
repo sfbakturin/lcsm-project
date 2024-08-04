@@ -19,7 +19,7 @@
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/SimContext.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 #include <unordered_map>
 
 namespace sim
@@ -37,7 +37,7 @@ namespace sim
 		SimCircuit &operator=(const SimCircuit &other) = delete;
 		SimCircuit &operator=(SimCircuit &&other) noexcept = delete;
 
-		const std::unordered_map< unsigned, support::Ref< Component > > &Pins() const noexcept;
+		const std::unordered_map< unsigned, support::PointerView< Component > > &Pins() const noexcept;
 
 	  private:
 		friend class SimBuilder;
@@ -61,9 +61,9 @@ namespace sim
 
 		unsigned m_globalId;
 
-		std::unordered_map< unsigned, support::Ref< Component > > m_pin;
-		std::unordered_map< unsigned, support::Ref< Component > > m_io;
-		std::unordered_map< unsigned, support::Ref< Component > > m_comp;
+		std::unordered_map< unsigned, support::PointerView< Component > > m_pin;
+		std::unordered_map< unsigned, support::PointerView< Component > > m_io;
+		std::unordered_map< unsigned, support::PointerView< Component > > m_comp;
 	};
 }	 // namespace sim
 

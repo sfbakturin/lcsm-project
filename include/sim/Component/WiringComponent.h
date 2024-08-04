@@ -2,7 +2,7 @@
 #define SIM_COMPONENT_WIRINGCOMPONENT_H
 
 #include <sim/Component/Component.h>
-#include <sim/Support/Ref.hpp>
+#include <sim/Support/PointerView.hpp>
 
 namespace sim
 {
@@ -22,8 +22,8 @@ namespace sim
 		virtual const WiringComponent *AsWiring() const noexcept override;
 		virtual WiringComponent *AsWiring() noexcept override;
 
-		virtual void ConnectWire(const support::Ref< WiringComponent > &wire) = 0;
-		virtual void ConnectWire(support::Ref< WiringComponent > &&wire) = 0;
+		virtual void ConnectWire(const support::PointerView< WiringComponent > &wire) = 0;
+		virtual void ConnectWire(support::PointerView< WiringComponent > &&wire) = 0;
 
 		bool IsWire() const noexcept;
 
@@ -31,7 +31,7 @@ namespace sim
 		virtual Wire *AsWire() noexcept = 0;
 	};
 
-	using wire_t = support::Ref< WiringComponent >;
+	using wire_t = support::PointerView< WiringComponent >;
 }	 // namespace sim
 
 #endif /* SIM_COMPONENT_WIRINGCOMPONENT_H */
