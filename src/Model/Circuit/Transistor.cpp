@@ -3,9 +3,10 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Transistor::Transistor(TransistorType type) : m_type(type) {}
+sim::Transistor::Transistor(TransistorType type) : m_id(0), m_type(type) {}
 
 sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type) {}
+
 sim::Transistor::Transistor(sim::Transistor &&other) noexcept : m_type(other.m_type) {}
 
 sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other)
@@ -14,6 +15,7 @@ sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other)
 		sim::Transistor(other).Swap(*this);
 	return *this;
 }
+
 sim::Transistor &sim::Transistor::operator=(sim::Transistor &&other)
 {
 	if (this != &other)
@@ -26,29 +28,52 @@ void sim::Transistor::Swap(sim::Transistor &other) noexcept
 	std::swap(m_type, other.m_type);
 }
 
-void sim::Transistor::ConnectIn(const sim::wire_t &wire, std::size_t i)
+unsigned sim::Transistor::ID() const noexcept
 {
-	Connect(wire, i);
+	return m_id;
 }
-void sim::Transistor::ConnectOut(const sim::wire_t &wire, std::size_t i)
+
+void sim::Transistor::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Transistor::ConnectIn(sim::wire_t &wire, std::size_t i)
 {
 	Connect(wire, i);
 }
 
-void sim::Transistor::ConnectBase(const sim::wire_t &wire)
+void sim::Transistor::ConnectOut(sim::wire_t &wire, std::size_t i)
+{
+	Connect(wire, i);
+}
+
+void sim::Transistor::ConnectBase(sim::wire_t &wire)
 {
 	ConnectIn(wire, 0);
 }
-void sim::Transistor::ConnectSrcA(const sim::wire_t &wire)
+
+void sim::Transistor::ConnectSrcA(sim::wire_t &wire)
 {
 	ConnectOut(wire, 1);
 }
-void sim::Transistor::ConnectSrcB(const sim::wire_t &wire)
+
+void sim::Transistor::ConnectSrcB(sim::wire_t &wire)
 {
 	ConnectOut(wire, 2);
 }
 
-void sim::Transistor::Connect(const sim::wire_t &wire, std::size_t i)
+const sim::Pin *sim::Transistor::AsPin() const noexcept
+{
+	return nullptr;
+}
+
+sim::Pin *sim::Transistor::AsPin() noexcept
+{
+	return nullptr;
+}
+
+void sim::Transistor::Connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
 		m_base.ConnectWire(wire);

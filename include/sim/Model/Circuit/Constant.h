@@ -9,6 +9,8 @@
 
 namespace sim
 {
+	class Pin;
+
 	class Constant : public CircuitComponent
 	{
 	  public:
@@ -28,15 +30,23 @@ namespace sim
 		void SetWidth(Width newWidth) noexcept;
 		void SetValue(std::uint64_t newValue) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
 
-		void Connect(const wire_t &wire);
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+
+		void Connect(wire_t &wire);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  protected:
+		unsigned m_id;
+
 		Width m_width;
 		std::uint64_t m_value;
-		sim::Wire m_wireOut;
+		Wire m_wireOut;
 	};
 }	 // namespace sim
 

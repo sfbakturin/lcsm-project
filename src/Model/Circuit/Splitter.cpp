@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) : m_widthIn(widthIn), m_widthOut(widthOut)
+sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) : m_id(0), m_widthIn(widthIn), m_widthOut(widthOut)
 {
 	ResetConnectors();
 }
@@ -15,6 +15,7 @@ sim::Splitter::Splitter(const sim::Splitter &other) : m_widthIn(other.m_widthIn)
 	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
 		m_connectors[i] = other.m_connectors[i];
 }
+
 sim::Splitter::Splitter(sim::Splitter &&other) noexcept : m_widthIn(other.m_widthIn), m_widthOut(other.m_widthOut)
 {
 	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
@@ -27,6 +28,7 @@ sim::Splitter &sim::Splitter::operator=(const sim::Splitter &other)
 		sim::Splitter(other).Swap(*this);
 	return *this;
 }
+
 sim::Splitter &sim::Splitter::operator=(sim::Splitter &&other) noexcept
 {
 	if (this != &other)
@@ -46,6 +48,7 @@ sim::Width sim::Splitter::GetWidthIn() const noexcept
 {
 	return m_widthIn;
 }
+
 std::size_t sim::Splitter::GetWidthOut() const noexcept
 {
 	return m_widthOut;
@@ -56,32 +59,55 @@ void sim::Splitter::SetWidthIn(sim::Width newWidthIn) noexcept
 	m_widthIn = newWidthIn;
 	ResetConnectors();
 }
+
 void sim::Splitter::SetWidthOut(std::size_t newWidthOut) noexcept
 {
 	m_widthOut = newWidthOut;
 	ResetConnectors();
 }
 
-void sim::Splitter::ConnectIn(const sim::wire_t &wire, std::size_t i)
+unsigned sim::Splitter::ID() const noexcept
+{
+	return m_id;
+}
+
+void sim::Splitter::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Splitter::ConnectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Splitter element have only 1 input.");
 	m_wireIn.ConnectWire(wire);
 }
-void sim::Splitter::ConnectOut(const sim::wire_t &wire, std::size_t i)
+
+void sim::Splitter::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i >= m_widthOut)
 		throw std::logic_error("Splitter element has only widthOut output connections.");
 	m_wireOut[i].ConnectWire(wire);
 }
 
-void sim::Splitter::ConnectBits(const sim::wire_t &wire)
+void sim::Splitter::ConnectBits(sim::wire_t &wire)
 {
 	ConnectIn(wire, 0);
 }
-void sim::Splitter::ConnectBitN(const sim::wire_t &wire, std::size_t i)
+
+void sim::Splitter::ConnectBitN(sim::wire_t &wire, std::size_t i)
 {
 	ConnectOut(wire, i);
+}
+
+const sim::Pin *sim::Splitter::AsPin() const noexcept
+{
+	return nullptr;
+}
+
+sim::Pin *sim::Splitter::AsPin() noexcept
+{
+	return nullptr;
 }
 
 static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept

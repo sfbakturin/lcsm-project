@@ -8,10 +8,12 @@
 
 namespace sim
 {
+	class Pin;
+
 	class TransmissionGate : public CircuitComponent
 	{
 	  public:
-		TransmissionGate() = default;
+		TransmissionGate();
 
 		TransmissionGate(const TransmissionGate &other);
 		TransmissionGate(TransmissionGate &&other) noexcept;
@@ -19,18 +21,26 @@ namespace sim
 		TransmissionGate &operator=(const TransmissionGate &other) = default;
 		TransmissionGate &operator=(TransmissionGate &&other) noexcept = default;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
 
-		void ConnectBase(const wire_t &wire);
-		void ConnectSrcA(const wire_t &wire);
-		void ConnectSrcB(const wire_t &wire);
-		void ConnectSrcC(const wire_t &wire);
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+
+		void ConnectBase(wire_t &wire);
+		void ConnectSrcA(wire_t &wire);
+		void ConnectSrcB(wire_t &wire);
+		void ConnectSrcC(wire_t &wire);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  private:
 		static constexpr std::size_t SRC_N = 3;
 
-		void Connect(const wire_t &wire, std::size_t i);
+		void Connect(wire_t &wire, std::size_t i);
+
+		unsigned m_id;
 
 		sim::Wire m_base;
 		std::array< sim::Wire, SRC_N > m_srcs;

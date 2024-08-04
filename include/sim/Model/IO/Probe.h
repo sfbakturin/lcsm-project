@@ -9,12 +9,17 @@ namespace sim
 	class Probe : public IOComponent
 	{
 	  public:
-		Probe() = default;
+		Probe();
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
+
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
 
 	  private:
+		unsigned m_id;
+
 		sim::Wire m_wireIn;
 	};
 }	 // namespace sim

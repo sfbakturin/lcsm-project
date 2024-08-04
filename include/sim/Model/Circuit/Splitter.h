@@ -11,6 +11,8 @@
 
 namespace sim
 {
+	class Pin;
+
 	class Splitter : public CircuitComponent
 	{
 	  public:
@@ -30,15 +32,23 @@ namespace sim
 		void SetWidthIn(Width newWidthIn) noexcept;
 		void SetWidthOut(std::size_t newWidthOut) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
 
-		void ConnectBits(const wire_t &wire);
-		void ConnectBitN(const wire_t &wire, std::size_t i);
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+
+		void ConnectBits(wire_t &wire);
+		void ConnectBitN(wire_t &wire, std::size_t i);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  private:
 		static constexpr std::size_t CONNECTORS_SIZE = Width::W64;
 		static constexpr std::size_t NO_CONNECT = std::numeric_limits< std::size_t >::max();
+
+		unsigned m_id;
 
 		Width m_widthIn;
 		std::size_t m_widthOut;

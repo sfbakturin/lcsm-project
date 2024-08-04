@@ -20,8 +20,7 @@
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/SimContext.h>
 #include <sim/Support/Ref.hpp>
-
-#include <vector>
+#include <unordered_map>
 
 namespace sim
 {
@@ -31,11 +30,14 @@ namespace sim
 	{
 	  public:
 		SimCircuit(SimContext &context);
+
 		SimCircuit(const SimCircuit &other) = delete;
 		SimCircuit(SimCircuit &&other) noexcept = delete;
 
 		SimCircuit &operator=(const SimCircuit &other) = delete;
 		SimCircuit &operator=(SimCircuit &&other) noexcept = delete;
+
+		const std::unordered_map< unsigned, support::Ref< Component > > &Pins() const noexcept;
 
 	  private:
 		friend class SimBuilder;
@@ -43,7 +45,7 @@ namespace sim
 		Constant *RegisterConstant(Width width, std::uint64_t value);
 		Ground *RegisterGround(Width width);
 		Power *RegisterPower(Width width);
-		Pin *RegisterPin(bool output, Width width, std::uint64_t value);
+		Pin *RegisterPin(bool output, Width width);
 		Splitter *RegisterSplitter(Width widthIn, std::size_t widthOut);
 		Transistor *RegisterTransistor(TransistorType type);
 		TransmissionGate *RegisterTransmissionGate();
@@ -57,9 +59,11 @@ namespace sim
 
 		SimContext &m_context;
 
-		std::vector< support::Ref< Component > > m_pin;
-		std::vector< support::Ref< Component > > m_io;
-		std::vector< support::Ref< Component > > m_comp;
+		unsigned m_globalId;
+
+		std::unordered_map< unsigned, support::Ref< Component > > m_pin;
+		std::unordered_map< unsigned, support::Ref< Component > > m_io;
+		std::unordered_map< unsigned, support::Ref< Component > > m_comp;
 	};
 }	 // namespace sim
 

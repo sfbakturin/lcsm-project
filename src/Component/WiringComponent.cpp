@@ -28,3 +28,8 @@ sim::WiringComponent *sim::WiringComponent::AsWiring() noexcept
 {
 	return this;
 }
+
+bool sim::WiringComponent::IsWire() const noexcept
+{
+	return AsWire() != nullptr;
+}

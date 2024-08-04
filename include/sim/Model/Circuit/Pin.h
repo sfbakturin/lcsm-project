@@ -2,17 +2,16 @@
 #define SIM_MODEL_CIRCUIT_PIN_H
 
 #include <sim/Component/CircuitComponent.h>
-#include <sim/Component/PinComponent.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Constant.h>
 #include <sim/Model/Wiring/Wire.h>
 
 namespace sim
 {
-	class Pin : public CircuitComponent, public PinComponent
+	class Pin : public CircuitComponent
 	{
 	  public:
-		Pin(bool output, Width width, std::uint64_t value);
+		Pin(bool output, Width width);
 
 		Pin(const Pin &other);
 		Pin(Pin &&other) noexcept;
@@ -22,22 +21,31 @@ namespace sim
 
 		void Swap(Pin &other) noexcept;
 
+		bool IsOutput() const noexcept;
 		Width GetWidth() const noexcept;
-		std::uint64_t GetValue() const noexcept;
+		Wire &GetWire() noexcept;
+		const Wire &GetWire() const noexcept;
 
+		void SetOutput(bool newOutput) noexcept;
 		void SetWidth(Width newWidth) noexcept;
-		void SetValue(std::uint64_t newValue) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
 
-		void Connect(const wire_t &wire);
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+
+		void Connect(wire_t &wire);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  private:
+		unsigned m_id;
+
 		bool m_output;
 		Width m_width;
-		std::uint64_t m_value;
-		sim::Wire m_wire;
+		Wire m_wire;
 	};
 }	 // namespace sim
 

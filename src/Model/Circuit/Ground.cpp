@@ -6,7 +6,7 @@
 
 sim::Ground::Ground(sim::Width width) : sim::Constant(width, sim::Ground::GROUND_VALUE) {}
 
-sim::Ground::Ground(const sim::Ground &other) : sim::Constant(static_cast< sim::Constant >(other)) {}
+sim::Ground::Ground(const sim::Ground &other) : sim::Constant(other) {}
 sim::Ground::Ground(sim::Ground &&other) noexcept : sim::Constant(std::move(other)) {}
 
 sim::Ground &sim::Ground::operator=(const sim::Ground &other)

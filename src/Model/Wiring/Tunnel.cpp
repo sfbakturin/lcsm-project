@@ -4,7 +4,10 @@
 #include <stdexcept>
 #include <utility>
 
+sim::Tunnel::Tunnel() : m_id(0) {}
+
 sim::Tunnel::Tunnel(const sim::Tunnel &other) : m_tunnel(other.m_tunnel) {}
+
 sim::Tunnel::Tunnel(sim::Tunnel &&other) noexcept : m_tunnel(std::move(other.m_tunnel)) {}
 
 sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other)
@@ -13,6 +16,7 @@ sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other)
 		sim::Tunnel(other).Swap(*this);
 	return *this;
 }
+
 sim::Tunnel &sim::Tunnel::operator=(sim::Tunnel &&other) noexcept
 {
 	if (this != &other)
@@ -25,13 +29,24 @@ void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
 	std::swap(m_tunnel, other.m_tunnel);
 }
 
-void sim::Tunnel::ConnectIn(const sim::wire_t &wire, std::size_t i)
+unsigned sim::Tunnel::ID() const noexcept
+{
+	return m_id;
+}
+
+void sim::Tunnel::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Tunnel::ConnectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Tunnel element has only 1 inout.");
 	ConnectWire(wire);
 }
-void sim::Tunnel::ConnectOut(const sim::wire_t &wire, std::size_t i)
+
+void sim::Tunnel::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Tunnel element has only 1 inout.");
@@ -42,6 +57,7 @@ void sim::Tunnel::ConnectWire(const sim::wire_t &wire)
 {
 	m_wire.ConnectWire(wire);
 }
+
 void sim::Tunnel::ConnectWire(sim::wire_t &&wire)
 {
 	m_wire.ConnectWire(std::move(wire));
@@ -51,7 +67,18 @@ void sim::Tunnel::Connect(const sim::tunnel_t &tunnel) noexcept
 {
 	m_tunnel = tunnel;
 }
+
 void sim::Tunnel::Connect(sim::tunnel_t &&tunnel) noexcept
 {
 	m_tunnel = std::move(tunnel);
+}
+
+const sim::Wire *sim::Tunnel::AsWire() const noexcept
+{
+	return nullptr;
+}
+
+sim::Wire *sim::Tunnel::AsWire() noexcept
+{
+	return nullptr;
 }

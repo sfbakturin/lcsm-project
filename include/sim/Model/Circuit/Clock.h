@@ -8,6 +8,8 @@
 
 namespace sim
 {
+	class Pin;
+
 	class Clock : public CircuitComponent
 	{
 	  public:
@@ -21,8 +23,11 @@ namespace sim
 
 		void Swap(Clock &other) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
+
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
 
 		unsigned GetHighDuration() const noexcept;
 		unsigned GetLowDuration() const noexcept;
@@ -32,9 +37,14 @@ namespace sim
 		void GetLowDuration(unsigned newLowDuration) noexcept;
 		void GetPhaseOffset(unsigned newPhaseOffset) noexcept;
 
-		void Connect(const wire_t &wire);
+		void Connect(wire_t &wire);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  private:
+		unsigned m_id;
+
 		unsigned m_highDuration;
 		unsigned m_lowDuration;
 		unsigned m_phaseOffset;

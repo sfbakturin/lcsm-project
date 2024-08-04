@@ -36,7 +36,7 @@ namespace sim
 		Constant *CreateConstant(Width width = Width::W1, std::uint64_t value = 0x1);
 		Ground *CreateGround(Width width = Width::W1);
 		Power *CreatePower(Width width = Width::W1);
-		Pin *CreatePin(bool output, Width width = Width::W1, std::uint64_t value = 0x0);
+		Pin *CreatePin(bool output, Width width = Width::W1);
 		Splitter *CreateSplitter(Width widthIn = Width::W2, std::size_t widthOut = 2);
 		Transistor *CreateTransistor(TransistorType type = TransistorType::P);
 		TransmissionGate *CreateTransmissionGate();

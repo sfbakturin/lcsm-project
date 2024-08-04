@@ -12,10 +12,14 @@ namespace sim
 	class Wire : public WiringComponent
 	{
 	  public:
-		Wire() = default;
+		Wire();
+		Wire(Component *comp);
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
+
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
 
 		virtual void ConnectWire(const wire_t &wire) override;
 		virtual void ConnectWire(wire_t &&wire) override;
@@ -23,7 +27,15 @@ namespace sim
 		void Connect(const component_t &connect);
 		void Connect(component_t &&connect);
 
+		const std::vector< wire_t > &Wires() const noexcept;
+		const std::vector< component_t > &Connections() const noexcept;
+
+		virtual const Wire *AsWire() const noexcept override;
+		virtual Wire *AsWire() noexcept override;
+
 	  private:
+		unsigned m_id;
+
 		std::vector< wire_t > m_wires;
 		std::vector< component_t > m_connections;
 	};

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Digit::Digit(bool hasDecimalPoint) : m_hasDecimalPoint(hasDecimalPoint) {}
+sim::Digit::Digit(bool hasDecimalPoint) : m_id(0), m_hasDecimalPoint(hasDecimalPoint) {}
 
 sim::Digit::Digit(const sim::Digit &other) : m_hasDecimalPoint(other.m_hasDecimalPoint) {}
 sim::Digit::Digit(sim::Digit &&other) noexcept : m_hasDecimalPoint(other.m_hasDecimalPoint) {}
@@ -26,7 +26,17 @@ void sim::Digit::Swap(sim::Digit &other) noexcept
 	std::swap(m_hasDecimalPoint, other.m_hasDecimalPoint);
 }
 
-void sim::Digit::ConnectIn(const sim::wire_t &wire, std::size_t i)
+unsigned sim::Digit::ID() const noexcept
+{
+	return m_id;
+}
+
+void sim::Digit::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Digit::ConnectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
 		m_data.ConnectWire(wire);
@@ -35,7 +45,7 @@ void sim::Digit::ConnectIn(const sim::wire_t &wire, std::size_t i)
 	else
 		throw std::logic_error("Digit element has only 2 inputs.");
 }
-void sim::Digit::ConnectOut(const sim::wire_t &, std::size_t)
+void sim::Digit::ConnectOut(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Digit element doesn't have any outputs.");
 }

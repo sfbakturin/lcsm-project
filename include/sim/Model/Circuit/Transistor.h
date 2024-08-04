@@ -14,6 +14,8 @@ namespace sim
 		N
 	};
 
+	class Pin;
+
 	class Transistor : public CircuitComponent
 	{
 	  public:
@@ -27,17 +29,25 @@ namespace sim
 
 		void Swap(Transistor &other) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
 
-		void ConnectBase(const wire_t &wire);
-		void ConnectSrcA(const wire_t &wire);
-		void ConnectSrcB(const wire_t &wire);
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+
+		void ConnectBase(wire_t &wire);
+		void ConnectSrcA(wire_t &wire);
+		void ConnectSrcB(wire_t &wire);
+
+		virtual const Pin *AsPin() const noexcept override;
+		virtual Pin *AsPin() noexcept override;
 
 	  private:
 		static constexpr std::size_t SRC_N = 2;
 
-		void Connect(const wire_t &wire, std::size_t i);
+		void Connect(wire_t &wire, std::size_t i);
+
+		unsigned m_id;
 
 		TransistorType m_type;
 		sim::Wire m_base;

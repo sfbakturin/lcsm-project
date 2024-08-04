@@ -6,7 +6,7 @@
 #include <utility>
 
 sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	m_id(0), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
@@ -14,6 +14,7 @@ sim::Clock::Clock(const sim::Clock &other) :
 	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
 {
 }
+
 sim::Clock::Clock(sim::Clock &&other) noexcept :
 	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
 {
@@ -25,6 +26,7 @@ sim::Clock &sim::Clock::operator=(const sim::Clock &other)
 		sim::Clock(other).Swap(*this);
 	return *this;
 }
+
 sim::Clock &sim::Clock::operator=(sim::Clock &&other) noexcept
 {
 	if (this != &other)
@@ -39,11 +41,22 @@ void sim::Clock::Swap(sim::Clock &other) noexcept
 	std::swap(m_phaseOffset, other.m_phaseOffset);
 }
 
-void sim::Clock::ConnectIn(const sim::wire_t &, std::size_t)
+unsigned sim::Clock::ID() const noexcept
+{
+	return m_id;
+}
+
+void sim::Clock::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Clock::ConnectIn(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Clock element doesn't have inputs.");
 }
-void sim::Clock::ConnectOut(const sim::wire_t &wire, std::size_t i)
+
+void sim::Clock::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Clock element has only 1 output.");
@@ -54,10 +67,12 @@ unsigned sim::Clock::GetHighDuration() const noexcept
 {
 	return m_highDuration;
 }
+
 unsigned sim::Clock::GetLowDuration() const noexcept
 {
 	return m_lowDuration;
 }
+
 unsigned sim::Clock::GetPhaseOffset() const noexcept
 {
 	return m_phaseOffset;
@@ -67,16 +82,28 @@ void sim::Clock::SetHighDuration(unsigned newHighDuration) noexcept
 {
 	m_highDuration = newHighDuration;
 }
+
 void sim::Clock::GetLowDuration(unsigned newLowDuration) noexcept
 {
 	m_lowDuration = newLowDuration;
 }
+
 void sim::Clock::GetPhaseOffset(unsigned newPhaseOffset) noexcept
 {
 	m_phaseOffset = newPhaseOffset;
 }
 
-void sim::Clock::Connect(const sim::wire_t &wire)
+void sim::Clock::Connect(sim::wire_t &wire)
 {
 	ConnectOut(wire, 0);
+}
+
+const sim::Pin *sim::Clock::AsPin() const noexcept
+{
+	return nullptr;
+}
+
+sim::Pin *sim::Clock::AsPin() noexcept
+{
+	return nullptr;
 }

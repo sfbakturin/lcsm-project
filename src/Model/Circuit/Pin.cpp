@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Pin::Pin(bool output, sim::Width width, std::uint64_t value) : m_output(output), m_width(width), m_value(value) {}
+sim::Pin::Pin(bool output, sim::Width width) : m_id(0), m_output(output), m_width(width), m_wire(this) {}
 
-sim::Pin::Pin(const sim::Pin &other) : m_output(other.m_output), m_width(other.m_width), m_value(other.m_value) {}
-sim::Pin::Pin(sim::Pin &&other) noexcept : m_output(other.m_output), m_width(other.m_width), m_value(other.m_value) {}
+sim::Pin::Pin(const sim::Pin &other) : m_output(other.m_output), m_width(other.m_width) {}
+sim::Pin::Pin(sim::Pin &&other) noexcept : m_output(other.m_output), m_width(other.m_width) {}
 
 sim::Pin &sim::Pin::operator=(const sim::Pin &other)
 {
@@ -27,28 +27,49 @@ void sim::Pin::Swap(sim::Pin &other) noexcept
 {
 	std::swap(m_output, other.m_output);
 	std::swap(m_width, other.m_width);
-	std::swap(m_value, other.m_value);
+}
+
+bool sim::Pin::IsOutput() const noexcept
+{
+	return m_output;
 }
 
 sim::Width sim::Pin::GetWidth() const noexcept
 {
 	return m_width;
 }
-std::uint64_t sim::Pin::GetValue() const noexcept
+
+sim::Wire &sim::Pin::GetWire() noexcept
 {
-	return m_value;
+	return m_wire;
+}
+
+const sim::Wire &sim::Pin::GetWire() const noexcept
+{
+	return m_wire;
+}
+
+void sim::Pin::SetOutput(bool newOutput) noexcept
+{
+	m_output = newOutput;
 }
 
 void sim::Pin::SetWidth(sim::Width newWidth) noexcept
 {
 	m_width = newWidth;
 }
-void sim::Pin::SetValue(std::uint64_t newValue) noexcept
+
+unsigned sim::Pin::ID() const noexcept
 {
-	m_value = newValue;
+	return m_id;
 }
 
-void sim::Pin::ConnectIn(const sim::wire_t &wire, std::size_t i)
+void sim::Pin::Identify(unsigned ID) noexcept
+{
+	m_id = ID;
+}
+
+void sim::Pin::ConnectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (m_output)
 		throw std::logic_error("Constant element doesn't have input.");
@@ -56,9 +77,10 @@ void sim::Pin::ConnectIn(const sim::wire_t &wire, std::size_t i)
 		throw std::logic_error("Constant element has only one input.");
 	else
 		m_wire.ConnectWire(wire);
+	wire.Ptr()->ConnectWire(m_wire);
 }
 
-void sim::Pin::ConnectOut(const sim::wire_t &wire, std::size_t i)
+void sim::Pin::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (!m_output)
 		throw std::logic_error("Constant element doesn't have output.");
@@ -66,9 +88,20 @@ void sim::Pin::ConnectOut(const sim::wire_t &wire, std::size_t i)
 		throw std::logic_error("Constant element has only one output.");
 	else
 		m_wire.ConnectWire(wire);
+	wire.Ptr()->ConnectWire(m_wire);
 }
 
-void sim::Pin::Connect(const sim::wire_t &wire)
+void sim::Pin::Connect(sim::wire_t &wire)
 {
 	ConnectOut(wire, 0);
+}
+
+const sim::Pin *sim::Pin::AsPin() const noexcept
+{
+	return this;
+}
+
+sim::Pin *sim::Pin::AsPin() noexcept
+{
+	return this;
 }

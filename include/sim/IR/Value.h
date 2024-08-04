@@ -2,6 +2,7 @@
 #define SIM_IR_VALUE_H
 
 #include <sim/IR/Bit.h>
+#include <sim/IR/Width.h>
 
 #include <array>
 #include <cstddef>
@@ -12,24 +13,30 @@ namespace sim
 	{
 	  public:
 		Value() noexcept;
-		Value(std::size_t width) noexcept;
+		Value(sim::Width width) noexcept;
+
 		Value(const Value &other);
 		Value(Value &&other) noexcept;
 
 		Value &operator=(const Value &other);
 		Value &operator=(Value &&other) noexcept;
 
+		bool operator==(const Value &other);
+		bool operator!=(const Value &other);
+
 		void Swap(Value &other) noexcept;
 
-		std::size_t GetWidth() const noexcept;
+		sim::Width GetWidth() const noexcept;
 		bool IsError() const noexcept;
 		bool IsOK() const noexcept;
 
-		Bit GetBit(std::size_t i) const;
+		LogisimBit GetBit(std::size_t i) const;
 
 	  private:
-		std::size_t m_width;
-		std::array< Bit, 64 > m_bits;
+		static constexpr std::size_t VALUE_SIZE = Width::W64;
+
+		sim::Width m_width;
+		std::array< LogisimBit, VALUE_SIZE > m_bits;
 
 		void ResetBits() noexcept;
 	};

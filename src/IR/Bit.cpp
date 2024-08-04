@@ -1,6 +1,6 @@
 #include <sim/IR/Bit.h>
 
-sim::Bit VerilogToLogisim(sim::VerilogBit bit) noexcept
+sim::LogisimBit VerilogToLogisim(sim::VerilogBit bit) noexcept
 {
 	switch (bit)
 	{

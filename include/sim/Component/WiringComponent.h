@@ -6,6 +6,8 @@
 
 namespace sim
 {
+	class Wire;
+
 	class WiringComponent : public Component
 	{
 	  public:
@@ -22,6 +24,11 @@ namespace sim
 
 		virtual void ConnectWire(const support::Ref< WiringComponent > &wire) = 0;
 		virtual void ConnectWire(support::Ref< WiringComponent > &&wire) = 0;
+
+		bool IsWire() const noexcept;
+
+		virtual const Wire *AsWire() const noexcept = 0;
+		virtual Wire *AsWire() noexcept = 0;
 	};
 
 	using wire_t = support::Ref< WiringComponent >;

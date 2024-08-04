@@ -11,7 +11,7 @@ namespace sim
 		VERILOG_IMPEDANCE
 	};
 
-	enum Bit : unsigned
+	enum LogisimBit : unsigned
 	{
 		LOGISIM_TRUE,
 		LOGISIM_FALSE,
@@ -19,7 +19,7 @@ namespace sim
 		LOGISIM_ERROR
 	};
 
-	Bit VerilogToLogisim(VerilogBit bit) noexcept;
+	LogisimBit VerilogToLogisim(VerilogBit bit) noexcept;
 }	 // namespace sim
 
 #endif /* SIM_IR_BIT_H */

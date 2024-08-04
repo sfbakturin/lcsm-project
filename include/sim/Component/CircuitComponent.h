@@ -6,6 +6,8 @@
 
 namespace sim
 {
+	class Pin;
+
 	class CircuitComponent : public Component
 	{
 	  public:
@@ -19,6 +21,11 @@ namespace sim
 
 		virtual const WiringComponent *AsWiring() const noexcept override;
 		virtual WiringComponent *AsWiring() noexcept override;
+
+		bool IsPin() const noexcept;
+
+		virtual const Pin *AsPin() const noexcept = 0;
+		virtual Pin *AsPin() noexcept = 0;
 	};
 }	 // namespace sim
 

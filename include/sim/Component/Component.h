@@ -18,8 +18,11 @@ namespace sim
 		bool IsWiring() const noexcept;
 		bool IsCircuit() const noexcept;
 
-		virtual void ConnectIn(const sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
-		virtual void ConnectOut(const sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
+		virtual unsigned ID() const noexcept = 0;
+		virtual void Identify(unsigned ID) noexcept = 0;
+
+		virtual void ConnectIn(sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
+		virtual void ConnectOut(sim::support::Ref< WiringComponent > &wire, std::size_t i) = 0;
 
 		virtual const CircuitComponent *AsCircuit() const noexcept = 0;
 		virtual CircuitComponent *AsCircuit() noexcept = 0;

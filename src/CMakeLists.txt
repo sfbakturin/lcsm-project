@@ -20,12 +20,24 @@
     Model/IO/Digit.cpp
     Model/IO/Probe.cpp
 
+    IR/Bit.cpp
+    IR/Value.cpp
+    IR/Instruction.cpp
+    IR/WV.cpp
+    IR/BV.cpp
+    IR/RV.cpp
+    IR/CGObject.cpp
+    IR/CGPin.cpp
+    IR/CGPinInput.cpp
+    IR/CGPinOutput.cpp
+    IR/CGWire.cpp
+    IR/CGNode.cpp
+    IR/CG.cpp
+
     SimContext.cpp
     SimBuilder.cpp
     SimCircuit.cpp
-
-    IR/Bit.cpp
-    IR/Value.cpp
+    SimEngine.cpp
 )
 
 IF(MSVC)

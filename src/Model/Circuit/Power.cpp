@@ -6,7 +6,8 @@
 
 sim::Power::Power(sim::Width width) : sim::Constant(width, sim::Power::POWER_VALUE) {}
 
-sim::Power::Power(const sim::Power &other) : sim::Constant(static_cast< sim::Constant >(other)) {}
+sim::Power::Power(const sim::Power &other) : sim::Constant(other) {}
+
 sim::Power::Power(sim::Power &&other) noexcept : sim::Constant(std::move(other)) {}
 
 sim::Power &sim::Power::operator=(const sim::Power &other)
@@ -15,6 +16,7 @@ sim::Power &sim::Power::operator=(const sim::Power &other)
 		sim::Power(other).Swap(*this);
 	return *this;
 }
+
 sim::Power &sim::Power::operator=(sim::Power &&other) noexcept
 {
 	if (this != &other)

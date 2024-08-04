@@ -10,7 +10,8 @@ namespace sim
 	class Tunnel : public WiringComponent
 	{
 	  public:
-		Tunnel() = default;
+		Tunnel();
+
 		Tunnel(const Tunnel &other);
 		Tunnel(Tunnel &&other) noexcept;
 
@@ -19,8 +20,11 @@ namespace sim
 
 		void Swap(Tunnel &other) noexcept;
 
-		virtual void ConnectIn(const wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(const wire_t &wire, std::size_t i) override;
+		virtual unsigned ID() const noexcept override;
+		virtual void Identify(unsigned ID) noexcept override;
+
+		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
+		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
 
 		virtual void ConnectWire(const wire_t &wire) override;
 		virtual void ConnectWire(wire_t &&wire) override;
@@ -28,7 +32,12 @@ namespace sim
 		void Connect(const support::Ref< Tunnel > &tunnel) noexcept;
 		void Connect(support::Ref< Tunnel > &&tunnel) noexcept;
 
+		virtual const Wire *AsWire() const noexcept override;
+		virtual Wire *AsWire() noexcept override;
+
 	  private:
+		unsigned m_id;
+
 		sim::Wire m_wire;
 		support::Ref< Tunnel > m_tunnel;
 	};
