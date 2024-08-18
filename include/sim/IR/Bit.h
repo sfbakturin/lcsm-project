@@ -19,7 +19,7 @@ namespace sim
 		LOGISIM_ERROR
 	};
 
-	LogisimBit VerilogToLogisim(VerilogBit bit) noexcept;
+	LogisimBit verilogToLogisim(VerilogBit bit) noexcept;
 }	 // namespace sim
 
 #endif /* SIM_IR_BIT_H */

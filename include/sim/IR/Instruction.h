@@ -5,11 +5,12 @@
 
 namespace sim
 {
-	enum InstructionT
+	enum InstructionT : unsigned
 	{
 		INSTR_WRITE_VALUE,
 		INSTR_BROADCAST_VALUE,
-		INSTR_READ_VALUE
+		INSTR_UPDATE_ELEMENT_STATE,
+		INSTR_WRITE_VALUE_STABILIZED,
 	};
 
 	class Instruction
@@ -17,23 +18,28 @@ namespace sim
 	  public:
 		virtual ~Instruction() noexcept = default;
 
-		virtual void Invoke() = 0;
+		virtual void invoke() = 0;
 
 		virtual InstructionT T() const noexcept = 0;
 
-		bool IsWrite() const noexcept;
-		bool IsRead() const noexcept;
-		bool IsBroadcast() const noexcept;
+		bool isWrite() const noexcept;
+		bool isBroadcast() const noexcept;
+		bool isUpdateElementState() const noexcept;
+		bool isWriteValueStabilized() const noexcept;
+
+		virtual bool mayStabilized() const noexcept = 0;
 	};
 
 	class WriteValue : public Instruction
 	{
 	  public:
-		WriteValue(CGObject *targetTo, CGObject *targetFrom) noexcept;
+		WriteValue(CGObject *targetFrom, CGObject *targetTo) noexcept;
 
-		virtual void Invoke() override;
+		virtual void invoke() override;
 
 		virtual InstructionT T() const noexcept override;
+
+		virtual bool mayStabilized() const noexcept override;
 
 	  private:
 		CGObject *m_targetFrom;
@@ -43,25 +49,44 @@ namespace sim
 	class BroadcastValue : public Instruction
 	{
 	  public:
-		BroadcastValue(CGObject *targetTo, CGObject *targetFrom) noexcept;
+		BroadcastValue(CGObject *targetFrom, CGObject *targetTo) noexcept;
 
-		virtual void Invoke() override;
+		virtual void invoke() override;
 
 		virtual InstructionT T() const noexcept override;
+
+		virtual bool mayStabilized() const noexcept override;
 
 	  private:
 		CGObject *m_targetFrom;
 		CGObject *m_targetTo;
 	};
 
-	class ReadValue : public Instruction
+	class UpdateElementState : public Instruction
 	{
 	  public:
-		ReadValue(CGObject *targetTo, CGObject *targetFrom) noexcept;
+		UpdateElementState(CGObject *target) noexcept;
 
-		virtual void Invoke() override;
+		virtual void invoke() override;
 
 		virtual InstructionT T() const noexcept override;
+
+		virtual bool mayStabilized() const noexcept override;
+
+	  private:
+		CGObject *m_target;
+	};
+
+	class WriteValueStabilized : public Instruction
+	{
+	  public:
+		WriteValueStabilized(CGObject *targetFrom, CGObject *targetTo) noexcept;
+
+		virtual void invoke() override;
+
+		virtual InstructionT T() const noexcept override;
+
+		virtual bool mayStabilized() const noexcept override;
 
 	  private:
 		CGObject *m_targetFrom;

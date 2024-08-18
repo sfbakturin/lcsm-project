@@ -8,12 +8,12 @@ sim::CGPin::CGPin(const sim::Value &value) : m_value(value) {}
 
 sim::CGPin::CGPin(sim::Value &&value) noexcept : m_value(std::move(value)) {}
 
-sim::Width sim::CGPin::GetWidth() const noexcept
+sim::Width sim::CGPin::width() const noexcept
 {
-	return m_value.GetWidth();
+	return m_value.width();
 }
 
-bool sim::CGPin::CheckWidth(const sim::Value &value) const noexcept
+bool sim::CGPin::checkWidth(const sim::Value &value) const noexcept
 {
-	return value.GetWidth() == GetWidth();
+	return value.width() == width();
 }

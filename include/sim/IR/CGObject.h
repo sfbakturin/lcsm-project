@@ -3,6 +3,9 @@
 
 #include <sim/IR/Value.h>
 #include <sim/IR/Width.h>
+#include <sim/Support/PointerView.hpp>
+
+#include <deque>
 
 namespace sim
 {
@@ -13,38 +16,48 @@ namespace sim
 		OBJ_WIRE
 	};
 
+	class CGNode;
+
 	class CGWire;
 	class CGPinInput;
 	class CGPinOutput;
+
+	class Instruction;
 
 	class CGObject
 	{
 	  public:
 		virtual ~CGObject() noexcept = default;
 
-		virtual Value &Read() = 0;
-		virtual const Value &Read() const = 0;
+		virtual Value &read() = 0;
+		virtual const Value &read() const = 0;
 
-		virtual void Write(const Value &value) = 0;
-		virtual void Write(Value &&value) = 0;
+		virtual void write(const Value &value) = 0;
+		virtual void write(Value &&value) = 0;
 
-		virtual Width GetWidth() const noexcept = 0;
-		virtual bool CheckWidth(const Value &value) const noexcept = 0;
+		virtual Width width() const noexcept = 0;
+		virtual bool checkWidth(const Value &value) const noexcept = 0;
 
 		virtual CGObjectT T() const noexcept = 0;
 
-		bool IsWire() const noexcept;
-		bool IsPinInput() const noexcept;
-		bool IsPinOutput() const noexcept;
+		bool isWire() const noexcept;
+		bool isPinInput() const noexcept;
+		bool isPinOutput() const noexcept;
 
-		virtual const CGWire *AsWire() const noexcept = 0;
-		virtual CGWire *AsWire() noexcept = 0;
+		virtual CGWire *asWire() noexcept = 0;
+		virtual const CGWire *asWire() const noexcept = 0;
+		virtual CGPinInput *asPinInput() noexcept = 0;
+		virtual const CGPinInput *asPinInput() const noexcept = 0;
+		virtual CGPinOutput *asPinOutput() noexcept = 0;
+		virtual const CGPinOutput *asPinOutput() const noexcept = 0;
 
-		virtual const CGPinInput *AsPinInput() const noexcept = 0;
-		virtual CGPinInput *AsPinInput() noexcept = 0;
+		void addInstantInstr(support::PointerView< Instruction > &&instruction);
+		void addInstantInstr(const support::PointerView< Instruction > &instruction);
 
-		virtual const CGPinOutput *AsPinOutput() const noexcept = 0;
-		virtual CGPinOutput *AsPinOutput() noexcept = 0;
+		void invokeInstant();
+
+	  protected:
+		std::deque< support::PointerView< Instruction > > m_instants;
 	};
 
 	class CGPin : public CGObject
@@ -52,11 +65,13 @@ namespace sim
 	  public:
 		CGPin() noexcept = default;
 
+		virtual ~CGPin() noexcept = default;
+
 		CGPin(const Value &value);
 		CGPin(Value &&value) noexcept;
 
-		virtual Width GetWidth() const noexcept override;
-		virtual bool CheckWidth(const Value &value) const noexcept override;
+		virtual Width width() const noexcept override;
+		virtual bool checkWidth(const Value &value) const noexcept override;
 
 	  protected:
 		Value m_value;
@@ -65,77 +80,73 @@ namespace sim
 	class CGPinInput : public CGPin
 	{
 	  public:
-		virtual Value &Read() override;
-		virtual const Value &Read() const override;
+		virtual Value &read() override;
+		virtual const Value &read() const override;
 
-		virtual void Write(const Value &value) override;
-		virtual void Write(Value &&value) override;
+		virtual void write(const Value &value) override;
+		virtual void write(Value &&value) override;
 
 		virtual CGObjectT T() const noexcept override;
 
-		void ExternalWrite(const Value &value);
-		void ExternalWrite(Value &&value) noexcept;
+		void externalWrite(const Value &value);
+		void externalWrite(Value &&value) noexcept;
 
-		virtual const CGWire *AsWire() const noexcept override;
-		virtual CGWire *AsWire() noexcept override;
-
-		virtual const CGPinInput *AsPinInput() const noexcept override;
-		virtual CGPinInput *AsPinInput() noexcept override;
-
-		virtual const CGPinOutput *AsPinOutput() const noexcept override;
-		virtual CGPinOutput *AsPinOutput() noexcept override;
+		virtual CGWire *asWire() noexcept override;
+		virtual const CGWire *asWire() const noexcept override;
+		virtual CGPinInput *asPinInput() noexcept override;
+		virtual const CGPinInput *asPinInput() const noexcept override;
+		virtual CGPinOutput *asPinOutput() noexcept override;
+		virtual const CGPinOutput *asPinOutput() const noexcept override;
 	};
 
 	class CGPinOutput : public CGPin
 	{
 	  public:
-		virtual Value &Read() override;
-		virtual const Value &Read() const override;
+		virtual Value &read() override;
+		virtual const Value &read() const override;
 
-		virtual void Write(const Value &value) override;
-		virtual void Write(Value &&value) override;
+		virtual void write(const Value &value) override;
+		virtual void write(Value &&value) override;
 
 		virtual CGObjectT T() const noexcept override;
 
-		const Value &ExternalRead() const noexcept;
-		Value &ExternalRead() noexcept;
+		Value &externalRead() noexcept;
+		const Value &externalRead() const noexcept;
 
-		virtual const CGWire *AsWire() const noexcept override;
-		virtual CGWire *AsWire() noexcept override;
-
-		virtual const CGPinInput *AsPinInput() const noexcept override;
-		virtual CGPinInput *AsPinInput() noexcept override;
-
-		virtual const CGPinOutput *AsPinOutput() const noexcept override;
-		virtual CGPinOutput *AsPinOutput() noexcept override;
+		virtual CGWire *asWire() noexcept override;
+		virtual const CGWire *asWire() const noexcept override;
+		virtual CGPinInput *asPinInput() noexcept override;
+		virtual const CGPinInput *asPinInput() const noexcept override;
+		virtual CGPinOutput *asPinOutput() noexcept override;
+		virtual const CGPinOutput *asPinOutput() const noexcept override;
 	};
 
 	class CGWire : public CGObject
 	{
 	  public:
-		virtual Value &Read() override;
-		virtual const Value &Read() const override;
+		virtual Value &read() override;
+		virtual const Value &read() const override;
 
-		virtual void Write(const Value &value) override;
-		virtual void Write(Value &&value) override;
+		virtual void write(const Value &value) override;
+		virtual void write(Value &&value) override;
 
-		virtual Width GetWidth() const noexcept override;
-		virtual bool CheckWidth(const Value &value) const noexcept override;
+		virtual Width width() const noexcept override;
+		virtual bool checkWidth(const Value &value) const noexcept override;
 
 		virtual CGObjectT T() const noexcept override;
 
-		virtual const CGWire *AsWire() const noexcept override;
-		virtual CGWire *AsWire() noexcept override;
-
-		virtual const CGPinInput *AsPinInput() const noexcept override;
-		virtual CGPinInput *AsPinInput() noexcept override;
-
-		virtual const CGPinOutput *AsPinOutput() const noexcept override;
-		virtual CGPinOutput *AsPinOutput() noexcept override;
+		virtual CGWire *asWire() noexcept override;
+		virtual const CGWire *asWire() const noexcept override;
+		virtual CGPinInput *asPinInput() noexcept override;
+		virtual const CGPinInput *asPinInput() const noexcept override;
+		virtual CGPinOutput *asPinOutput() noexcept override;
+		virtual const CGPinOutput *asPinOutput() const noexcept override;
 
 	  private:
 		Value m_value;
 	};
+
+	using CGObjectView = support::PointerView< CGObject >;
 }	 // namespace sim
 
 #endif /* SIM_IR_CGOBJECT_H */

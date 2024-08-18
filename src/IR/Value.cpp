@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <sim/IR/Bit.h>
 #include <sim/IR/Value.h>
 #include <sim/IR/Width.h>
@@ -6,41 +7,92 @@
 #include <stdexcept>
 #include <utility>
 
+static unsigned roundPow2(unsigned n) noexcept
+{
+	n--;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+	n++;
+	return n;
+}
+
 sim::Value::Value() noexcept : m_width(sim::Width::W1)
 {
-	ResetBits();
+	resetBits();
 }
+
 sim::Value::Value(sim::Width width) noexcept : m_width(width)
 {
-	ResetBits();
+	resetBits();
 }
 
-sim::Value::Value(const sim::Value &other) : m_width(other.m_width), m_bits(other.m_bits) {}
+sim::Value::Value(std::initializer_list< sim::LogisimBit > value)
+{
+	resetBits();
 
-sim::Value::Value(sim::Value &&other) noexcept : m_width(other.m_width), m_bits(std::move(other.m_bits)) {}
+	const unsigned n = roundPow2(value.size());
+
+	if (n > sim::Width::W64)
+	{
+		throw std::logic_error("");
+	}
+
+	m_width = static_cast< sim::Width >(n);
+	std::size_t i = 0;
+
+	for (std::initializer_list< sim::LogisimBit >::iterator it = value.begin();
+		 it < value.end();
+		 it++)
+	{
+		m_bits[i++] = *it;
+	}
+}
+
+sim::Value::Value(const sim::Value &other) :
+	m_width(other.m_width), m_bits(other.m_bits)
+{
+}
+
+sim::Value::Value(sim::Value &&other) noexcept :
+	m_width(other.m_width), m_bits(std::move(other.m_bits))
+{
+}
 
 sim::Value &sim::Value::operator=(const sim::Value &other)
 {
 	if (this != &other)
-		sim::Value(other).Swap(*this);
+	{
+		sim::Value(other).swap(*this);
+	}
 	return *this;
 }
 
 sim::Value &sim::Value::operator=(sim::Value &&other) noexcept
 {
 	if (this != &other)
-		sim::Value(std::move(other)).Swap(*this);
+	{
+		sim::Value(std::move(other)).swap(*this);
+	}
 	return *this;
 }
 
 bool sim::Value::operator==(const sim::Value &other)
 {
-	if (GetWidth() != other.GetWidth())
+	if (width() != other.width())
+	{
 		return false;
-	const sim::Width width = other.GetWidth();
+	}
+	const sim::Width width = other.width();
 	for (unsigned i = 0; i < width; i++)
-		if (m_bits[i] != other.GetBit(i))
+	{
+		if (m_bits[i] != other.bit(i))
+		{
 			return false;
+		}
+	}
 	return true;
 }
 
@@ -49,39 +101,61 @@ bool sim::Value::operator!=(const sim::Value &other)
 	return !operator==(other);
 }
 
-void sim::Value::Swap(sim::Value &other) noexcept
+void sim::Value::swap(sim::Value &other) noexcept
 {
 	std::swap(m_width, other.m_width);
 	std::swap(m_bits, other.m_bits);
 }
 
-sim::Width sim::Value::GetWidth() const noexcept
+sim::Width sim::Value::width() const noexcept
 {
 	return m_width;
 }
 
-bool sim::Value::IsError() const noexcept
+void sim::Value::setWidth(sim::Width newWidth) noexcept
+{
+	m_width = newWidth;
+}
+
+bool sim::Value::isError() const noexcept
 {
 	for (std::size_t i = 0; i < m_width; i++)
+	{
 		if (m_bits[i] == sim::LogisimBit::LOGISIM_ERROR)
+		{
 			return true;
+		}
+	}
 	return false;
 }
 
-bool sim::Value::IsOK() const noexcept
+bool sim::Value::isOK() const noexcept
 {
-	return !IsError();
+	return !isError();
 }
 
-sim::LogisimBit sim::Value::GetBit(std::size_t i) const
+sim::LogisimBit sim::Value::bit(std::size_t i) const
 {
 	if (i >= m_width)
+	{
 		throw std::logic_error("Incompatible widths found.");
+	}
 	return m_bits[i];
 }
 
-void sim::Value::ResetBits() noexcept
+void sim::Value::setBit(std::size_t i, sim::LogisimBit b)
+{
+	if (i >= m_width)
+	{
+		throw std::logic_error("Incompatible widths found.");
+	}
+	m_bits[i] = b;
+}
+
+void sim::Value::resetBits() noexcept
 {
 	for (std::size_t i = 0; i < m_width; i++)
+	{
 		m_bits[i] = sim::LogisimBit::LOGISIM_UNDEFINED;
+	}
 }

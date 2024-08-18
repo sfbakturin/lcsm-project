@@ -20,20 +20,25 @@ namespace sim
 	  public:
 		SimEngine();
 
-		void AddCircuit(SimCircuit &circuit);
+		void addCircuit(SimCircuit &circuit);
 
-		std::vector< Value > InvokeFull(std::initializer_list< Value > I);
+		std::vector< Value > invokeFull(std::initializer_list< Value > I);
 
 	  private:
-		CGPinInput *RegisterPinInput(unsigned ID);
-		CGPinOutput *RegisterPinOutput(unsigned ID);
-		CGWire *RegisterWire(unsigned ID);
+		CGPinInput *registerPinInput(unsigned ID);
+		CGPinOutput *registerPinOutput(unsigned ID);
+		CGWire *registerWire(unsigned ID);
 
-		CGPinInput *RegisteredPinInput(unsigned ID);
-		CGPinOutput *RegisteredPinOutput(unsigned ID);
-		CGWire *RegisteredWire(unsigned ID);
+		CGPinInput *registeredPinInput(unsigned ID);
+		CGPinOutput *registeredPinOutput(unsigned ID);
+		CGWire *registeredWire(unsigned ID);
 
-		void BuildCircuit(const Wire &root, CGObject *targetRoot, const WiringComponent *parent, CGNode *parentNode, std::unordered_map< unsigned, bool > &visited);
+		void buildCircuit(
+			const Wire &root,
+			CGObject *targetRoot,
+			const WiringComponent *parent,
+			CGNode *parentNode,
+			std::unordered_map< unsigned, bool > &visited);
 
 		unsigned m_circuits;
 		std::unordered_map< unsigned, std::shared_ptr< CGObject > > m_objects;

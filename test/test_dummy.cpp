@@ -1,4 +1,5 @@
 ﻿#include <sim/Component/WiringComponent.h>
+#include <sim/IR/Bit.h>
 #include <sim/Model/Circuit/Pin.h>
 #include <sim/SimBuilder.h>
 #include <sim/SimContext.h>
@@ -16,5 +17,7 @@ int main()
 
 	builder.ConnectPin(in0, out0, 0);
 
-	engine.AddCircuit(dummy);
+	engine.addCircuit(dummy);
+
+	engine.invokeFull({ { sim::LogisimBit::LOGISIM_TRUE } });
 }

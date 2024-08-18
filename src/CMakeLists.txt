@@ -23,20 +23,22 @@
     IR/Bit.cpp
     IR/Value.cpp
     IR/Instruction.cpp
-    IR/WV.cpp
-    IR/BV.cpp
-    IR/RV.cpp
-    IR/CGObject.cpp
-    IR/CGPin.cpp
-    IR/CGPinInput.cpp
-    IR/CGPinOutput.cpp
-    IR/CGWire.cpp
-    IR/CGNode.cpp
-    IR/CG.cpp
+    IR/Instruction/WriteValueInstruction.cpp
+    IR/Instruction/BroadcastValueInstruction.cpp
+    IR/Instruction/UpdateElementStateInstruction.cpp
+    IR/Instruction/WriteValueStabilizedInstruction.cpp
+    IR/CG/CGObject.cpp
+    IR/CG/CGPin.cpp
+    IR/CG/CGPinInput.cpp
+    IR/CG/CGPinOutput.cpp
+    IR/CG/CGWire.cpp
+    IR/CG/CGNode.cpp
+    IR/CG/CG.cpp
 
     SimContext.cpp
     SimBuilder.cpp
     SimCircuit.cpp
+    SimState.cpp
     SimEngine.cpp
 )
 

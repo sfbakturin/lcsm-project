@@ -13,15 +13,7 @@ namespace sim
 	class CGNode
 	{
 	  public:
-		CGNode() = default;
-		CGNode(const support::PointerView< CGObject > &target);
-		CGNode(support::PointerView< CGObject > &&target);
-		CGNode(const std::shared_ptr< Instruction > &run);
-		CGNode(std::shared_ptr< Instruction > &&run);
-		CGNode(const support::PointerView< CGObject > &target, const std::shared_ptr< Instruction > &run);
-		CGNode(const support::PointerView< CGObject > &target, std::shared_ptr< Instruction > &&run);
-		CGNode(support::PointerView< CGObject > &&target, const std::shared_ptr< Instruction > &run);
-		CGNode(support::PointerView< CGObject > &&target, std::shared_ptr< Instruction > &&run);
+		CGNode();
 
 		CGNode(const CGNode &other) = delete;
 		CGNode(CGNode &&other) noexcept;
@@ -29,33 +21,40 @@ namespace sim
 		CGNode &operator=(const CGNode &other) = delete;
 		CGNode &operator=(CGNode &&other) noexcept;
 
-		void Swap(CGNode &other) noexcept;
+		void swap(CGNode &other) noexcept;
 
-		const Instruction *GetInstruction() const noexcept;
-		Instruction *GetInstruction() noexcept;
-		const CGObject *GetTarget() const noexcept;
-		CGObject *GetTarget() noexcept;
-		const std::vector< CGNode > &GetConnections() const noexcept;
-		std::vector< CGNode > &GetConnections() noexcept;
+		Instruction *instruction() noexcept;
+		const Instruction *instruction() const noexcept;
+		CGObject *targetFrom() noexcept;
+		const CGObject *targetFrom() const noexcept;
+		CGObject *targetTo() noexcept;
+		const CGObject *targetTo() const noexcept;
+		std::vector< CGNode > &connections() noexcept;
+		const std::vector< CGNode > &connections() const noexcept;
 
-		void SetInstruction(const std::shared_ptr< Instruction > &run) noexcept;
-		void SetInstruction(std::shared_ptr< Instruction > &&run) noexcept;
-		void SetTarget(const support::PointerView< CGObject > &target) noexcept;
-		void SetTarget(support::PointerView< CGObject > &&target) noexcept;
-		CGNode *AddConnection(CGNode &&connection);
+		void setInstruction(const std::shared_ptr< Instruction > &run) noexcept;
+		void setInstruction(std::shared_ptr< Instruction > &&run) noexcept;
+		void setTargetFrom(const CGObjectView &targetFrom) noexcept;
+		void setTargetFrom(CGObjectView &&targetFrom) noexcept;
+		void setTargetTo(const CGObjectView &targetTo) noexcept;
+		void setTargetTo(CGObjectView &&targetTo) noexcept;
+
+		CGNode *addChild(CGNode &&connection);
 
 	  private:
-		support::PointerView< CGObject > m_target;
+		CGObjectView m_targetFrom;
+		CGObjectView m_targetTo;
 		std::shared_ptr< Instruction > m_run;
 		std::vector< CGNode > m_adjacent;
+		unsigned m_timer;
 	};
+
+	using CGNodeView = support::PointerView< CGNode >;
 
 	class CG
 	{
 	  public:
 		CG() = default;
-		CG(const support::PointerView< CGObject > &target);
-		CG(support::PointerView< CGObject > &&target);
 
 		CG(const CG &other) = delete;
 		CG(CG &&other) noexcept;
@@ -63,13 +62,10 @@ namespace sim
 		CG &operator=(const CG &other) = delete;
 		CG &operator=(CG &&other) noexcept;
 
-		void Swap(CG &other) noexcept;
+		void swap(CG &other) noexcept;
 
-		void SetTarget(const support::PointerView< CGObject > &target) noexcept;
-		void SetTarget(support::PointerView< CGObject > &&target) noexcept;
-
-		const CGNode *GetRoot() const noexcept;
-		CGNode *GetRoot() noexcept;
+		CGNode *root() noexcept;
+		const CGNode *root() const noexcept;
 
 	  private:
 		CGNode m_root;

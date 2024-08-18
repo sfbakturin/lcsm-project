@@ -49,15 +49,19 @@ void sim::Wire::ConnectWire(sim::wire_t &&wire)
 
 void sim::Wire::Connect(const sim::component_t &connect)
 {
-	if (connect.Val().IsWiring())
-		throw std::logic_error("All wiring components should be connected via ConnectWire method.");
+	if (connect.value().IsWiring())
+		throw std::logic_error(
+			"All wiring components should be connected via "
+			"ConnectWire method.");
 	m_connections.push_back(connect);
 }
 
 void sim::Wire::Connect(sim::component_t &&connect)
 {
 	if (connect.Val().IsWiring())
-		throw std::logic_error("All wiring components should be connected via ConnectWire method.");
+		throw std::logic_error(
+			"All wiring components should be connected via "
+			"ConnectWire method.");
 	m_connections.push_back(std::move(connect));
 }
 
