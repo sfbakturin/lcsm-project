@@ -1,3 +1,4 @@
+#include "sim/Component/CircuitComponent.h"
 #include <sim/Model/Circuit/TransmissionGate.h>
 #include <sim/Model/Wiring/Wire.h>
 
@@ -49,6 +50,11 @@ void sim::TransmissionGate::ConnectSrcC(sim::wire_t &wire)
 	ConnectOut(wire, 3);
 }
 
+sim::CircuitComponentType sim::TransmissionGate::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE;
+}
+
 const sim::Pin *sim::TransmissionGate::AsPin() const noexcept
 {
 	return nullptr;
@@ -65,5 +71,6 @@ void sim::TransmissionGate::Connect(sim::wire_t &wire, std::size_t i)
 		m_base.ConnectWire(wire);
 	else if (i - 1 < sim::TransmissionGate::SRC_N)
 		m_srcs[i].ConnectWire(wire);
-	throw std::logic_error("TransmissionGate element has only 4 inout connections.");
+	throw std::logic_error("TransmissionGate element has only 4 inout "
+						   "connections.");
 }

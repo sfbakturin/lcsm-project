@@ -16,8 +16,6 @@ namespace sim
 		OBJ_WIRE
 	};
 
-	class CGNode;
-
 	class CGWire;
 	class CGPinInput;
 	class CGPinOutput;

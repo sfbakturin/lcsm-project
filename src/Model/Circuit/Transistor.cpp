@@ -5,9 +5,14 @@
 
 sim::Transistor::Transistor(TransistorType type) : m_id(0), m_type(type) {}
 
-sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type) {}
+sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type)
+{
+}
 
-sim::Transistor::Transistor(sim::Transistor &&other) noexcept : m_type(other.m_type) {}
+sim::Transistor::Transistor(sim::Transistor &&other) noexcept :
+	m_type(other.m_type)
+{
+}
 
 sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other)
 {
@@ -61,6 +66,11 @@ void sim::Transistor::ConnectSrcA(sim::wire_t &wire)
 void sim::Transistor::ConnectSrcB(sim::wire_t &wire)
 {
 	ConnectOut(wire, 2);
+}
+
+sim::CircuitComponentType sim::Transistor::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_TRANSISTOR;
 }
 
 const sim::Pin *sim::Transistor::AsPin() const noexcept

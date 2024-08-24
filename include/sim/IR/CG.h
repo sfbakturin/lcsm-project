@@ -6,14 +6,63 @@
 #include <sim/Support/PointerView.hpp>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace sim
 {
+	class CGEdge
+	{
+	  public:
+		CGEdge();
+		CGEdge(const CGObjectView &targetFrom,
+			   const CGObjectView &targetTo,
+			   const std::shared_ptr< Instruction > &run);
+		CGEdge(const CGObjectView &targetFrom,
+			   const CGObjectView &targetTo,
+			   std::shared_ptr< Instruction > &&run);
+
+		CGEdge(const CGEdge &other) = delete;
+		CGEdge(CGEdge &&other) noexcept;
+
+		CGEdge &operator=(const CGEdge &other) = delete;
+		CGEdge &operator=(CGEdge &&other) noexcept;
+
+		void swap(CGEdge &other) noexcept;
+
+		Instruction *instruction() noexcept;
+		const Instruction *instruction() const noexcept;
+		CGObject *targetFrom() noexcept;
+		const CGObject *targetFrom() const noexcept;
+		CGObject *targetTo() noexcept;
+		const CGObject *targetTo() const noexcept;
+
+		void setInstruction(const InstructionShared &run) noexcept;
+		void setInstruction(InstructionShared &&run) noexcept;
+		void setTargetFrom(const CGObjectView &targetFrom) noexcept;
+		void setTargetFrom(CGObjectView &&targetFrom) noexcept;
+		void setTargetTo(const CGObjectView &targetTo) noexcept;
+		void setTargetTo(CGObjectView &&targetTo) noexcept;
+
+	  private:
+		CGObjectView m_targetFrom;
+		CGObjectView m_targetTo;
+		InstructionShared m_run;
+		unsigned m_timer;
+	};
+
+	using CGEdgeView = support::PointerView< CGEdge >;
+
 	class CGNode
 	{
 	  public:
-		CGNode();
+		using view_type = support::PointerView< CGNode >;
+
+		CGNode() = default;
+
+		CGNode(const CGObjectView &object);
+		CGNode(CGObjectView &&object);
+		CGNode(CGObject *object);
 
 		CGNode(const CGNode &other) = delete;
 		CGNode(CGNode &&other) noexcept;
@@ -23,33 +72,24 @@ namespace sim
 
 		void swap(CGNode &other) noexcept;
 
-		Instruction *instruction() noexcept;
-		const Instruction *instruction() const noexcept;
-		CGObject *targetFrom() noexcept;
-		const CGObject *targetFrom() const noexcept;
-		CGObject *targetTo() noexcept;
-		const CGObject *targetTo() const noexcept;
-		std::vector< CGNode > &connections() noexcept;
-		const std::vector< CGNode > &connections() const noexcept;
+		CGObjectView &object() noexcept;
+		const CGObjectView &object() const noexcept;
+		void setObject(const CGObjectView &object) noexcept;
+		void setObject(CGObjectView &&object) noexcept;
+		void setObject(CGObject *object) noexcept;
 
-		void setInstruction(const std::shared_ptr< Instruction > &run) noexcept;
-		void setInstruction(std::shared_ptr< Instruction > &&run) noexcept;
-		void setTargetFrom(const CGObjectView &targetFrom) noexcept;
-		void setTargetFrom(CGObjectView &&targetFrom) noexcept;
-		void setTargetTo(const CGObjectView &targetTo) noexcept;
-		void setTargetTo(CGObjectView &&targetTo) noexcept;
-
-		CGNode *addChild(CGNode &&connection);
+		std::vector< std::pair< CGEdge, view_type > > &instructions() noexcept;
+		const std::vector< std::pair< CGEdge, view_type > > &instructions() const noexcept;
+		void addInstruction(CGEdge &&I, CGNode *N);
+		void addInstruction(CGEdge &&I, const view_type &N);
+		void addInstruction(CGEdge &&I, view_type &&N);
 
 	  private:
-		CGObjectView m_targetFrom;
-		CGObjectView m_targetTo;
-		std::shared_ptr< Instruction > m_run;
-		std::vector< CGNode > m_adjacent;
-		unsigned m_timer;
+		CGObjectView m_target;
+		std::vector< std::pair< CGEdge, view_type > > m_instructions;
 	};
 
-	using CGNodeView = support::PointerView< CGNode >;
+	using CGNodeView = CGNode::view_type;
 
 	class CG
 	{
@@ -64,11 +104,11 @@ namespace sim
 
 		void swap(CG &other) noexcept;
 
-		CGNode *root() noexcept;
-		const CGNode *root() const noexcept;
+		void addRoot(const CGNodeView &node);
+		void addRoot(CGNodeView &&node);
 
 	  private:
-		CGNode m_root;
+		std::vector< CGNodeView > m_roots;
 	};
 }	 // namespace sim
 

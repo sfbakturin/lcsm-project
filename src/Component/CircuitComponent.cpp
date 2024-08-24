@@ -1,6 +1,12 @@
 #include <sim/Component/CircuitComponent.h>
+#include <sim/Component/Component.h>
 #include <sim/Component/IOComponent.h>
 #include <sim/Component/WiringComponent.h>
+
+sim::ComponentType sim::CircuitComponent::componentType() const noexcept
+{
+	return sim::ComponentType::COMP_CIRCUIT;
+}
 
 const sim::CircuitComponent *sim::CircuitComponent::AsCircuit() const noexcept
 {

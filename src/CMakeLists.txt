@@ -22,16 +22,19 @@
 
     IR/Bit.cpp
     IR/Value.cpp
+
     IR/Instruction.cpp
     IR/Instruction/WriteValueInstruction.cpp
     IR/Instruction/BroadcastValueInstruction.cpp
-    IR/Instruction/UpdateElementStateInstruction.cpp
+    IR/Instruction/UpdateStateInstruction.cpp
     IR/Instruction/WriteValueStabilizedInstruction.cpp
+
     IR/CG/CGObject.cpp
     IR/CG/CGPin.cpp
     IR/CG/CGPinInput.cpp
     IR/CG/CGPinOutput.cpp
     IR/CG/CGWire.cpp
+    IR/CG/CGEdge.cpp
     IR/CG/CGNode.cpp
     IR/CG/CG.cpp
 

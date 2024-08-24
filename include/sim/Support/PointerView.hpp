@@ -12,10 +12,17 @@ namespace sim
 		class PointerView
 		{
 		  public:
+			using value_type = T;
+			using shared_value_type = std::shared_ptr< value_type >;
+			using reference = value_type &;
+			using const_reference = const value_type &;
+			using pointer = value_type *;
+			using const_pointer = const value_type *;
+
 			PointerView() noexcept;
-			PointerView(T *ptr) noexcept;
-			PointerView(T &ref) noexcept;
-			PointerView(std::shared_ptr< T > &ptr) noexcept;
+			PointerView(value_type *ptr) noexcept;
+			PointerView(value_type &ref) noexcept;
+			PointerView(shared_value_type &ptr) noexcept;
 
 			PointerView(const PointerView &other) noexcept;
 			PointerView(PointerView &&other) noexcept;
@@ -23,25 +30,25 @@ namespace sim
 			PointerView &operator=(const PointerView &other) noexcept;
 			PointerView &operator=(PointerView &&other) noexcept;
 
-			const T *operator->() const noexcept;
-			T *operator->() noexcept;
+			const_pointer operator->() const noexcept;
+			pointer operator->() noexcept;
 
-			const T &operator*() const & noexcept;
-			T &operator*() & noexcept;
+			const_reference operator*() const & noexcept;
+			reference operator*() & noexcept;
 
 			void swap(PointerView &other) noexcept;
 
 			bool hasValue() const noexcept;
 			explicit operator bool() const noexcept;
 
-			T *Ptr() noexcept;
-			const T *Ptr() const noexcept;
+			pointer Ptr() noexcept;
+			const_pointer Ptr() const noexcept;
 
-			T &Val() noexcept;
-			const T &value() const noexcept;
+			reference Val() noexcept;
+			const_reference value() const noexcept;
 
 		  private:
-			T *m_ptr;
+			pointer m_ptr;
 		};
 	}	 // namespace support
 }	 // namespace sim

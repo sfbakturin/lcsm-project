@@ -1,106 +1,83 @@
 #include <sim/IR/CG.h>
-#include <sim/IR/Instruction.h>
+#include <sim/IR/CGObject.h>
 #include <sim/Support/PointerView.hpp>
 
 #include <memory>
 #include <utility>
+#include <vector>
 
-sim::CGNode::CGNode() : m_timer(0) {}
+sim::CGNode::CGNode(const sim::CGObjectView &object) : m_target(object) {}
+
+sim::CGNode::CGNode(sim::CGObjectView &&object) : m_target(std::move(object)) {}
+
+sim::CGNode::CGNode(sim::CGObject *object) : m_target(object) {}
 
 sim::CGNode::CGNode(sim::CGNode &&other) noexcept :
-	m_targetFrom(std::move(other.m_targetFrom)),
-	m_targetTo(std::move(other.m_targetTo)), m_run(std::move(other.m_run)),
-	m_adjacent(std::move(other.m_adjacent)), m_timer(other.m_timer)
+	m_target(std::move(other.m_target)), m_instructions(std::move(other.m_instructions))
 {
 }
 
 sim::CGNode &sim::CGNode::operator=(sim::CGNode &&other) noexcept
 {
-	if (this != &other)
+	if (this != std::addressof(other))
 		sim::CGNode(std::move(other)).swap(*this);
 	return *this;
 }
 
 void sim::CGNode::swap(sim::CGNode &other) noexcept
 {
-	std::swap(m_targetFrom, other.m_targetFrom);
-	std::swap(m_targetTo, other.m_targetTo);
-	std::swap(m_run, other.m_run);
-	std::swap(m_adjacent, other.m_adjacent);
+	std::swap(m_target, other.m_target);
+	std::swap(m_instructions, other.m_instructions);
 }
 
-sim::Instruction *sim::CGNode::instruction() noexcept
+sim::CGObjectView &sim::CGNode::object() noexcept
 {
-	return m_run.get();
+	return m_target;
 }
 
-const sim::Instruction *sim::CGNode::instruction() const noexcept
+const sim::CGObjectView &sim::CGNode::object() const noexcept
 {
-	return m_run.get();
+	return m_target;
 }
 
-sim::CGObject *sim::CGNode::targetFrom() noexcept
+void sim::CGNode::setObject(const sim::CGObjectView &object) noexcept
 {
-	return m_targetFrom.Ptr();
+	m_target = object;
 }
 
-const sim::CGObject *sim::CGNode::targetFrom() const noexcept
+void sim::CGNode::setObject(sim::CGObjectView &&object) noexcept
 {
-	return m_targetFrom.Ptr();
+	m_target = std::move(object);
 }
 
-sim::CGObject *sim::CGNode::targetTo() noexcept
+void sim::CGNode::setObject(CGObject *object) noexcept
 {
-	return m_targetTo.Ptr();
+	m_target = { object };
 }
 
-const sim::CGObject *sim::CGNode::targetTo() const noexcept
+std::vector< std::pair< sim::CGEdge, sim::CGNodeView > > &sim::CGNode::instructions() noexcept
 {
-	return m_targetTo.Ptr();
+	return m_instructions;
 }
 
-std::vector< sim::CGNode > &sim::CGNode::connections() noexcept
+const std::vector< std::pair< sim::CGEdge, sim::CGNodeView > > &
+	sim::CGNode::instructions() const noexcept
 {
-	return m_adjacent;
+	return m_instructions;
 }
 
-const std::vector< sim::CGNode > &sim::CGNode::connections() const noexcept
+void sim::CGNode::addInstruction(sim::CGEdge &&I, sim::CGNode *N)
 {
-	return m_adjacent;
+	view_type view = N;
+	addInstruction(std::move(I), std::move(view));
 }
 
-void sim::CGNode::setInstruction(const std::shared_ptr< sim::Instruction > &run) noexcept
+void sim::CGNode::addInstruction(sim::CGEdge &&I, const sim::CGNode::view_type &N)
 {
-	m_run = run;
+	m_instructions.emplace_back(std::move(I), N);
 }
 
-void sim::CGNode::setInstruction(std::shared_ptr< sim::Instruction > &&run) noexcept
+void sim::CGNode::addInstruction(sim::CGEdge &&I, sim::CGNode::view_type &&N)
 {
-	m_run = std::move(run);
-}
-
-void sim::CGNode::setTargetFrom(const CGObjectView &targetFrom) noexcept
-{
-	m_targetFrom = targetFrom;
-}
-
-void sim::CGNode::setTargetFrom(CGObjectView &&targetFrom) noexcept
-{
-	m_targetFrom = std::move(targetFrom);
-}
-
-void sim::CGNode::setTargetTo(const CGObjectView &targetTo) noexcept
-{
-	m_targetTo = targetTo;
-}
-
-void sim::CGNode::setTargetTo(CGObjectView &&targetTo) noexcept
-{
-	m_targetTo = std::move(targetTo);
-}
-
-sim::CGNode *sim::CGNode::addChild(sim::CGNode &&connection)
-{
-	m_adjacent.push_back(std::move(connection));
-	return std::addressof(m_adjacent.back());
+	m_instructions.emplace_back(std::move(I), std::move(N));
 }

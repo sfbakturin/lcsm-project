@@ -23,8 +23,11 @@ namespace sim
 
 		void Swap(Ground &other) noexcept;
 
+		virtual CircuitComponentType circuitComponentType() const noexcept override;
+
 	  private:
-		static constexpr std::uint64_t GROUND_VALUE = std::numeric_limits< std::uint64_t >::min();
+		static constexpr std::uint64_t GROUND_VALUE =
+			std::numeric_limits< std::uint64_t >::min();
 	};
 }	 // namespace sim
 

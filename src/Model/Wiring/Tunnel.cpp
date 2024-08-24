@@ -8,7 +8,10 @@ sim::Tunnel::Tunnel() : m_id(0) {}
 
 sim::Tunnel::Tunnel(const sim::Tunnel &other) : m_tunnel(other.m_tunnel) {}
 
-sim::Tunnel::Tunnel(sim::Tunnel &&other) noexcept : m_tunnel(std::move(other.m_tunnel)) {}
+sim::Tunnel::Tunnel(sim::Tunnel &&other) noexcept :
+	m_tunnel(std::move(other.m_tunnel))
+{
+}
 
 sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other)
 {
@@ -71,6 +74,11 @@ void sim::Tunnel::Connect(const sim::tunnel_t &tunnel) noexcept
 void sim::Tunnel::Connect(sim::tunnel_t &&tunnel) noexcept
 {
 	m_tunnel = std::move(tunnel);
+}
+
+sim::WiringComponentType sim::Tunnel::wiringComponentType() const noexcept
+{
+	return sim::WiringComponentType::WIRING_COMP_TUNNEL;
 }
 
 const sim::Wire *sim::Tunnel::AsWire() const noexcept

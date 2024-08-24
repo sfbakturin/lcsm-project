@@ -30,6 +30,8 @@ namespace sim
 		const std::vector< wire_t > &Wires() const noexcept;
 		const std::vector< component_t > &Connections() const noexcept;
 
+		virtual WiringComponentType wiringComponentType() const noexcept override;
+
 		virtual const Wire *AsWire() const noexcept override;
 		virtual Wire *AsWire() noexcept override;
 

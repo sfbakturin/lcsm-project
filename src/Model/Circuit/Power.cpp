@@ -4,11 +4,16 @@
 
 #include <utility>
 
-sim::Power::Power(sim::Width width) : sim::Constant(width, sim::Power::POWER_VALUE) {}
+sim::Power::Power(sim::Width width) :
+	sim::Constant(width, sim::Power::POWER_VALUE)
+{
+}
 
 sim::Power::Power(const sim::Power &other) : sim::Constant(other) {}
 
-sim::Power::Power(sim::Power &&other) noexcept : sim::Constant(std::move(other)) {}
+sim::Power::Power(sim::Power &&other) noexcept : sim::Constant(std::move(other))
+{
+}
 
 sim::Power &sim::Power::operator=(const sim::Power &other)
 {
@@ -28,4 +33,9 @@ void sim::Power::Swap(sim::Power &other) noexcept
 {
 	sim::Constant &left = *this;
 	left.Swap(other);
+}
+
+sim::CircuitComponentType sim::Power::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_POWER;
 }

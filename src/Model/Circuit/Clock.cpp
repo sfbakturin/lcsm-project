@@ -6,17 +6,20 @@
 #include <utility>
 
 sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_id(0), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	m_id(0), m_highDuration(highDuration), m_lowDuration(lowDuration),
+	m_phaseOffset(phaseOffset)
 {
 }
 
 sim::Clock::Clock(const sim::Clock &other) :
-	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
+	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration),
+	m_phaseOffset(other.m_phaseOffset)
 {
 }
 
 sim::Clock::Clock(sim::Clock &&other) noexcept :
-	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
+	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration),
+	m_phaseOffset(other.m_phaseOffset)
 {
 }
 
@@ -96,6 +99,11 @@ void sim::Clock::GetPhaseOffset(unsigned newPhaseOffset) noexcept
 void sim::Clock::Connect(sim::wire_t &wire)
 {
 	ConnectOut(wire, 0);
+}
+
+sim::CircuitComponentType sim::Clock::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_CLOCK;
 }
 
 const sim::Pin *sim::Clock::AsPin() const noexcept

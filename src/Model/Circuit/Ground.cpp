@@ -4,10 +4,16 @@
 
 #include <utility>
 
-sim::Ground::Ground(sim::Width width) : sim::Constant(width, sim::Ground::GROUND_VALUE) {}
+sim::Ground::Ground(sim::Width width) :
+	sim::Constant(width, sim::Ground::GROUND_VALUE)
+{
+}
 
 sim::Ground::Ground(const sim::Ground &other) : sim::Constant(other) {}
-sim::Ground::Ground(sim::Ground &&other) noexcept : sim::Constant(std::move(other)) {}
+sim::Ground::Ground(sim::Ground &&other) noexcept :
+	sim::Constant(std::move(other))
+{
+}
 
 sim::Ground &sim::Ground::operator=(const sim::Ground &other)
 {
@@ -26,4 +32,9 @@ void sim::Ground::Swap(sim::Ground &other) noexcept
 {
 	sim::Constant &left = *this;
 	left.Swap(other);
+}
+
+sim::CircuitComponentType sim::Ground::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_GROUND;
 }

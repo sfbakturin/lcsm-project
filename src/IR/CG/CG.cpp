@@ -2,31 +2,29 @@
 #include <sim/IR/CGObject.h>
 #include <sim/Support/PointerView.hpp>
 
-#include <memory>
 #include <utility>
+#include <vector>
 
-sim::CG::CG(sim::CG &&other) noexcept : m_root(std::move(other.m_root)) {}
+sim::CG::CG(sim::CG &&other) noexcept : m_roots(std::move(other.m_roots)) {}
 
 sim::CG &sim::CG::operator=(sim::CG &&other) noexcept
 {
 	if (this != &other)
-	{
 		sim::CG(std::move(other)).swap(*this);
-	}
 	return *this;
 }
 
 void sim::CG::swap(sim::CG &other) noexcept
 {
-	std::swap(m_root, other.m_root);
+	std::swap(m_roots, other.m_roots);
 }
 
-sim::CGNode *sim::CG::root() noexcept
+void sim::CG::addRoot(const sim::CGNodeView &node)
 {
-	return std::addressof(m_root);
+	m_roots.push_back(node);
 }
 
-const sim::CGNode *sim::CG::root() const noexcept
+void sim::CG::addRoot(sim::CGNodeView &&node)
 {
-	return std::addressof(m_root);
+	m_roots.push_back(std::move(node));
 }

@@ -32,6 +32,8 @@ namespace sim
 		void Connect(const support::PointerView< Tunnel > &tunnel) noexcept;
 		void Connect(support::PointerView< Tunnel > &&tunnel) noexcept;
 
+		virtual WiringComponentType wiringComponentType() const noexcept override;
+
 		virtual const Wire *AsWire() const noexcept override;
 		virtual Wire *AsWire() noexcept override;
 

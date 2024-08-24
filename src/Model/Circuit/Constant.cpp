@@ -4,11 +4,20 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Constant::Constant(sim::Width width, std::uint64_t value) : m_id(0), m_width(width), m_value(value) {}
+sim::Constant::Constant(sim::Width width, std::uint64_t value) :
+	m_id(0), m_width(width), m_value(value)
+{
+}
 
-sim::Constant::Constant(const sim::Constant &other) : m_width(other.m_width), m_value(other.m_value) {}
+sim::Constant::Constant(const sim::Constant &other) :
+	m_width(other.m_width), m_value(other.m_value)
+{
+}
 
-sim::Constant::Constant(sim::Constant &&other) noexcept : m_width(other.m_width), m_value(other.m_value) {}
+sim::Constant::Constant(sim::Constant &&other) noexcept :
+	m_width(other.m_width), m_value(other.m_value)
+{
+}
 
 sim::Constant &sim::Constant::operator=(const sim::Constant &other)
 {
@@ -81,6 +90,11 @@ void sim::Constant::ConnectOut(sim::wire_t &wire, std::size_t i)
 void sim::Constant::Connect(sim::wire_t &wire)
 {
 	ConnectOut(wire, 0);
+}
+
+sim::CircuitComponentType sim::Constant::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_CONSTANT;
 }
 
 const sim::Pin *sim::Constant::AsPin() const noexcept

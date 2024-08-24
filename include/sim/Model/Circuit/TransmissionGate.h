@@ -32,6 +32,8 @@ namespace sim
 		void ConnectSrcB(wire_t &wire);
 		void ConnectSrcC(wire_t &wire);
 
+		virtual CircuitComponentType circuitComponentType() const noexcept override;
+
 		virtual const Pin *AsPin() const noexcept override;
 		virtual Pin *AsPin() noexcept override;
 

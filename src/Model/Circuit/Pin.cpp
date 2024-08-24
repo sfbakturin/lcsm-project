@@ -4,10 +4,19 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Pin::Pin(bool output, sim::Width width) : m_id(0), m_output(output), m_width(width), m_wire(this) {}
+sim::Pin::Pin(bool output, sim::Width width) :
+	m_id(0), m_output(output), m_width(width), m_wire(this)
+{
+}
 
-sim::Pin::Pin(const sim::Pin &other) : m_output(other.m_output), m_width(other.m_width) {}
-sim::Pin::Pin(sim::Pin &&other) noexcept : m_output(other.m_output), m_width(other.m_width) {}
+sim::Pin::Pin(const sim::Pin &other) :
+	m_output(other.m_output), m_width(other.m_width)
+{
+}
+sim::Pin::Pin(sim::Pin &&other) noexcept :
+	m_output(other.m_output), m_width(other.m_width)
+{
+}
 
 sim::Pin &sim::Pin::operator=(const sim::Pin &other)
 {
@@ -94,6 +103,11 @@ void sim::Pin::ConnectOut(sim::wire_t &wire, std::size_t i)
 void sim::Pin::Connect(sim::wire_t &wire)
 {
 	ConnectOut(wire, 0);
+}
+
+sim::CircuitComponentType sim::Pin::circuitComponentType() const noexcept
+{
+	return sim::CircuitComponentType::CIRCUIT_COMP_PIN;
 }
 
 const sim::Pin *sim::Pin::AsPin() const noexcept

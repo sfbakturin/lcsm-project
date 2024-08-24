@@ -1,10 +1,14 @@
 #ifndef SIM_IR_INSTRUCTION_H
 #define SIM_IR_INSTRUCTION_H
 
-#include <sim/IR/CGObject.h>
+#include <sim/Support/PointerView.hpp>
+
+#include <memory>
 
 namespace sim
 {
+	class CGObject;
+
 	enum InstructionT : unsigned
 	{
 		INSTR_WRITE_VALUE,
@@ -29,6 +33,9 @@ namespace sim
 
 		virtual bool mayStabilized() const noexcept = 0;
 	};
+
+	using InstructionView = support::PointerView< Instruction >;
+	using InstructionShared = std::shared_ptr< Instruction >;
 
 	class WriteValue : public Instruction
 	{
@@ -62,10 +69,10 @@ namespace sim
 		CGObject *m_targetTo;
 	};
 
-	class UpdateElementState : public Instruction
+	class UpdateState : public Instruction
 	{
 	  public:
-		UpdateElementState(CGObject *target) noexcept;
+		UpdateState(CGObject *target) noexcept;
 
 		virtual void invoke() override;
 
@@ -92,6 +99,13 @@ namespace sim
 		CGObject *m_targetFrom;
 		CGObject *m_targetTo;
 	};
+
+	std::shared_ptr< Instruction > CreateWriteValue(CGObject *targetFrom, CGObject *targetTo);
+	std::shared_ptr< Instruction >
+		CreateBroadcastValue(CGObject *targetFrom, CGObject *targetTo);
+	std::shared_ptr< Instruction > CreateUpdateState(CGObject *target);
+	std::shared_ptr< Instruction >
+		CreateWriteValueStabilized(CGObject *targetFrom, CGObject *targetTo);
 }	 // namespace sim
 
 #endif /* SIM_IR_INSTRUCTION_H */

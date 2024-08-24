@@ -75,6 +75,11 @@ const std::vector< sim::component_t > &sim::Wire::Connections() const noexcept
 	return m_connections;
 }
 
+sim::WiringComponentType sim::Wire::wiringComponentType() const noexcept
+{
+	return sim::WiringComponentType::WIRING_COMP_WIRE;
+}
+
 const sim::Wire *sim::Wire::AsWire() const noexcept
 {
 	return this;

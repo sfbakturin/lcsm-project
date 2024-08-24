@@ -6,12 +6,20 @@
 
 namespace sim
 {
+	enum WiringComponentType
+	{
+		WIRING_COMP_WIRE,
+		WIRING_COMP_TUNNEL
+	};
+
 	class Wire;
 
 	class WiringComponent : public Component
 	{
 	  public:
 		virtual ~WiringComponent() noexcept = default;
+
+		virtual ComponentType componentType() const noexcept override;
 
 		virtual const CircuitComponent *AsCircuit() const noexcept override;
 		virtual CircuitComponent *AsCircuit() noexcept override;
@@ -24,6 +32,8 @@ namespace sim
 
 		virtual void ConnectWire(const support::PointerView< WiringComponent > &wire) = 0;
 		virtual void ConnectWire(support::PointerView< WiringComponent > &&wire) = 0;
+
+		virtual WiringComponentType wiringComponentType() const noexcept = 0;
 
 		bool IsWire() const noexcept;
 

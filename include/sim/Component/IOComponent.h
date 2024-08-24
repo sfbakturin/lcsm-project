@@ -11,6 +11,8 @@ namespace sim
 	  public:
 		virtual ~IOComponent() noexcept = default;
 
+		virtual ComponentType componentType() const noexcept override;
+
 		virtual const CircuitComponent *AsCircuit() const noexcept override;
 		virtual CircuitComponent *AsCircuit() noexcept override;
 
