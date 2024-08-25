@@ -39,26 +39,6 @@ sim::Value &sim::CGPinOutput::externalRead() noexcept
 	return m_value;
 }
 
-sim::CGWire *sim::CGPinOutput::asWire() noexcept
-{
-	return nullptr;
-}
-
-const sim::CGWire *sim::CGPinOutput::asWire() const noexcept
-{
-	return nullptr;
-}
-
-sim::CGPinInput *sim::CGPinOutput::asPinInput() noexcept
-{
-	return nullptr;
-}
-
-const sim::CGPinInput *sim::CGPinOutput::asPinInput() const noexcept
-{
-	return nullptr;
-}
-
 sim::CGPinOutput *sim::CGPinOutput::asPinOutput() noexcept
 {
 	return this;

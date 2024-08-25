@@ -5,6 +5,11 @@
 #include <deque>
 #include <utility>
 
+bool sim::CGObject::isWire() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_WIRE;
+}
+
 bool sim::CGObject::isPinInput() const noexcept
 {
 	return T() == sim::CGObjectT::OBJ_PIN_INPUT;
@@ -15,9 +20,79 @@ bool sim::CGObject::isPinOutput() const noexcept
 	return T() == sim::CGObjectT::OBJ_PIN_OUTPUT;
 }
 
-bool sim::CGObject::isWire() const noexcept
+bool sim::CGObject::isConstant() const noexcept
 {
-	return T() == sim::CGObjectT::OBJ_WIRE;
+	return T() == sim::CGObjectT::OBJ_CONSTANT;
+}
+
+bool sim::CGObject::isPower() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_POWER;
+}
+
+bool sim::CGObject::isGround() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_GROUND;
+}
+
+sim::CGWire *sim::CGObject::asWire() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGWire *sim::CGObject::asWire() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGPinInput *sim::CGObject::asPinInput() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGPinInput *sim::CGObject::asPinInput() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGPinOutput *sim::CGObject::asPinOutput() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGPinOutput *sim::CGObject::asPinOutput() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGConstant *sim::CGObject::asConstant() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGConstant *sim::CGObject::asConstant() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGPower *sim::CGObject::asPower() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGPower *sim::CGObject::asPower() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGGround *sim::CGObject::asGround() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGGround *sim::CGObject::asGround() const noexcept
+{
+	return nullptr;
 }
 
 void sim::CGObject::addInstantInstr(const sim::support::PointerView< Instruction > &instruction)

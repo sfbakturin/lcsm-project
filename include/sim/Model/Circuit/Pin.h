@@ -39,8 +39,8 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
-		virtual const Pin *AsPin() const noexcept override;
-		virtual Pin *AsPin() noexcept override;
+		virtual Pin *asPin() noexcept override final;
+		virtual const Pin *asPin() const noexcept override final;
 
 	  private:
 		unsigned m_id;

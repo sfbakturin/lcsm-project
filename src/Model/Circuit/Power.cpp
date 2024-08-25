@@ -39,3 +39,13 @@ sim::CircuitComponentType sim::Power::circuitComponentType() const noexcept
 {
 	return sim::CircuitComponentType::CIRCUIT_COMP_POWER;
 }
+
+sim::Power *sim::Power::asPower() noexcept
+{
+	return this;
+}
+
+const sim::Power *sim::Power::asPower() const noexcept
+{
+	return this;
+}

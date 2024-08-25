@@ -110,12 +110,12 @@ sim::CircuitComponentType sim::Pin::circuitComponentType() const noexcept
 	return sim::CircuitComponentType::CIRCUIT_COMP_PIN;
 }
 
-const sim::Pin *sim::Pin::AsPin() const noexcept
+sim::Pin *sim::Pin::asPin() noexcept
 {
 	return this;
 }
 
-sim::Pin *sim::Pin::AsPin() noexcept
+const sim::Pin *sim::Pin::asPin() const noexcept
 {
 	return this;
 }

@@ -40,5 +40,45 @@ sim::WiringComponent *sim::CircuitComponent::AsWiring() noexcept
 
 bool sim::CircuitComponent::IsPin() const noexcept
 {
-	return AsPin() != nullptr;
+	return asPin() != nullptr;
+}
+
+sim::Pin *sim::CircuitComponent::asPin() noexcept
+{
+	return nullptr;
+}
+
+const sim::Pin *sim::CircuitComponent::asPin() const noexcept
+{
+	return nullptr;
+}
+
+sim::Constant *sim::CircuitComponent::asConstant() noexcept
+{
+	return nullptr;
+}
+
+const sim::Constant *sim::CircuitComponent::asConstant() const noexcept
+{
+	return nullptr;
+}
+
+sim::Power *sim::CircuitComponent::asPower() noexcept
+{
+	return nullptr;
+}
+
+const sim::Power *sim::CircuitComponent::asPower() const noexcept
+{
+	return nullptr;
+}
+
+sim::Ground *sim::CircuitComponent::asGround() noexcept
+{
+	return nullptr;
+}
+
+const sim::Ground *sim::CircuitComponent::asGround() const noexcept
+{
+	return nullptr;
 }

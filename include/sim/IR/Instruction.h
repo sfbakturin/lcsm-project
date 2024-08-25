@@ -100,12 +100,10 @@ namespace sim
 		CGObject *m_targetTo;
 	};
 
-	std::shared_ptr< Instruction > CreateWriteValue(CGObject *targetFrom, CGObject *targetTo);
-	std::shared_ptr< Instruction >
-		CreateBroadcastValue(CGObject *targetFrom, CGObject *targetTo);
-	std::shared_ptr< Instruction > CreateUpdateState(CGObject *target);
-	std::shared_ptr< Instruction >
-		CreateWriteValueStabilized(CGObject *targetFrom, CGObject *targetTo);
+	InstructionShared CreateWriteValue(CGObject *targetFrom, CGObject *targetTo);
+	InstructionShared CreateBroadcastValue(CGObject *targetFrom, CGObject *targetTo);
+	InstructionShared CreateUpdateState(CGObject *target);
+	InstructionShared CreateWriteValueStabilized(CGObject *targetFrom, CGObject *targetTo);
 }	 // namespace sim
 
 #endif /* SIM_IR_INSTRUCTION_H */

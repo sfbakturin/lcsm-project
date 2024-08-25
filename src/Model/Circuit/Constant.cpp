@@ -65,6 +65,16 @@ void sim::Constant::SetValue(std::uint64_t newValue) noexcept
 	m_value = newValue;
 }
 
+sim::Wire &sim::Constant::wire() noexcept
+{
+	return m_wireOut;
+}
+
+const sim::Wire &sim::Constant::wire() const noexcept
+{
+	return m_wireOut;
+}
+
 unsigned sim::Constant::ID() const noexcept
 {
 	return m_id;
@@ -97,12 +107,12 @@ sim::CircuitComponentType sim::Constant::circuitComponentType() const noexcept
 	return sim::CircuitComponentType::CIRCUIT_COMP_CONSTANT;
 }
 
-const sim::Pin *sim::Constant::AsPin() const noexcept
+sim::Constant *sim::Constant::asConstant() noexcept
 {
-	return nullptr;
+	return this;
 }
 
-sim::Pin *sim::Constant::AsPin() noexcept
+const sim::Constant *sim::Constant::asConstant() const noexcept
 {
-	return nullptr;
+	return this;
 }

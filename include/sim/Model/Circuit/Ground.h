@@ -25,6 +25,9 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
+		virtual Ground *asGround() noexcept override final;
+		virtual const Ground *asGround() const noexcept override final;
+
 	  private:
 		static constexpr std::uint64_t GROUND_VALUE =
 			std::numeric_limits< std::uint64_t >::min();

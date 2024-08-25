@@ -43,9 +43,6 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
-		virtual const Pin *AsPin() const noexcept override;
-		virtual Pin *AsPin() noexcept override;
-
 	  private:
 		static constexpr std::size_t CONNECTORS_SIZE = Width::W64;
 		static constexpr std::size_t NO_CONNECT =

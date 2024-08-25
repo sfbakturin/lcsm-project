@@ -1,3 +1,6 @@
+#include "sim/Model/Circuit/Constant.h"
+#include "sim/Model/Circuit/Ground.h"
+#include "sim/Model/Circuit/Power.h"
 #include <initializer_list>
 #include <sim/Component/CircuitComponent.h>
 #include <sim/Component/Component.h>
@@ -35,7 +38,7 @@ void sim::SimEngine::addCircuit(sim::SimCircuit &circuit)
 
 	for (auto it = circuit.Pins().begin(); it != circuit.Pins().end(); it++)
 	{
-		const sim::Pin *pin = it->second->AsCircuit()->AsPin();
+		const sim::Pin *pin = it->second->AsCircuit()->asPin();
 
 		if (pin->IsOutput())
 			continue;
@@ -56,15 +59,29 @@ std::vector< sim::Value > sim::SimEngine::invokeFull(std::initializer_list< sim:
 	return {};
 }
 
+sim::CGWire *sim::SimEngine::registerWire(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering Wire found same ID.");
+
+	std::shared_ptr< sim::CGObject > W = std::make_shared< sim::CGWire >();
+	m_objects[ID] = W;
+
+	return static_cast< sim::CGWire * >(W.get());
+}
+
 sim::CGPinInput *sim::SimEngine::registerPinInput(unsigned ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< CGObject > >::const_iterator found =
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
 		m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering PinInput found same ID.");
 
-	std::shared_ptr< CGObject > I = std::make_shared< sim::CGPinInput >();
+	std::shared_ptr< sim::CGObject > I = std::make_shared< sim::CGPinInput >();
 	m_objects[ID] = I;
 
 	return static_cast< sim::CGPinInput * >(I.get());
@@ -72,30 +89,75 @@ sim::CGPinInput *sim::SimEngine::registerPinInput(unsigned ID)
 
 sim::CGPinOutput *sim::SimEngine::registerPinOutput(unsigned ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< CGObject > >::const_iterator found =
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
 		m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering PinOutput found same ID.");
 
-	std::shared_ptr< CGObject > O = std::make_shared< sim::CGPinOutput >();
+	std::shared_ptr< sim::CGObject > O = std::make_shared< sim::CGPinOutput >();
 	m_objects[ID] = O;
 
 	return static_cast< sim::CGPinOutput * >(O.get());
 }
 
-sim::CGWire *sim::SimEngine::registerWire(unsigned ID)
+sim::CGConstant *sim::SimEngine::registerConstant(unsigned ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< CGObject > >::const_iterator found =
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
 		m_objects.find(ID);
 
 	if (found != m_objects.cend())
-		throw std::logic_error("Registering Wire found same ID.");
+		throw std::logic_error("Registering Constant found same ID.");
 
-	std::shared_ptr< CGObject > W = std::make_shared< sim::CGWire >();
-	m_objects[ID] = W;
+	std::shared_ptr< sim::CGObject > C = std::make_shared< sim::CGConstant >();
+	m_objects[ID] = C;
 
-	return static_cast< sim::CGWire * >(W.get());
+	return static_cast< sim::CGConstant * >(C.get());
+}
+
+sim::CGPower *sim::SimEngine::registerPower(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering Power found same ID.");
+
+	std::shared_ptr< sim::CGObject > P = std::make_shared< sim::CGPower >();
+	m_objects[ID] = P;
+
+	return static_cast< sim::CGPower * >(P.get());
+}
+
+sim::CGGround *sim::SimEngine::registerGround(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering Ground found same ID.");
+
+	std::shared_ptr< sim::CGObject > G = std::make_shared< sim::CGGround >();
+	m_objects[ID] = G;
+
+	return static_cast< sim::CGGround * >(G.get());
+}
+
+sim::CGWire *sim::SimEngine::registeredWire(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		CGObject *I = found->second.get();
+		if (I && I->isWire())
+			return I->asWire();
+		else
+			throw std::logic_error("RegisteredPinOutput");
+	}
+
+	return registerWire(ID);
 }
 
 sim::CGPinInput *sim::SimEngine::registeredPinInput(unsigned ID)
@@ -132,21 +194,55 @@ sim::CGPinOutput *sim::SimEngine::registeredPinOutput(unsigned ID)
 	return registerPinOutput(ID);
 }
 
-sim::CGWire *sim::SimEngine::registeredWire(unsigned ID)
+sim::CGConstant *sim::SimEngine::registeredConstant(unsigned ID)
 {
 	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
 		m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
-		CGObject *I = found->second.get();
-		if (I && I->isWire())
-			return I->asWire();
+		sim::CGObject *I = found->second.get();
+		if (I && I->isConstant())
+			return I->asConstant();
 		else
-			throw std::logic_error("RegisteredPinOutput");
+			throw std::logic_error("RegisteredConstant");
 	}
 
-	return registerWire(ID);
+	return registerConstant(ID);
+}
+
+sim::CGPower *sim::SimEngine::registeredPower(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		sim::CGObject *I = found->second.get();
+		if (I && I->isPower())
+			return I->asPower();
+		else
+			throw std::logic_error("RegisteredPower");
+	}
+
+	return registerPower(ID);
+}
+
+sim::CGGround *sim::SimEngine::registeredGround(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		sim::CGObject *I = found->second.get();
+		if (I && I->isGround())
+			return I->asGround();
+		else
+			throw std::logic_error("RegisteredPower");
+	}
+
+	return registerGround(ID);
 }
 
 sim::CGNode *sim::SimEngine::registeredNode(unsigned ID, CGObject *object)
@@ -204,7 +300,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 
 				// Broadcast value from Wire to adjacent Wire object as
 				// tree's edge.
-				std::shared_ptr< sim::Instruction > wvWireToWire =
+				sim::InstructionShared wvWireToWire =
 					sim::CreateBroadcastValue(wireGraph, adjacentWireGraph);
 				sim::CGEdge wireToWireEdge = { { wireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
 				wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
@@ -235,7 +331,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 				{
 				case CIRCUIT_COMP_PIN:
 				{
-					const sim::Pin *pin = circComp->AsPin();
+					const sim::Pin *pin = circComp->asPin();
 					sim::CGPin *pinGraph = nullptr;
 
 					if (pin->IsOutput())
@@ -247,7 +343,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 					// node.
 					sim::CGNode *pinNode = registeredNode(pin->ID(), pinGraph);
 
-					std::shared_ptr< sim::Instruction > wvWireToPin =
+					sim::InstructionShared wvWireToPin =
 						sim::CreateWriteValue(wireGraph, pinGraph);
 					sim::CGEdge wireToPinEdge = { { wireGraph }, { pinGraph }, std::move(wvWireToPin) };
 					wireNode->addInstruction(std::move(wireToPinEdge), pinNode);
@@ -290,11 +386,15 @@ void sim::SimEngine::buildCircuitCircuitComp(
 	std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 	const sim::CircuitComponent *circuitComp)
 {
+	sim::CGNode *wireNode = nullptr;
+	sim::CGWire *outputWireGraph = nullptr;
+	const sim::Wire *outputWire = nullptr;
+
 	switch (circuitComp->circuitComponentType())
 	{
 	case sim::CircuitComponentType::CIRCUIT_COMP_PIN:
 	{
-		const sim::Pin *pin = circuitComp->AsPin();
+		const sim::Pin *pin = circuitComp->asPin();
 		const sim::Wire &pinWire = pin->GetWire();
 
 		sim::CGPin *pinGraph = nullptr;
@@ -310,48 +410,22 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGNode *pinNode = registeredNode(pin->ID(), pinGraph);
 
 		// Wire's tree node as Pin's child.
-		sim::CGNode *wireNode = registeredNode(pinWire.ID(), pinWireGraph);
+		sim::CGNode *pinWireNode = registeredNode(pinWire.ID(), pinWireGraph);
 
 		// Write value from Pin to Pin's Wire object as tree's edge.
-		std::shared_ptr< sim::Instruction > wvPinToWire =
-			sim::CreateWriteValue(pinGraph, pinWireGraph);
+		sim::InstructionShared wvPinToWire = sim::CreateWriteValue(pinGraph, pinWireGraph);
 		sim::CGEdge pinToWireEdge = { { pinGraph }, { pinWireGraph }, std::move(wvPinToWire) };
-		pinNode->addInstruction(std::move(pinToWireEdge), wireNode);
+		pinNode->addInstruction(std::move(pinToWireEdge), pinWireNode);
 
 		// Write value from Pin's Wire object to Pin as tree's edge.
-		std::shared_ptr< sim::Instruction > wvWireToPin =
-			sim::CreateWriteValue(pinWireGraph, pinGraph);
+		sim::InstructionShared wvWireToPin = sim::CreateWriteValue(pinWireGraph, pinGraph);
 		sim::CGEdge wireToPinEdge = { { pinWireGraph }, { pinGraph }, std::move(wvWireToPin) };
-		wireNode->addInstruction(std::move(wireToPinEdge), pinNode);
+		pinWireNode->addInstruction(std::move(wireToPinEdge), pinNode);
 
-		// Make connections from Pin's Wire object to his adjacent wires as
-		// tree's edges.
-		for (const sim::wire_t &adjacentWire : pinWire.Wires())
-		{
-			switch (adjacentWire->wiringComponentType())
-			{
-			case WIRING_COMP_WIRE:
-			{
-				// Wire's adjacent wire tree node.
-				sim::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
-				sim::CGNode *adjacentWireNode =
-					registeredNode(adjacentWire->ID(), adjacentWireGraph);
-
-				// Broadcast value from Pin's Wire to adjacent Wire object as
-				// tree's edge.
-				std::shared_ptr< sim::Instruction > wvWireToWire =
-					sim::CreateBroadcastValue(pinWireGraph, adjacentWireGraph);
-				sim::CGEdge wireToWireEdge = { { pinWireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
-				wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
-
-				break;
-			}
-			case WIRING_COMP_TUNNEL:
-				throw std::logic_error("Not implemented.");
-			}
-			// Add to future BFS visiting.
-			bfsVisit.emplace_back(adjacentWire.Ptr());
-		}
+		// Set output's wire to make connections from Pin's Wire object.
+		wireNode = pinWireNode;
+		outputWireGraph = pinWireGraph;
+		outputWire = std::addressof(pinWire);
 
 		// Add as visited objects.
 		visited.insert(pin->ID());
@@ -360,11 +434,121 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		break;
 	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_CONSTANT:
-		throw std::logic_error("Not implemented");
+	{
+		const sim::Constant *constant = circuitComp->asConstant();
+		const sim::Wire &constantWire = constant->wire();
+
+		sim::CGConstant *constantGraph = registeredConstant(constant->ID());
+		sim::CGWire *constantWireGraph = registeredWire(constantWire.ID());
+
+		constantGraph->emplaceValue(constant->GetWidth(), constant->GetValue());
+
+		// Constant's tree node.
+		sim::CGNode *constantNode = registeredNode(constant->ID(), constantGraph);
+
+		// Wire's tree node as Constant's child.
+		sim::CGNode *constantWireNode = registeredNode(constantWire.ID(), constantWireGraph);
+
+		// Write value from Constant to Constant's Wire object as tree's edge.
+		sim::InstructionShared wvConstantToWire =
+			sim::CreateWriteValue(constantGraph, constantWireGraph);
+		sim::CGEdge constantToWireEdge = { { constantGraph }, { constantWireGraph }, std::move(wvConstantToWire) };
+		constantNode->addInstruction(std::move(constantToWireEdge), constantWireNode);
+
+		// Write value from Constant's Wire object to Constant as tree's edge.
+		sim::InstructionShared wvWireToConstant =
+			sim::CreateWriteValue(constantWireGraph, constantGraph);
+		sim::CGEdge wireToConstantEdge = { { constantWireGraph }, { constantGraph }, std::move(wvWireToConstant) };
+		constantWireNode->addInstruction(std::move(wireToConstantEdge), constantNode);
+
+		// Set output's wire to make connections from Constant's Wire object.
+		wireNode = constantWireNode;
+		outputWireGraph = constantWireGraph;
+		outputWire = std::addressof(constantWire);
+
+		// Add as visited objects.
+		visited.insert(constant->ID());
+		visited.insert(constantWire.ID());
+
+		break;
+	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_POWER:
-		throw std::logic_error("Not implemented");
+	{
+		const sim::Power *power = circuitComp->asPower();
+		const sim::Wire &powerWire = power->wire();
+
+		sim::CGPower *powerGraph = registeredPower(power->ID());
+		sim::CGWire *powerWireGraph = registeredWire(powerWire.ID());
+
+		powerGraph->setWidth(power->GetWidth());
+
+		// Power's tree node.
+		sim::CGNode *powerNode = registeredNode(power->ID(), powerGraph);
+
+		// Wire's value tree node as Power's child.
+		sim::CGNode *powerWireNode = registeredNode(powerWire.ID(), powerWireGraph);
+
+		// Write value from Power to Power's Wire object as tree's edge.
+		sim::InstructionShared wvPowerToWire = sim::CreateWriteValue(powerGraph, powerWireGraph);
+		sim::CGEdge powerToWireEdge = { { powerGraph }, { powerWireGraph }, std::move(wvPowerToWire) };
+		powerNode->addInstruction(std::move(powerToWireEdge), powerWireNode);
+
+		// Write value from Power's Wire object to Power as tree's edge.
+		sim::InstructionShared wvWireToPower =
+			sim::CreateWriteValue(powerWireGraph, powerGraph);
+		sim::CGEdge wireToPowerEdge = { { powerWireGraph }, { powerGraph }, std::move(wvWireToPower) };
+		powerWireNode->addInstruction(std::move(wireToPowerEdge), powerNode);
+
+		// Set output's wire to make connections from Power's Wire object.
+		wireNode = powerWireNode;
+		outputWireGraph = powerWireGraph;
+		outputWire = std::addressof(powerWire);
+
+		// Add as visited objects.
+		visited.insert(power->ID());
+		visited.insert(powerWire.ID());
+
+		break;
+	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_GROUND:
-		throw std::logic_error("Not implemented");
+	{
+		const sim::Ground *ground = circuitComp->asGround();
+		const sim::Wire &groundWire = ground->wire();
+
+		sim::CGGround *groundGraph = registeredGround(ground->ID());
+		sim::CGWire *groundWireGraph = registeredWire(groundWire.ID());
+
+		groundGraph->setWidth(ground->GetWidth());
+
+		// Ground's tree node.
+		sim::CGNode *groundNode = registeredNode(ground->ID(), groundGraph);
+
+		// Wire's value tree node as Ground's child.
+		sim::CGNode *groundWireNode = registeredNode(groundWire.ID(), groundWireGraph);
+
+		// Write value from Ground to Ground's Wire object as tree's edge.
+		sim::InstructionShared wvGroundToWire =
+			sim::CreateWriteValue(groundGraph, groundWireGraph);
+		sim::CGEdge groundToWireEdge = { { groundGraph }, { groundWireGraph }, std::move(wvGroundToWire) };
+		groundNode->addInstruction(std::move(groundToWireEdge), groundWireNode);
+
+		// Write value from Ground's Wire object to Ground as tree's edge.
+		sim::InstructionShared wvWireToGround =
+			sim::CreateWriteValue(groundWireGraph, groundGraph);
+		sim::CGEdge wireToGroundEdge = { { groundWireGraph }, { groundGraph }, std::move(wvWireToGround) };
+		groundWireNode->addInstruction(std::move(wireToGroundEdge), groundNode);
+
+		// Set output's wire to make connections from Ground's Wire object.
+		wireNode = groundWireNode;
+		outputWireGraph = groundWireGraph;
+		outputWire = std::addressof(groundWire);
+
+		// Add as visited objects.
+		visited.insert(ground->ID());
+		visited.insert(groundWire.ID());
+
+		break;
+	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_SPLITTER:
 		throw std::logic_error("Not implemented");
 	case sim::CircuitComponentType::CIRCUIT_COMP_CLOCK:
@@ -373,6 +557,34 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		throw std::logic_error("Not implemented");
 	case sim::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE:
 		throw std::logic_error("Not implemented");
+	}
+
+	// Make connections from simple Wire object to his adjacent wires as
+	// tree's edges.
+	for (const sim::wire_t &adjacentWire : outputWire->Wires())
+	{
+		switch (adjacentWire->wiringComponentType())
+		{
+		case WIRING_COMP_WIRE:
+		{
+			// Wire's adjacent wire tree node.
+			sim::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
+			sim::CGNode *adjacentWireNode = registeredNode(adjacentWire->ID(), adjacentWireGraph);
+
+			// Broadcast value from Pin's Wire to adjacent Wire object as
+			// tree's edge.
+			sim::InstructionShared wvWireToWire =
+				sim::CreateBroadcastValue(outputWireGraph, adjacentWireGraph);
+			sim::CGEdge wireToWireEdge = { { outputWireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
+			wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
+
+			break;
+		}
+		case WIRING_COMP_TUNNEL:
+			throw std::logic_error("Not implemented.");
+		}
+		// Add to future BFS visiting.
+		bfsVisit.emplace_back(adjacentWire.Ptr());
 	}
 }
 

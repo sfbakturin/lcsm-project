@@ -48,23 +48,3 @@ const sim::CGWire *sim::CGWire::asWire() const noexcept
 {
 	return this;
 }
-
-sim::CGPinInput *sim::CGWire::asPinInput() noexcept
-{
-	return nullptr;
-}
-
-const sim::CGPinInput *sim::CGWire::asPinInput() const noexcept
-{
-	return nullptr;
-}
-
-sim::CGPinOutput *sim::CGWire::asPinOutput() noexcept
-{
-	return nullptr;
-}
-
-const sim::CGPinOutput *sim::CGWire::asPinOutput() const noexcept
-{
-	return nullptr;
-}

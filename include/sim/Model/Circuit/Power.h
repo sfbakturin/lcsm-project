@@ -25,6 +25,9 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
+		virtual Power *asPower() noexcept override final;
+		virtual const Power *asPower() const noexcept override final;
+
 	  private:
 		static constexpr std::uint64_t POWER_VALUE =
 			std::numeric_limits< std::uint64_t >::max();

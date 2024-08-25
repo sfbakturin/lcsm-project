@@ -5,6 +5,7 @@
 #include <sim/IR/Width.h>
 #include <sim/Support/PointerView.hpp>
 
+#include <cstdint>
 #include <deque>
 
 namespace sim
@@ -13,12 +14,18 @@ namespace sim
 	{
 		OBJ_PIN_INPUT,
 		OBJ_PIN_OUTPUT,
-		OBJ_WIRE
+		OBJ_WIRE,
+		OBJ_CONSTANT,
+		OBJ_POWER,
+		OBJ_GROUND
 	};
 
 	class CGWire;
 	class CGPinInput;
 	class CGPinOutput;
+	class CGConstant;
+	class CGPower;
+	class CGGround;
 
 	class Instruction;
 
@@ -41,13 +48,22 @@ namespace sim
 		bool isWire() const noexcept;
 		bool isPinInput() const noexcept;
 		bool isPinOutput() const noexcept;
+		bool isConstant() const noexcept;
+		bool isPower() const noexcept;
+		bool isGround() const noexcept;
 
-		virtual CGWire *asWire() noexcept = 0;
-		virtual const CGWire *asWire() const noexcept = 0;
-		virtual CGPinInput *asPinInput() noexcept = 0;
-		virtual const CGPinInput *asPinInput() const noexcept = 0;
-		virtual CGPinOutput *asPinOutput() noexcept = 0;
-		virtual const CGPinOutput *asPinOutput() const noexcept = 0;
+		virtual CGWire *asWire() noexcept;
+		virtual const CGWire *asWire() const noexcept;
+		virtual CGPinInput *asPinInput() noexcept;
+		virtual const CGPinInput *asPinInput() const noexcept;
+		virtual CGPinOutput *asPinOutput() noexcept;
+		virtual const CGPinOutput *asPinOutput() const noexcept;
+		virtual CGConstant *asConstant() noexcept;
+		virtual const CGConstant *asConstant() const noexcept;
+		virtual CGPower *asPower() noexcept;
+		virtual const CGPower *asPower() const noexcept;
+		virtual CGGround *asGround() noexcept;
+		virtual const CGGround *asGround() const noexcept;
 
 		void addInstantInstr(support::PointerView< Instruction > &&instruction);
 		void addInstantInstr(const support::PointerView< Instruction > &instruction);
@@ -57,6 +73,8 @@ namespace sim
 	  protected:
 		std::deque< support::PointerView< Instruction > > m_instants;
 	};
+
+	using CGObjectView = support::PointerView< CGObject >;
 
 	class CGPin : public CGObject
 	{
@@ -89,12 +107,8 @@ namespace sim
 		void externalWrite(const Value &value);
 		void externalWrite(Value &&value) noexcept;
 
-		virtual CGWire *asWire() noexcept override;
-		virtual const CGWire *asWire() const noexcept override;
-		virtual CGPinInput *asPinInput() noexcept override;
-		virtual const CGPinInput *asPinInput() const noexcept override;
-		virtual CGPinOutput *asPinOutput() noexcept override;
-		virtual const CGPinOutput *asPinOutput() const noexcept override;
+		virtual CGPinInput *asPinInput() noexcept override final;
+		virtual const CGPinInput *asPinInput() const noexcept override final;
 	};
 
 	class CGPinOutput : public CGPin
@@ -111,12 +125,8 @@ namespace sim
 		Value &externalRead() noexcept;
 		const Value &externalRead() const noexcept;
 
-		virtual CGWire *asWire() noexcept override;
-		virtual const CGWire *asWire() const noexcept override;
-		virtual CGPinInput *asPinInput() noexcept override;
-		virtual const CGPinInput *asPinInput() const noexcept override;
-		virtual CGPinOutput *asPinOutput() noexcept override;
-		virtual const CGPinOutput *asPinOutput() const noexcept override;
+		virtual CGPinOutput *asPinOutput() noexcept override final;
+		virtual const CGPinOutput *asPinOutput() const noexcept override final;
 	};
 
 	class CGWire : public CGObject
@@ -133,18 +143,62 @@ namespace sim
 
 		virtual CGObjectT T() const noexcept override;
 
-		virtual CGWire *asWire() noexcept override;
-		virtual const CGWire *asWire() const noexcept override;
-		virtual CGPinInput *asPinInput() noexcept override;
-		virtual const CGPinInput *asPinInput() const noexcept override;
-		virtual CGPinOutput *asPinOutput() noexcept override;
-		virtual const CGPinOutput *asPinOutput() const noexcept override;
+		virtual CGWire *asWire() noexcept override final;
+		virtual const CGWire *asWire() const noexcept override final;
 
 	  private:
 		Value m_value;
 	};
 
-	using CGObjectView = support::PointerView< CGObject >;
+	class CGConstant : public CGObject
+	{
+	  public:
+		CGConstant() noexcept = default;
+
+		virtual Value &read() override;
+		virtual const Value &read() const override;
+
+		virtual void write(const Value &value) override;
+		virtual void write(Value &&value) override;
+
+		virtual Width width() const noexcept override;
+		virtual bool checkWidth(const Value &value) const noexcept override;
+
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGConstant *asConstant() noexcept override final;
+		virtual const CGConstant *asConstant() const noexcept override final;
+
+		void emplaceValue(Width width, std::uint64_t value);
+
+	  protected:
+		void setValue(const Value &value);
+		void setValue(Value &&value) noexcept;
+
+		Value m_value;
+	};
+
+	class CGPower : public CGConstant
+	{
+	  public:
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGPower *asPower() noexcept override final;
+		virtual const CGPower *asPower() const noexcept override final;
+
+		void setWidth(Width width);
+	};
+
+	class CGGround : public CGConstant
+	{
+	  public:
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGGround *asGround() noexcept override final;
+		virtual const CGGround *asGround() const noexcept override final;
+
+		void setWidth(Width width);
+	};
 }	 // namespace sim
 
 #endif /* SIM_IR_CGOBJECT_H */

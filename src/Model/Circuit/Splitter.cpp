@@ -89,8 +89,9 @@ void sim::Splitter::ConnectIn(sim::wire_t &wire, std::size_t i)
 void sim::Splitter::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i >= m_widthOut)
-		throw std::logic_error("Splitter element has only widthOut output "
-							   "connections.");
+		throw std::logic_error(
+			"Splitter element has only widthOut output "
+			"connections.");
 	m_wireOut[i].ConnectWire(wire);
 }
 
@@ -107,16 +108,6 @@ void sim::Splitter::ConnectBitN(sim::wire_t &wire, std::size_t i)
 sim::CircuitComponentType sim::Splitter::circuitComponentType() const noexcept
 {
 	return sim::CircuitComponentType::CIRCUIT_COMP_SPLITTER;
-}
-
-const sim::Pin *sim::Splitter::AsPin() const noexcept
-{
-	return nullptr;
-}
-
-sim::Pin *sim::Splitter::AsPin() noexcept
-{
-	return nullptr;
 }
 
 static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept

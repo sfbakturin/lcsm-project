@@ -15,7 +15,8 @@ namespace sim
 	  public:
 		Value() noexcept;
 
-		Value(sim::Width width) noexcept;
+		Value(Width width) noexcept;
+		Value(Width width, LogisimBit bit) noexcept;
 		Value(std::initializer_list< LogisimBit > value);
 
 		Value(const Value &other);

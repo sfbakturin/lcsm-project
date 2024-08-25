@@ -19,6 +19,9 @@ namespace sim
 	};
 
 	class Pin;
+	class Constant;
+	class Power;
+	class Ground;
 
 	class CircuitComponent : public Component
 	{
@@ -40,8 +43,17 @@ namespace sim
 
 		bool IsPin() const noexcept;
 
-		virtual const Pin *AsPin() const noexcept = 0;
-		virtual Pin *AsPin() noexcept = 0;
+		virtual Pin *asPin() noexcept;
+		virtual const Pin *asPin() const noexcept;
+
+		virtual Constant *asConstant() noexcept;
+		virtual const Constant *asConstant() const noexcept;
+
+		virtual Power *asPower() noexcept;
+		virtual const Power *asPower() const noexcept;
+
+		virtual Ground *asGround() noexcept;
+		virtual const Ground *asGround() const noexcept;
 	};
 }	 // namespace sim
 

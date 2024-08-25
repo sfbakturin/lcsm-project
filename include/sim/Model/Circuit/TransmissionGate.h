@@ -34,9 +34,6 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
-		virtual const Pin *AsPin() const noexcept override;
-		virtual Pin *AsPin() noexcept override;
-
 	  private:
 		static constexpr std::size_t SRC_N = 3;
 

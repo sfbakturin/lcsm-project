@@ -73,16 +73,6 @@ sim::CircuitComponentType sim::Transistor::circuitComponentType() const noexcept
 	return sim::CircuitComponentType::CIRCUIT_COMP_TRANSISTOR;
 }
 
-const sim::Pin *sim::Transistor::AsPin() const noexcept
-{
-	return nullptr;
-}
-
-sim::Pin *sim::Transistor::AsPin() noexcept
-{
-	return nullptr;
-}
-
 void sim::Transistor::Connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)

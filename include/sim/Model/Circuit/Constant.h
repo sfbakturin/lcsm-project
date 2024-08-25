@@ -30,6 +30,9 @@ namespace sim
 		void SetWidth(Width newWidth) noexcept;
 		void SetValue(std::uint64_t newValue) noexcept;
 
+		Wire &wire() noexcept;
+		const Wire &wire() const noexcept;
+
 		virtual unsigned ID() const noexcept override;
 		virtual void Identify(unsigned ID) noexcept override;
 
@@ -40,8 +43,8 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
-		virtual const Pin *AsPin() const noexcept override;
-		virtual Pin *AsPin() noexcept override;
+		virtual Constant *asConstant() noexcept override final;
+		virtual const Constant *asConstant() const noexcept override final;
 
 	  protected:
 		unsigned m_id;

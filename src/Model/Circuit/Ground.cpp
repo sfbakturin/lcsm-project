@@ -38,3 +38,13 @@ sim::CircuitComponentType sim::Ground::circuitComponentType() const noexcept
 {
 	return sim::CircuitComponentType::CIRCUIT_COMP_GROUND;
 }
+
+sim::Ground *sim::Ground::asGround() noexcept
+{
+	return this;
+}
+
+const sim::Ground *sim::Ground::asGround() const noexcept
+{
+	return this;
+}

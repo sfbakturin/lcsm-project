@@ -28,13 +28,19 @@ namespace sim
 		std::vector< Value > invokeFull(std::initializer_list< Value > I);
 
 	  private:
+		CGWire *registerWire(unsigned ID);
 		CGPinInput *registerPinInput(unsigned ID);
 		CGPinOutput *registerPinOutput(unsigned ID);
-		CGWire *registerWire(unsigned ID);
+		CGConstant *registerConstant(unsigned ID);
+		CGPower *registerPower(unsigned ID);
+		CGGround *registerGround(unsigned ID);
 
+		CGWire *registeredWire(unsigned ID);
 		CGPinInput *registeredPinInput(unsigned ID);
 		CGPinOutput *registeredPinOutput(unsigned ID);
-		CGWire *registeredWire(unsigned ID);
+		CGConstant *registeredConstant(unsigned ID);
+		CGPower *registeredPower(unsigned ID);
+		CGGround *registeredGround(unsigned ID);
 
 		CGNode *registeredNode(unsigned ID, CGObject *object = nullptr);
 

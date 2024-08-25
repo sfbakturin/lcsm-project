@@ -105,13 +105,3 @@ sim::CircuitComponentType sim::Clock::circuitComponentType() const noexcept
 {
 	return sim::CircuitComponentType::CIRCUIT_COMP_CLOCK;
 }
-
-const sim::Pin *sim::Clock::AsPin() const noexcept
-{
-	return nullptr;
-}
-
-sim::Pin *sim::Clock::AsPin() noexcept
-{
-	return nullptr;
-}
