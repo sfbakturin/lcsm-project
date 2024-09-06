@@ -82,3 +82,13 @@ const sim::Ground *sim::CircuitComponent::asGround() const noexcept
 {
 	return nullptr;
 }
+
+sim::Transistor *sim::CircuitComponent::asTransistor() noexcept
+{
+	return nullptr;
+}
+
+const sim::Transistor *sim::CircuitComponent::asTransistor() const noexcept
+{
+	return nullptr;
+}

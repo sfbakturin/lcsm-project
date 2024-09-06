@@ -36,6 +36,7 @@
     IR/CG/CGConstant.cpp
     IR/CG/CGPower.cpp
     IR/CG/CGGround.cpp
+    IR/CG/CGTransistor.cpp
     IR/CG/CGWire.cpp
     IR/CG/CGEdge.cpp
     IR/CG/CGNode.cpp

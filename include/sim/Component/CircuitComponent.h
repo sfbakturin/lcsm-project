@@ -22,6 +22,7 @@ namespace sim
 	class Constant;
 	class Power;
 	class Ground;
+	class Transistor;
 
 	class CircuitComponent : public Component
 	{
@@ -54,6 +55,9 @@ namespace sim
 
 		virtual Ground *asGround() noexcept;
 		virtual const Ground *asGround() const noexcept;
+
+		virtual Transistor *asTransistor() noexcept;
+		virtual const Transistor *asTransistor() const noexcept;
 	};
 }	 // namespace sim
 

@@ -34,6 +34,9 @@ namespace sim
 		CGConstant *registerConstant(unsigned ID);
 		CGPower *registerPower(unsigned ID);
 		CGGround *registerGround(unsigned ID);
+		CGTransistorBase *registerTransistorBase(unsigned ID);
+		CGTransistorInout *registerTransistorInout(unsigned ID);
+		CGTransistorState *registerTransistorState(unsigned ID);
 
 		CGWire *registeredWire(unsigned ID);
 		CGPinInput *registeredPinInput(unsigned ID);
@@ -41,6 +44,9 @@ namespace sim
 		CGConstant *registeredConstant(unsigned ID);
 		CGPower *registeredPower(unsigned ID);
 		CGGround *registeredGround(unsigned ID);
+		CGTransistorBase *registeredTransistorBase(unsigned ID);
+		CGTransistorInout *registeredTransistorInout(unsigned ID);
+		CGTransistorState *registeredTransistorState(unsigned ID);
 
 		CGNode *registeredNode(unsigned ID, CGObject *object = nullptr);
 

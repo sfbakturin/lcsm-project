@@ -35,6 +35,21 @@ bool sim::CGObject::isGround() const noexcept
 	return T() == sim::CGObjectT::OBJ_GROUND;
 }
 
+bool sim::CGObject::isTransistorBase() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_TRANSISTOR_BASE;
+}
+
+bool sim::CGObject::isTransistorInout() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_TRANSISTOR_INOUT;
+}
+
+bool sim::CGObject::isTransistorState() const noexcept
+{
+	return T() == sim::CGObjectT::OBJ_TRANSISTOR_STATE;
+}
+
 sim::CGWire *sim::CGObject::asWire() noexcept
 {
 	return nullptr;
@@ -91,6 +106,36 @@ sim::CGGround *sim::CGObject::asGround() noexcept
 }
 
 const sim::CGGround *sim::CGObject::asGround() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGTransistorBase *sim::CGObject::asTransistorBase() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGTransistorBase *sim::CGObject::asTransistorBase() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGTransistorInout *sim::CGObject::asTransistorInout() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGTransistorInout *sim::CGObject::asTransistorInout() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGTransistorState *sim::CGObject::asTransistorState() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGTransistorState *sim::CGObject::asTransistorState() const noexcept
 {
 	return nullptr;
 }

@@ -73,11 +73,51 @@ sim::CircuitComponentType sim::Transistor::circuitComponentType() const noexcept
 	return sim::CircuitComponentType::CIRCUIT_COMP_TRANSISTOR;
 }
 
+sim::Transistor *sim::Transistor::asTransistor() noexcept
+{
+	return this;
+}
+
+const sim::Transistor *sim::Transistor::asTransistor() const noexcept
+{
+	return this;
+}
+
+sim::Wire &sim::Transistor::wireBase() noexcept
+{
+	return m_base;
+}
+
+const sim::Wire &sim::Transistor::wireBase() const noexcept
+{
+	return m_base;
+}
+
+sim::Wire &sim::Transistor::wireSrcA() noexcept
+{
+	return m_srcs[0];
+}
+
+const sim::Wire &sim::Transistor::wireSrcA() const noexcept
+{
+	return m_srcs[0];
+}
+
+sim::Wire &sim::Transistor::wireSrcB() noexcept
+{
+	return m_srcs[1];
+}
+
+const sim::Wire &sim::Transistor::wireSrcB() const noexcept
+{
+	return m_srcs[1];
+}
+
 void sim::Transistor::Connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
 		m_base.ConnectWire(wire);
 	else if (i - 1 < sim::Transistor::SRC_N)
-		m_srcs[i].ConnectWire(wire);
+		m_srcs[i - 1].ConnectWire(wire);
 	throw std::logic_error("Transistor element has only 3 inout connections.");
 }

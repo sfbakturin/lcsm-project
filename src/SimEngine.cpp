@@ -1,6 +1,7 @@
 #include "sim/Model/Circuit/Constant.h"
 #include "sim/Model/Circuit/Ground.h"
 #include "sim/Model/Circuit/Power.h"
+#include "sim/Model/Circuit/Transistor.h"
 #include <initializer_list>
 #include <sim/Component/CircuitComponent.h>
 #include <sim/Component/Component.h>
@@ -143,6 +144,45 @@ sim::CGGround *sim::SimEngine::registerGround(unsigned ID)
 	return static_cast< sim::CGGround * >(G.get());
 }
 
+sim::CGTransistorBase *sim::SimEngine::registerTransistorBase(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering transistor element found same ID.");
+
+	std::shared_ptr< sim::CGObject > T = std::make_shared< sim::CGTransistorBase >();
+}
+
+sim::CGTransistorInout *sim::SimEngine::registerTransistorInout(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering transistor element found same ID.");
+
+	std::shared_ptr< sim::CGObject > T = std::make_shared< sim::CGTransistorInout >();
+	m_objects[ID] = T;
+
+	return static_cast< sim::CGTransistorInout * >(T.get());
+}
+
+sim::CGTransistorState *sim::SimEngine::registerTransistorState(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+		throw std::logic_error("Registering transistor element found same ID.");
+
+	std::shared_ptr< sim::CGObject > T = std::make_shared< sim::CGTransistorState >();
+	m_objects[ID] = T;
+
+	return static_cast< sim::CGTransistorState * >(T.get());
+}
+
 sim::CGWire *sim::SimEngine::registeredWire(unsigned ID)
 {
 	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
@@ -243,6 +283,57 @@ sim::CGGround *sim::SimEngine::registeredGround(unsigned ID)
 	}
 
 	return registerGround(ID);
+}
+
+sim::CGTransistorBase *sim::SimEngine::registeredTransistorBase(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		sim::CGObject *T = found->second.get();
+		if (T && T->isTransistorBase())
+			return T->asTransistorBase();
+		else
+			throw std::logic_error("RegisteredTransistorBase");
+	}
+
+	return registerTransistorBase(ID);
+}
+
+sim::CGTransistorInout *sim::SimEngine::registeredTransistorInout(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		sim::CGObject *T = found->second.get();
+		if (T && T->isTransistorInout())
+			return T->asTransistorInout();
+		else
+			throw std::logic_error("RegisteredTransistorInout");
+	}
+
+	return registerTransistorInout(ID);
+}
+
+sim::CGTransistorState *sim::SimEngine::registeredTransistorState(unsigned ID)
+{
+	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
+		m_objects.find(ID);
+
+	if (found != m_objects.cend())
+	{
+		sim::CGObject *T = found->second.get();
+		if (T && T->isTransistorState())
+			return T->asTransistorState();
+		else
+			throw std::logic_error("RegisteredTransistorState");
+	}
+
+	return registerTransistorState(ID);
 }
 
 sim::CGNode *sim::SimEngine::registeredNode(unsigned ID, CGObject *object)
@@ -554,7 +645,70 @@ void sim::SimEngine::buildCircuitCircuitComp(
 	case sim::CircuitComponentType::CIRCUIT_COMP_CLOCK:
 		throw std::logic_error("Not implemented");
 	case sim::CircuitComponentType::CIRCUIT_COMP_TRANSISTOR:
-		throw std::logic_error("Not implemented");
+	{
+		const sim::Transistor *transistor = circuitComp->asTransistor();
+		const sim::Wire &wireBase = transistor->wireBase();
+		const sim::Wire &wireSrcA = transistor->wireSrcA();
+		const sim::Wire &wireSrcB = transistor->wireSrcB();
+
+		sim::CGWire *transistorWireBaseGraph = registeredWire(wireBase.ID());
+		sim::CGWire *transistorWireSrcAGraph = registeredWire(wireSrcA.ID());
+		sim::CGWire *transistorWireSrcBGraph = registeredWire(wireSrcB.ID());
+
+		// FIXME: All transistor's elements MAYBE should have same ID's
+		// ideologically, OR sim::Transistor should have methods to identify and
+		// get ID's for all elements separately.
+		sim::CGTransistorBase *transistorBaseGraph =
+			registeredTransistorBase(wireBase.ID());
+		sim::CGTransistorInout *transistorSrcAGraph =
+			registeredTransistorInout(wireSrcA.ID());
+		sim::CGTransistorInout *transistorSrcBGraph =
+			registeredTransistorInout(wireSrcB.ID());
+		sim::CGTransistorState *transistorState = registeredTransistorState(0);
+
+		// Base's Wire tree node.
+		sim::CGNode *transistorWireBaseNode =
+			registeredNode(wireBase.ID(), transistorWireBaseGraph);
+
+		// SrcA's Wire tree node.
+		sim::CGNode *transistorWireSrcANode =
+			registeredNode(wireSrcA.ID(), transistorWireSrcAGraph);
+
+		// SrcB's Wire tree node.
+		sim::CGNode *transistorWireSrcBNode =
+			registeredNode(wireSrcB.ID(), transistorWireSrcBGraph);
+
+		// Base's tree node.
+		sim::CGNode *transistorBaseNode = registeredNode(wireBase.ID());
+
+		// SrcA's tree node.
+		sim::CGNode *transistorSrcANode = registeredNode(wireSrcA.ID());
+
+		// SrcB's tree node.
+		sim::CGNode *transistorSrcBNode = registeredNode(wireSrcB.ID());
+
+		// Write value from Base's Wire to Base's tree node.
+		sim::InstructionShared wvBaseWireToBase =
+			sim::CreateWriteValue(transistorWireBaseGraph, transistorBaseGraph);
+		sim::CGEdge baseWireToBase = {
+			{ transistorWireBaseGraph },
+			{ transistorBaseGraph },
+			std::move(wvBaseWireToBase)
+		};
+		transistorWireBaseNode->addInstruction(std::move(baseWireToBase), transistorBaseNode);
+
+		// Write value from Base's to Base's Wire tree node.
+		sim::InstructionShared wvBaseToBaseWire =
+			sim::CreateWriteValue(transistorBaseGraph, transistorWireBaseGraph);
+		sim::CGEdge baseToBaseWire = {
+			{ transistorBaseGraph },
+			{ transistorWireBaseGraph },
+			std::move(wvBaseToBaseWire)
+		};
+		transistorBaseNode->addInstruction(std::move(baseToBaseWire), transistorWireBaseNode);
+
+		// Wire value from
+	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE:
 		throw std::logic_error("Not implemented");
 	}

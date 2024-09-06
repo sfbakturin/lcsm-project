@@ -17,7 +17,10 @@ namespace sim
 		OBJ_WIRE,
 		OBJ_CONSTANT,
 		OBJ_POWER,
-		OBJ_GROUND
+		OBJ_GROUND,
+		OBJ_TRANSISTOR_BASE,
+		OBJ_TRANSISTOR_INOUT,
+		OBJ_TRANSISTOR_STATE
 	};
 
 	class CGWire;
@@ -26,6 +29,9 @@ namespace sim
 	class CGConstant;
 	class CGPower;
 	class CGGround;
+	class CGTransistorBase;
+	class CGTransistorInout;
+	class CGTransistorState;
 
 	class Instruction;
 
@@ -51,6 +57,9 @@ namespace sim
 		bool isConstant() const noexcept;
 		bool isPower() const noexcept;
 		bool isGround() const noexcept;
+		bool isTransistorBase() const noexcept;
+		bool isTransistorInout() const noexcept;
+		bool isTransistorState() const noexcept;
 
 		virtual CGWire *asWire() noexcept;
 		virtual const CGWire *asWire() const noexcept;
@@ -64,6 +73,12 @@ namespace sim
 		virtual const CGPower *asPower() const noexcept;
 		virtual CGGround *asGround() noexcept;
 		virtual const CGGround *asGround() const noexcept;
+		virtual CGTransistorBase *asTransistorBase() noexcept;
+		virtual const CGTransistorBase *asTransistorBase() const noexcept;
+		virtual CGTransistorInout *asTransistorInout() noexcept;
+		virtual const CGTransistorInout *asTransistorInout() const noexcept;
+		virtual CGTransistorState *asTransistorState() noexcept;
+		virtual const CGTransistorState *asTransistorState() const noexcept;
 
 		void addInstantInstr(support::PointerView< Instruction > &&instruction);
 		void addInstantInstr(const support::PointerView< Instruction > &instruction);
@@ -198,6 +213,37 @@ namespace sim
 		virtual const CGGround *asGround() const noexcept override final;
 
 		void setWidth(Width width);
+	};
+
+	class CGState : public CGObject
+	{
+	};
+
+	class CGTransistorBase : public CGObject
+	{
+	  public:
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGTransistorBase *asTransistorBase() noexcept override final;
+		virtual const CGTransistorBase *asTransistorBase() const noexcept override final;
+	};
+
+	class CGTransistorInout : public CGObject
+	{
+	  public:
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGTransistorInout *asTransistorInout() noexcept override final;
+		virtual const CGTransistorInout *asTransistorInout() const noexcept override final;
+	};
+
+	class CGTransistorState : public CGState
+	{
+	  public:
+		virtual CGObjectT T() const noexcept override;
+
+		virtual CGTransistorState *asTransistorState() noexcept override final;
+		virtual const CGTransistorState *asTransistorState() const noexcept override final;
 	};
 }	 // namespace sim
 

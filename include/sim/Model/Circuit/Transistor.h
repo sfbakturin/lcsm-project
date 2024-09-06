@@ -41,6 +41,18 @@ namespace sim
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
+		virtual Transistor *asTransistor() noexcept override final;
+		virtual const Transistor *asTransistor() const noexcept override final;
+
+		Wire &wireBase() noexcept;
+		const Wire &wireBase() const noexcept;
+
+		Wire &wireSrcA() noexcept;
+		const Wire &wireSrcA() const noexcept;
+
+		Wire &wireSrcB() noexcept;
+		const Wire &wireSrcB() const noexcept;
+
 	  private:
 		static constexpr std::size_t SRC_N = 2;
 
