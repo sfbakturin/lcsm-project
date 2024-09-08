@@ -1,6 +1,7 @@
 #ifndef SIM_COMPONENT_COMPONENT_H
 #define SIM_COMPONENT_COMPONENT_H
 
+#include <sim/Component/Identifier.h>
 #include <sim/Support/PointerView.hpp>
 
 namespace sim
@@ -27,8 +28,8 @@ namespace sim
 		bool IsWiring() const noexcept;
 		bool IsCircuit() const noexcept;
 
-		virtual unsigned ID() const noexcept = 0;
-		virtual void Identify(unsigned ID) noexcept = 0;
+		virtual Identifier ID() const noexcept = 0;
+		virtual Identifier identify(Identifier ID) noexcept = 0;
 
 		virtual void
 			ConnectIn(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;

@@ -1,12 +1,19 @@
+#include <sim/Component/Identifier.h>
 #include <sim/Model/IO/Button.h>
 
 #include <stdexcept>
 #include <utility>
 
-sim::Button::Button(bool activeOnPress) : m_id(0), m_activeOnPress(activeOnPress) {}
+sim::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress) {}
 
-sim::Button::Button(const sim::Button &other) : m_activeOnPress(other.m_activeOnPress) {}
-sim::Button::Button(sim::Button &&other) noexcept : m_activeOnPress(other.m_activeOnPress) {}
+sim::Button::Button(const sim::Button &other) :
+	m_activeOnPress(other.m_activeOnPress)
+{
+}
+sim::Button::Button(sim::Button &&other) noexcept :
+	m_activeOnPress(other.m_activeOnPress)
+{
+}
 
 sim::Button &sim::Button::operator=(const sim::Button &other)
 {
@@ -26,14 +33,15 @@ void sim::Button::Swap(sim::Button &other) noexcept
 	std::swap(m_activeOnPress, other.m_activeOnPress);
 }
 
-unsigned sim::Button::ID() const noexcept
+sim::Identifier sim::Button::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Button::Identify(unsigned ID) noexcept
+sim::Identifier sim::Button::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wireOut.identify(m_id.next());
 }
 
 void sim::Button::ConnectIn(sim::wire_t &, std::size_t)

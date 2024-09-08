@@ -24,12 +24,12 @@ void sim::CGWire::write(sim::Value &&value)
 	m_value = std::move(value);
 }
 
-sim::Width sim::CGWire::width() const noexcept
+sim::Width sim::CGWire::width() const
 {
 	return m_value.width();
 }
 
-bool sim::CGWire::checkWidth(const sim::Value &value) const noexcept
+bool sim::CGWire::checkWidth(const sim::Value &value) const
 {
 	return value.width() == width();
 }

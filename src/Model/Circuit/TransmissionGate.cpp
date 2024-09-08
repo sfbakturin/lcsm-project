@@ -1,23 +1,51 @@
-#include "sim/Component/CircuitComponent.h"
+#include <sim/Component/CircuitComponent.h>
+#include <sim/Component/Identifier.h>
 #include <sim/Model/Circuit/TransmissionGate.h>
 #include <sim/Model/Wiring/Wire.h>
 
 #include <stdexcept>
-
-sim::TransmissionGate::TransmissionGate() : m_id(0) {}
+#include <utility>
 
 sim::TransmissionGate::TransmissionGate(const sim::TransmissionGate &) {}
 
 sim::TransmissionGate::TransmissionGate(sim::TransmissionGate &&) noexcept {}
 
-unsigned sim::TransmissionGate::ID() const noexcept
+sim::Identifier sim::TransmissionGate::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::TransmissionGate::Identify(unsigned ID) noexcept
+sim::Identifier sim::TransmissionGate::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	m_idBase = m_id.next();
+	m_idSrcA = m_idBase.next();
+	m_idSrcB = m_idSrcA.next();
+	m_idSrcC = m_idSrcB.next();
+	sim::Identifier next = m_base.identify(m_idSrcC.next());
+	for (std::size_t i = 0; i < sim::TransmissionGate::SRC_N; i++)
+		next = m_srcs[i].identify(next.next());
+	return next;
+}
+
+sim::Identifier sim::TransmissionGate::idBase() const noexcept
+{
+	return m_idBase;
+}
+
+sim::Identifier sim::TransmissionGate::idSrcA() const noexcept
+{
+	return m_idSrcA;
+}
+
+sim::Identifier sim::TransmissionGate::idSrcB() const noexcept
+{
+	return m_idSrcB;
+}
+
+sim::Identifier sim::TransmissionGate::idSrcC() const noexcept
+{
+	return m_idSrcC;
 }
 
 void sim::TransmissionGate::ConnectIn(sim::wire_t &wire, std::size_t i)

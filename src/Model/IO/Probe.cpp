@@ -1,18 +1,19 @@
+#include <sim/Component/Identifier.h>
 #include <sim/Model/IO/Probe.h>
 #include <sim/Model/Wiring/Wire.h>
 
 #include <stdexcept>
+#include <utility>
 
-sim::Probe::Probe() : m_id(0) {}
-
-unsigned sim::Probe::ID() const noexcept
+sim::Identifier sim::Probe::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Probe::Identify(unsigned ID) noexcept
+sim::Identifier sim::Probe::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wireIn.identify(m_id.next());
 }
 
 void sim::Probe::ConnectIn(sim::wire_t &wire, std::size_t i)

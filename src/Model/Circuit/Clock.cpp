@@ -1,3 +1,4 @@
+#include <sim/Component/Identifier.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/Model/Circuit/Clock.h>
 
@@ -6,8 +7,7 @@
 #include <utility>
 
 sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_id(0), m_highDuration(highDuration), m_lowDuration(lowDuration),
-	m_phaseOffset(phaseOffset)
+	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
@@ -44,14 +44,15 @@ void sim::Clock::Swap(sim::Clock &other) noexcept
 	std::swap(m_phaseOffset, other.m_phaseOffset);
 }
 
-unsigned sim::Clock::ID() const noexcept
+sim::Identifier sim::Clock::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Clock::Identify(unsigned ID) noexcept
+sim::Identifier sim::Clock::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wireOut.identify(m_id.next());
 }
 
 void sim::Clock::ConnectIn(sim::wire_t &, std::size_t)

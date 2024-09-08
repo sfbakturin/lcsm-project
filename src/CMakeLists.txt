@@ -1,4 +1,5 @@
 ﻿ADD_LIBRARY(${PROJECT_NAME}
+    Component/Identifier.cpp
     Component/Component.cpp
     Component/IOComponent.cpp
     Component/WiringComponent.cpp
@@ -27,7 +28,6 @@
     IR/Instruction/WriteValueInstruction.cpp
     IR/Instruction/BroadcastValueInstruction.cpp
     IR/Instruction/UpdateStateInstruction.cpp
-    IR/Instruction/WriteValueStabilizedInstruction.cpp
 
     IR/CG/CGObject.cpp
     IR/CG/CGPin.cpp
@@ -36,6 +36,7 @@
     IR/CG/CGConstant.cpp
     IR/CG/CGPower.cpp
     IR/CG/CGGround.cpp
+    IR/CG/CGState.cpp
     IR/CG/CGTransistor.cpp
     IR/CG/CGWire.cpp
     IR/CG/CGEdge.cpp

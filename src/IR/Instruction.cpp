@@ -46,9 +46,3 @@ std::shared_ptr< sim::Instruction > sim::CreateUpdateState(sim::CGObject *target
 {
 	return CreateInstruction< sim::UpdateState >(target);
 }
-
-std::shared_ptr< sim::Instruction >
-	sim::CreateWriteValueStabilized(sim::CGObject *targetFrom, sim::CGObject *targetTo)
-{
-	return CreateInstruction< sim::WriteValueStabilized >(targetFrom, targetTo);
-}

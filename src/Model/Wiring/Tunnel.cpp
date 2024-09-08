@@ -1,10 +1,9 @@
+#include <sim/Component/Identifier.h>
 #include <sim/Model/Wiring/Tunnel.h>
 #include <sim/Model/Wiring/Wire.h>
 
 #include <stdexcept>
 #include <utility>
-
-sim::Tunnel::Tunnel() : m_id(0) {}
 
 sim::Tunnel::Tunnel(const sim::Tunnel &other) : m_tunnel(other.m_tunnel) {}
 
@@ -32,14 +31,15 @@ void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
 	std::swap(m_tunnel, other.m_tunnel);
 }
 
-unsigned sim::Tunnel::ID() const noexcept
+sim::Identifier sim::Tunnel::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Tunnel::Identify(unsigned ID) noexcept
+sim::Identifier sim::Tunnel::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wire.identify(m_id.next());
 }
 
 void sim::Tunnel::ConnectIn(sim::wire_t &wire, std::size_t i)

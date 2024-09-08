@@ -1,4 +1,5 @@
 #include <sim/Component/Component.h>
+#include <sim/Component/Identifier.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/Support/PointerView.hpp>
@@ -6,21 +7,20 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Wire::Wire() : m_id(0) {}
-
-sim::Wire::Wire(sim::Component *comp) : m_id(0)
+sim::Wire::Wire(sim::Component *comp)
 {
 	Connect(sim::support::PointerView< sim::Component >(comp));
 }
 
-unsigned sim::Wire::ID() const noexcept
+sim::Identifier sim::Wire::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Wire::Identify(unsigned ID) noexcept
+sim::Identifier sim::Wire::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_id.next();
 }
 
 void sim::Wire::ConnectIn(sim::wire_t &wire, std::size_t i)
@@ -49,7 +49,7 @@ void sim::Wire::ConnectWire(sim::wire_t &&wire)
 
 void sim::Wire::Connect(const sim::component_t &connect)
 {
-	if (connect.value().IsWiring())
+	if (connect->IsWiring())
 		throw std::logic_error(
 			"All wiring components should be connected via "
 			"ConnectWire method.");
@@ -58,7 +58,7 @@ void sim::Wire::Connect(const sim::component_t &connect)
 
 void sim::Wire::Connect(sim::component_t &&connect)
 {
-	if (connect.Val().IsWiring())
+	if (connect->IsWiring())
 		throw std::logic_error(
 			"All wiring components should be connected via "
 			"ConnectWire method.");

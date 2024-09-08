@@ -1,3 +1,4 @@
+#include <sim/Component/Identifier.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Pin.h>
 
@@ -5,7 +6,7 @@
 #include <utility>
 
 sim::Pin::Pin(bool output, sim::Width width) :
-	m_id(0), m_output(output), m_width(width), m_wire(this)
+	m_output(output), m_width(width), m_wire(this)
 {
 }
 
@@ -68,14 +69,15 @@ void sim::Pin::SetWidth(sim::Width newWidth) noexcept
 	m_width = newWidth;
 }
 
-unsigned sim::Pin::ID() const noexcept
+sim::Identifier sim::Pin::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Pin::Identify(unsigned ID) noexcept
+sim::Identifier sim::Pin::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wire.identify(m_id.next());
 }
 
 void sim::Pin::ConnectIn(sim::wire_t &wire, std::size_t i)
@@ -86,7 +88,7 @@ void sim::Pin::ConnectIn(sim::wire_t &wire, std::size_t i)
 		throw std::logic_error("Constant element has only one input.");
 	else
 		m_wire.ConnectWire(wire);
-	wire.Ptr()->ConnectWire(m_wire);
+	wire->ConnectWire(m_wire);
 }
 
 void sim::Pin::ConnectOut(sim::wire_t &wire, std::size_t i)
@@ -97,7 +99,7 @@ void sim::Pin::ConnectOut(sim::wire_t &wire, std::size_t i)
 		throw std::logic_error("Constant element has only one output.");
 	else
 		m_wire.ConnectWire(wire);
-	wire.Ptr()->ConnectWire(m_wire);
+	wire->ConnectWire(m_wire);
 }
 
 void sim::Pin::Connect(sim::wire_t &wire)

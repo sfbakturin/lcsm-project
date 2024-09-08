@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <sim/Component/Component.h>
+#include <sim/Component/Identifier.h>
 #include <sim/IR/CG.h>
 #include <sim/IR/CGObject.h>
 #include <sim/IR/Instruction.h>
@@ -28,38 +29,38 @@ namespace sim
 		std::vector< Value > invokeFull(std::initializer_list< Value > I);
 
 	  private:
-		CGWire *registerWire(unsigned ID);
-		CGPinInput *registerPinInput(unsigned ID);
-		CGPinOutput *registerPinOutput(unsigned ID);
-		CGConstant *registerConstant(unsigned ID);
-		CGPower *registerPower(unsigned ID);
-		CGGround *registerGround(unsigned ID);
-		CGTransistorBase *registerTransistorBase(unsigned ID);
-		CGTransistorInout *registerTransistorInout(unsigned ID);
-		CGTransistorState *registerTransistorState(unsigned ID);
+		CGWire *registerWire(Identifier ID);
+		CGPinInput *registerPinInput(Identifier ID);
+		CGPinOutput *registerPinOutput(Identifier ID);
+		CGConstant *registerConstant(Identifier ID);
+		CGPower *registerPower(Identifier ID);
+		CGGround *registerGround(Identifier ID);
+		CGTransistorBase *registerTransistorBase(Identifier ID);
+		CGTransistorInout *registerTransistorInout(Identifier ID);
+		CGTransistorState *registerTransistorState(Identifier ID);
 
-		CGWire *registeredWire(unsigned ID);
-		CGPinInput *registeredPinInput(unsigned ID);
-		CGPinOutput *registeredPinOutput(unsigned ID);
-		CGConstant *registeredConstant(unsigned ID);
-		CGPower *registeredPower(unsigned ID);
-		CGGround *registeredGround(unsigned ID);
-		CGTransistorBase *registeredTransistorBase(unsigned ID);
-		CGTransistorInout *registeredTransistorInout(unsigned ID);
-		CGTransistorState *registeredTransistorState(unsigned ID);
+		CGWire *registeredWire(Identifier ID);
+		CGPinInput *registeredPinInput(Identifier ID);
+		CGPinOutput *registeredPinOutput(Identifier ID);
+		CGConstant *registeredConstant(Identifier ID);
+		CGPower *registeredPower(Identifier ID);
+		CGGround *registeredGround(Identifier ID);
+		CGTransistorBase *registeredTransistorBase(Identifier ID);
+		CGTransistorInout *registeredTransistorInout(Identifier ID);
+		CGTransistorState *registeredTransistorState(Identifier ID);
 
-		CGNode *registeredNode(unsigned ID, CGObject *object = nullptr);
+		CGNode *registeredNode(Identifier ID, CGObject *object);
 
 		void buildCircuitIOComp(
-			std::unordered_set< unsigned > &visited,
+			std::unordered_set< sim::Identifier > &visited,
 			std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 			const sim::IOComponent *ioComp);
 		void buildCircuitWiringComp(
-			std::unordered_set< unsigned > &visited,
+			std::unordered_set< sim::Identifier > &visited,
 			std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 			const sim::WiringComponent *wiringComp);
 		void buildCircuitCircuitComp(
-			std::unordered_set< unsigned > &visited,
+			std::unordered_set< sim::Identifier > &visited,
 			std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 			const sim::CircuitComponent *circuitComp);
 
@@ -67,8 +68,8 @@ namespace sim
 
 		unsigned m_circuits;
 		CG m_inputs;
-		std::unordered_map< unsigned, std::shared_ptr< CGObject > > m_objects;
-		std::unordered_map< unsigned, CGNode > m_nodes;
+		std::unordered_map< Identifier, std::shared_ptr< CGObject > > m_objects;
+		std::unordered_map< Identifier, CGNode > m_nodes;
 	};
 }	 // namespace sim
 

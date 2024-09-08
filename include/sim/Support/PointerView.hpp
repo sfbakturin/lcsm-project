@@ -30,22 +30,22 @@ namespace sim
 			PointerView &operator=(const PointerView &other) noexcept;
 			PointerView &operator=(PointerView &&other) noexcept;
 
-			const_pointer operator->() const noexcept;
 			pointer operator->() noexcept;
+			const_pointer operator->() const noexcept;
 
-			const_reference operator*() const & noexcept;
 			reference operator*() & noexcept;
+			const_reference operator*() const & noexcept;
 
 			void swap(PointerView &other) noexcept;
 
 			bool hasValue() const noexcept;
 			explicit operator bool() const noexcept;
 
-			pointer Ptr() noexcept;
-			const_pointer Ptr() const noexcept;
+			pointer ptr() noexcept;
+			const_pointer cptr() const noexcept;
 
-			reference Val() noexcept;
-			const_reference value() const noexcept;
+			reference ref() noexcept;
+			const_reference cref() const noexcept;
 
 		  private:
 			pointer m_ptr;
@@ -107,25 +107,25 @@ sim::support::PointerView< T > &
 }
 
 template< typename T >
-const T *sim::support::PointerView< T >::operator->() const noexcept
-{
-	return Ptr();
-}
-
-template< typename T >
 T *sim::support::PointerView< T >::operator->() noexcept
 {
-	return Ptr();
+	return ptr();
 }
 
 template< typename T >
-const T &sim::support::PointerView< T >::operator*() const & noexcept
+const T *sim::support::PointerView< T >::operator->() const noexcept
+{
+	return cptr();
+}
+
+template< typename T >
+T &sim::support::PointerView< T >::operator*() & noexcept
 {
 	return value();
 }
 
 template< typename T >
-T &sim::support::PointerView< T >::operator*() & noexcept
+const T &sim::support::PointerView< T >::operator*() const & noexcept
 {
 	return value();
 }
@@ -149,25 +149,25 @@ sim::support::PointerView< T >::operator bool() const noexcept
 }
 
 template< typename T >
-const T *sim::support::PointerView< T >::Ptr() const noexcept
+T *sim::support::PointerView< T >::ptr() noexcept
 {
 	return m_ptr;
 }
 
 template< typename T >
-T *sim::support::PointerView< T >::Ptr() noexcept
+const T *sim::support::PointerView< T >::cptr() const noexcept
 {
 	return m_ptr;
 }
 
 template< typename T >
-const T &sim::support::PointerView< T >::value() const noexcept
+T &sim::support::PointerView< T >::ref() noexcept
 {
 	return *m_ptr;
 }
 
 template< typename T >
-T &sim::support::PointerView< T >::Val() noexcept
+const T &sim::support::PointerView< T >::cref() const noexcept
 {
 	return *m_ptr;
 }

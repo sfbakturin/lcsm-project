@@ -84,26 +84,9 @@ namespace sim
 		CGObject *m_target;
 	};
 
-	class WriteValueStabilized : public Instruction
-	{
-	  public:
-		WriteValueStabilized(CGObject *targetFrom, CGObject *targetTo) noexcept;
-
-		virtual void invoke() override;
-
-		virtual InstructionT T() const noexcept override;
-
-		virtual bool mayStabilized() const noexcept override;
-
-	  private:
-		CGObject *m_targetFrom;
-		CGObject *m_targetTo;
-	};
-
 	InstructionShared CreateWriteValue(CGObject *targetFrom, CGObject *targetTo);
 	InstructionShared CreateBroadcastValue(CGObject *targetFrom, CGObject *targetTo);
 	InstructionShared CreateUpdateState(CGObject *target);
-	InstructionShared CreateWriteValueStabilized(CGObject *targetFrom, CGObject *targetTo);
 }	 // namespace sim
 
 #endif /* SIM_IR_INSTRUCTION_H */

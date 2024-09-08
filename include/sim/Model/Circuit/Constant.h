@@ -2,6 +2,7 @@
 #define SIM_MODEL_CIRCUIT_CONSTANT_H
 
 #include <sim/Component/CircuitComponent.h>
+#include <sim/Component/Identifier.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Wiring/Wire.h>
 
@@ -33,8 +34,8 @@ namespace sim
 		Wire &wire() noexcept;
 		const Wire &wire() const noexcept;
 
-		virtual unsigned ID() const noexcept override;
-		virtual void Identify(unsigned ID) noexcept override;
+		virtual Identifier ID() const noexcept override final;
+		virtual Identifier identify(Identifier ID) noexcept override final;
 
 		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
 		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
@@ -47,7 +48,7 @@ namespace sim
 		virtual const Constant *asConstant() const noexcept override final;
 
 	  protected:
-		unsigned m_id;
+		Identifier m_id;
 
 		Width m_width;
 		std::uint64_t m_value;

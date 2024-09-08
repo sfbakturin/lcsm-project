@@ -1,16 +1,17 @@
-#include "sim/Model/Circuit/Constant.h"
-#include "sim/Model/Circuit/Ground.h"
-#include "sim/Model/Circuit/Power.h"
-#include "sim/Model/Circuit/Transistor.h"
 #include <initializer_list>
 #include <sim/Component/CircuitComponent.h>
 #include <sim/Component/Component.h>
+#include <sim/Component/Identifier.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/IR/CG.h>
 #include <sim/IR/CGObject.h>
 #include <sim/IR/Instruction.h>
 #include <sim/IR/Value.h>
+#include <sim/Model/Circuit/Constant.h>
+#include <sim/Model/Circuit/Ground.h>
 #include <sim/Model/Circuit/Pin.h>
+#include <sim/Model/Circuit/Power.h>
+#include <sim/Model/Circuit/Transistor.h>
 #include <sim/Model/Wiring/Wire.h>
 #include <sim/SimCircuit.h>
 #include <sim/SimContext.h>
@@ -23,6 +24,7 @@
 #include <deque>
 #include <memory>
 #include <stdexcept>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -60,10 +62,9 @@ std::vector< sim::Value > sim::SimEngine::invokeFull(std::initializer_list< sim:
 	return {};
 }
 
-sim::CGWire *sim::SimEngine::registerWire(unsigned ID)
+sim::CGWire *sim::SimEngine::registerWire(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering Wire found same ID.");
@@ -74,10 +75,9 @@ sim::CGWire *sim::SimEngine::registerWire(unsigned ID)
 	return static_cast< sim::CGWire * >(W.get());
 }
 
-sim::CGPinInput *sim::SimEngine::registerPinInput(unsigned ID)
+sim::CGPinInput *sim::SimEngine::registerPinInput(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering PinInput found same ID.");
@@ -88,10 +88,9 @@ sim::CGPinInput *sim::SimEngine::registerPinInput(unsigned ID)
 	return static_cast< sim::CGPinInput * >(I.get());
 }
 
-sim::CGPinOutput *sim::SimEngine::registerPinOutput(unsigned ID)
+sim::CGPinOutput *sim::SimEngine::registerPinOutput(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering PinOutput found same ID.");
@@ -102,10 +101,9 @@ sim::CGPinOutput *sim::SimEngine::registerPinOutput(unsigned ID)
 	return static_cast< sim::CGPinOutput * >(O.get());
 }
 
-sim::CGConstant *sim::SimEngine::registerConstant(unsigned ID)
+sim::CGConstant *sim::SimEngine::registerConstant(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering Constant found same ID.");
@@ -116,10 +114,9 @@ sim::CGConstant *sim::SimEngine::registerConstant(unsigned ID)
 	return static_cast< sim::CGConstant * >(C.get());
 }
 
-sim::CGPower *sim::SimEngine::registerPower(unsigned ID)
+sim::CGPower *sim::SimEngine::registerPower(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering Power found same ID.");
@@ -130,10 +127,9 @@ sim::CGPower *sim::SimEngine::registerPower(unsigned ID)
 	return static_cast< sim::CGPower * >(P.get());
 }
 
-sim::CGGround *sim::SimEngine::registerGround(unsigned ID)
+sim::CGGround *sim::SimEngine::registerGround(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering Ground found same ID.");
@@ -144,21 +140,22 @@ sim::CGGround *sim::SimEngine::registerGround(unsigned ID)
 	return static_cast< sim::CGGround * >(G.get());
 }
 
-sim::CGTransistorBase *sim::SimEngine::registerTransistorBase(unsigned ID)
+sim::CGTransistorBase *sim::SimEngine::registerTransistorBase(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering transistor element found same ID.");
 
 	std::shared_ptr< sim::CGObject > T = std::make_shared< sim::CGTransistorBase >();
+	m_objects[ID] = T;
+
+	return static_cast< sim::CGTransistorBase * >(T.get());
 }
 
-sim::CGTransistorInout *sim::SimEngine::registerTransistorInout(unsigned ID)
+sim::CGTransistorInout *sim::SimEngine::registerTransistorInout(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering transistor element found same ID.");
@@ -169,10 +166,9 @@ sim::CGTransistorInout *sim::SimEngine::registerTransistorInout(unsigned ID)
 	return static_cast< sim::CGTransistorInout * >(T.get());
 }
 
-sim::CGTransistorState *sim::SimEngine::registerTransistorState(unsigned ID)
+sim::CGTransistorState *sim::SimEngine::registerTransistorState(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 		throw std::logic_error("Registering transistor element found same ID.");
@@ -183,10 +179,9 @@ sim::CGTransistorState *sim::SimEngine::registerTransistorState(unsigned ID)
 	return static_cast< sim::CGTransistorState * >(T.get());
 }
 
-sim::CGWire *sim::SimEngine::registeredWire(unsigned ID)
+sim::CGWire *sim::SimEngine::registeredWire(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -200,10 +195,9 @@ sim::CGWire *sim::SimEngine::registeredWire(unsigned ID)
 	return registerWire(ID);
 }
 
-sim::CGPinInput *sim::SimEngine::registeredPinInput(unsigned ID)
+sim::CGPinInput *sim::SimEngine::registeredPinInput(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -217,10 +211,9 @@ sim::CGPinInput *sim::SimEngine::registeredPinInput(unsigned ID)
 	return registerPinInput(ID);
 }
 
-sim::CGPinOutput *sim::SimEngine::registeredPinOutput(unsigned ID)
+sim::CGPinOutput *sim::SimEngine::registeredPinOutput(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -234,10 +227,9 @@ sim::CGPinOutput *sim::SimEngine::registeredPinOutput(unsigned ID)
 	return registerPinOutput(ID);
 }
 
-sim::CGConstant *sim::SimEngine::registeredConstant(unsigned ID)
+sim::CGConstant *sim::SimEngine::registeredConstant(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -251,10 +243,9 @@ sim::CGConstant *sim::SimEngine::registeredConstant(unsigned ID)
 	return registerConstant(ID);
 }
 
-sim::CGPower *sim::SimEngine::registeredPower(unsigned ID)
+sim::CGPower *sim::SimEngine::registeredPower(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -268,10 +259,9 @@ sim::CGPower *sim::SimEngine::registeredPower(unsigned ID)
 	return registerPower(ID);
 }
 
-sim::CGGround *sim::SimEngine::registeredGround(unsigned ID)
+sim::CGGround *sim::SimEngine::registeredGround(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -285,10 +275,9 @@ sim::CGGround *sim::SimEngine::registeredGround(unsigned ID)
 	return registerGround(ID);
 }
 
-sim::CGTransistorBase *sim::SimEngine::registeredTransistorBase(unsigned ID)
+sim::CGTransistorBase *sim::SimEngine::registeredTransistorBase(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -302,10 +291,9 @@ sim::CGTransistorBase *sim::SimEngine::registeredTransistorBase(unsigned ID)
 	return registerTransistorBase(ID);
 }
 
-sim::CGTransistorInout *sim::SimEngine::registeredTransistorInout(unsigned ID)
+sim::CGTransistorInout *sim::SimEngine::registeredTransistorInout(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -319,10 +307,9 @@ sim::CGTransistorInout *sim::SimEngine::registeredTransistorInout(unsigned ID)
 	return registerTransistorInout(ID);
 }
 
-sim::CGTransistorState *sim::SimEngine::registeredTransistorState(unsigned ID)
+sim::CGTransistorState *sim::SimEngine::registeredTransistorState(sim::Identifier ID)
 {
-	std::unordered_map< unsigned, std::shared_ptr< sim::CGObject > >::const_iterator found =
-		m_objects.find(ID);
+	const auto found = m_objects.find(ID);
 
 	if (found != m_objects.cend())
 	{
@@ -336,13 +323,13 @@ sim::CGTransistorState *sim::SimEngine::registeredTransistorState(unsigned ID)
 	return registerTransistorState(ID);
 }
 
-sim::CGNode *sim::SimEngine::registeredNode(unsigned ID, CGObject *object)
+sim::CGNode *sim::SimEngine::registeredNode(sim::Identifier ID, CGObject *object)
 {
-	std::unordered_map< unsigned, sim::CGNode >::iterator found = m_nodes.find(ID);
+	const auto found = m_nodes.find(ID);
 
 	if (found != m_nodes.end())
 	{
-		if (found->second.object().Ptr() == object)
+		if (found->second.object().ptr() == object)
 			return std::addressof(found->second);
 		else
 			throw std::logic_error("Node registered, objects not same");
@@ -354,7 +341,7 @@ sim::CGNode *sim::SimEngine::registeredNode(unsigned ID, CGObject *object)
 }
 
 void sim::SimEngine::buildCircuitIOComp(
-	std::unordered_set< unsigned > &,
+	std::unordered_set< sim::Identifier > &,
 	std::deque< sim::support::PointerView< const sim::Component > > &,
 	const sim::IOComponent *)
 {
@@ -362,7 +349,7 @@ void sim::SimEngine::buildCircuitIOComp(
 }
 
 void sim::SimEngine::buildCircuitWiringComp(
-	std::unordered_set< unsigned > &visited,
+	std::unordered_set< sim::Identifier > &visited,
 	std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 	const sim::WiringComponent *wiringComp)
 {
@@ -402,7 +389,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 				throw std::logic_error("Not implemented.");
 			}
 			// Add to future BFS visiting.
-			bfsVisit.emplace_back(adjacentWire.Ptr());
+			bfsVisit.emplace_back(adjacentWire.cptr());
 		}
 
 		// This wire might be som object's wire, so we should make connection as
@@ -459,7 +446,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 			}
 			}
 			// Add to future BFS visiting.
-			bfsVisit.emplace_back(comp.Ptr());
+			bfsVisit.emplace_back(comp.cptr());
 		}
 
 		// Add as visited objects.
@@ -473,13 +460,19 @@ void sim::SimEngine::buildCircuitWiringComp(
 }
 
 void sim::SimEngine::buildCircuitCircuitComp(
-	std::unordered_set< unsigned > &visited,
+	std::unordered_set< sim::Identifier > &visited,
 	std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit,
 	const sim::CircuitComponent *circuitComp)
 {
-	sim::CGNode *wireNode = nullptr;
-	sim::CGWire *outputWireGraph = nullptr;
-	const sim::Wire *outputWire = nullptr;
+	static constexpr std::size_t IDX_NODE = 0;
+	static constexpr std::size_t IDX_GRAPH = 1;
+	static constexpr std::size_t IDX_OUTPUT = 2;
+
+	using node_t = sim::support::PointerView< sim::CGNode >;
+	using graph_t = sim::support::PointerView< sim::CGWire >;
+	using output_t = sim::support::PointerView< const sim::Wire >;
+
+	std::vector< std::tuple< node_t, graph_t, output_t > > outputs;
 
 	switch (circuitComp->circuitComponentType())
 	{
@@ -514,9 +507,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		pinWireNode->addInstruction(std::move(wireToPinEdge), pinNode);
 
 		// Set output's wire to make connections from Pin's Wire object.
-		wireNode = pinWireNode;
-		outputWireGraph = pinWireGraph;
-		outputWire = std::addressof(pinWire);
+		outputs.emplace_back(pinWireNode, pinWireGraph, pinWire);
 
 		// Add as visited objects.
 		visited.insert(pin->ID());
@@ -553,9 +544,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		constantWireNode->addInstruction(std::move(wireToConstantEdge), constantNode);
 
 		// Set output's wire to make connections from Constant's Wire object.
-		wireNode = constantWireNode;
-		outputWireGraph = constantWireGraph;
-		outputWire = std::addressof(constantWire);
+		outputs.emplace_back(constantWireNode, constantWireGraph, constantWire);
 
 		// Add as visited objects.
 		visited.insert(constant->ID());
@@ -591,9 +580,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		powerWireNode->addInstruction(std::move(wireToPowerEdge), powerNode);
 
 		// Set output's wire to make connections from Power's Wire object.
-		wireNode = powerWireNode;
-		outputWireGraph = powerWireGraph;
-		outputWire = std::addressof(powerWire);
+		outputs.emplace_back(powerWireNode, powerWireGraph, powerWire);
 
 		// Add as visited objects.
 		visited.insert(power->ID());
@@ -630,9 +617,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		groundWireNode->addInstruction(std::move(wireToGroundEdge), groundNode);
 
 		// Set output's wire to make connections from Ground's Wire object.
-		wireNode = groundWireNode;
-		outputWireGraph = groundWireGraph;
-		outputWire = std::addressof(groundWire);
+		outputs.emplace_back(groundWireNode, groundWireGraph, groundWire);
 
 		// Add as visited objects.
 		visited.insert(ground->ID());
@@ -655,16 +640,14 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGWire *transistorWireSrcAGraph = registeredWire(wireSrcA.ID());
 		sim::CGWire *transistorWireSrcBGraph = registeredWire(wireSrcB.ID());
 
-		// FIXME: All transistor's elements MAYBE should have same ID's
-		// ideologically, OR sim::Transistor should have methods to identify and
-		// get ID's for all elements separately.
 		sim::CGTransistorBase *transistorBaseGraph =
-			registeredTransistorBase(wireBase.ID());
+			registeredTransistorBase(transistor->idBase());
 		sim::CGTransistorInout *transistorSrcAGraph =
-			registeredTransistorInout(wireSrcA.ID());
+			registeredTransistorInout(transistor->idSrcA());
 		sim::CGTransistorInout *transistorSrcBGraph =
-			registeredTransistorInout(wireSrcB.ID());
-		sim::CGTransistorState *transistorState = registeredTransistorState(0);
+			registeredTransistorInout(transistor->idSrcB());
+		sim::CGTransistorState *transistorStateGraph =
+			registeredTransistorState(transistor->ID());
 
 		// Base's Wire tree node.
 		sim::CGNode *transistorWireBaseNode =
@@ -679,13 +662,19 @@ void sim::SimEngine::buildCircuitCircuitComp(
 			registeredNode(wireSrcB.ID(), transistorWireSrcBGraph);
 
 		// Base's tree node.
-		sim::CGNode *transistorBaseNode = registeredNode(wireBase.ID());
+		sim::CGNode *transistorBaseNode =
+			registeredNode(transistor->idBase(), transistorBaseGraph);
 
 		// SrcA's tree node.
-		sim::CGNode *transistorSrcANode = registeredNode(wireSrcA.ID());
+		sim::CGNode *transistorSrcANode =
+			registeredNode(transistor->idSrcA(), transistorSrcAGraph);
 
 		// SrcB's tree node.
-		sim::CGNode *transistorSrcBNode = registeredNode(wireSrcB.ID());
+		sim::CGNode *transistorSrcBNode =
+			registeredNode(transistor->idSrcB(), transistorWireSrcBGraph);
+
+		// State's tree node.
+		sim::CGNode *transistorStateNode = registeredNode(transistor->ID(), transistorStateGraph);
 
 		// Write value from Base's Wire to Base's tree node.
 		sim::InstructionShared wvBaseWireToBase =
@@ -707,7 +696,61 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		};
 		transistorBaseNode->addInstruction(std::move(baseToBaseWire), transistorWireBaseNode);
 
-		// Wire value from
+		/* Instruction: write value from SrcA's Wire to SrcA's tree node. */
+		sim::InstructionShared wvSrcWireToSrc =
+			sim::CreateWriteValue(transistorWireSrcAGraph, transistorSrcAGraph);
+		sim::CGEdge srcWireToSrc = { { transistorWireSrcAGraph }, { transistorSrcAGraph }, std::move(wvSrcWireToSrc) };
+		transistorWireSrcANode->addInstruction(std::move(srcWireToSrc), transistorSrcANode);
+
+		/* Instruction: write value from SrcA's to SrcA's Wire tree node. */
+		sim::InstructionShared wvSrcToSrcWire =
+			sim::CreateWriteValue(transistorSrcAGraph, transistorWireSrcAGraph);
+		sim::CGEdge srcToSrcWire = { { transistorSrcAGraph }, { transistorWireSrcAGraph }, std::move(wvSrcToSrcWire) };
+		transistorSrcANode->addInstruction(std::move(srcToSrcWire), transistorWireSrcANode);
+
+		/* Instruction: write value from SrcB's Wire to SrcB's tree node. */
+		wvSrcWireToSrc = sim::CreateWriteValue(transistorWireSrcBGraph, transistorSrcBGraph);
+		srcWireToSrc = { { transistorWireSrcBGraph }, { transistorSrcBGraph }, std::move(wvSrcWireToSrc) };
+		transistorWireSrcBNode->addInstruction(std::move(srcWireToSrc), transistorSrcBNode);
+
+		/* Instruction: write value from SrcB's to SrcB's Wire tree node. */
+		wvSrcToSrcWire = sim::CreateWriteValue(transistorSrcBGraph, transistorWireSrcBGraph);
+		srcToSrcWire = { { transistorSrcBGraph }, { transistorWireSrcBGraph }, std::move(wvSrcToSrcWire) };
+		transistorSrcBNode->addInstruction(std::move(srcToSrcWire), transistorWireSrcBNode);
+
+		/* Instruction: make request from Base's for updating state for
+		 * Transistor's State.*/
+		sim::InstructionShared updateState = sim::CreateUpdateState(transistorStateGraph);
+		sim::CGEdge baseToState = { { transistorBaseGraph }, { transistorStateGraph }, std::move(updateState) };
+		transistorBaseNode->addInstruction(std::move(baseToState), transistorStateNode);
+
+		/* Instruction: make request from SrcA's for updating state for
+		 * Transistor's State.*/
+		updateState = sim::CreateUpdateState(transistorStateGraph);
+		sim::CGEdge srcToState = { { transistorSrcAGraph }, { transistorStateGraph }, std::move(updateState) };
+		transistorSrcANode->addInstruction(std::move(srcToState), transistorStateNode);
+
+		/* Instruction: make request from SrcB's for updating state for
+		 * Transistor's State.*/
+		updateState = sim::CreateUpdateState(transistorStateGraph);
+		srcToState = { { transistorSrcBGraph }, { transistorStateGraph }, std::move(updateState) };
+		transistorSrcBNode->addInstruction(std::move(srcToState), transistorStateNode);
+
+		// Set output's wire to make connections from Transistor's Wires object.
+		outputs.emplace_back(transistorWireBaseNode, transistorWireBaseGraph, wireBase);
+		outputs.emplace_back(transistorWireSrcANode, transistorWireSrcAGraph, wireSrcA);
+		outputs.emplace_back(transistorWireSrcBNode, transistorWireSrcBGraph, wireSrcB);
+
+		// Add as visited objects.
+		visited.insert(transistor->ID());
+		visited.insert(transistor->idBase());
+		visited.insert(transistor->idSrcA());
+		visited.insert(transistor->idSrcB());
+		visited.insert(wireBase.ID());
+		visited.insert(wireSrcA.ID());
+		visited.insert(wireSrcB.ID());
+
+		break;
 	}
 	case sim::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE:
 		throw std::logic_error("Not implemented");
@@ -715,36 +758,48 @@ void sim::SimEngine::buildCircuitCircuitComp(
 
 	// Make connections from simple Wire object to his adjacent wires as
 	// tree's edges.
-	for (const sim::wire_t &adjacentWire : outputWire->Wires())
+	for (auto o : outputs)
 	{
-		switch (adjacentWire->wiringComponentType())
-		{
-		case WIRING_COMP_WIRE:
-		{
-			// Wire's adjacent wire tree node.
-			sim::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
-			sim::CGNode *adjacentWireNode = registeredNode(adjacentWire->ID(), adjacentWireGraph);
+		node_t &node = std::get< IDX_NODE >(o);
+		graph_t &graph = std::get< IDX_GRAPH >(o);
+		output_t &output = std::get< IDX_OUTPUT >(o);
 
-			// Broadcast value from Pin's Wire to adjacent Wire object as
-			// tree's edge.
-			sim::InstructionShared wvWireToWire =
-				sim::CreateBroadcastValue(outputWireGraph, adjacentWireGraph);
-			sim::CGEdge wireToWireEdge = { { outputWireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
-			wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
+		node_t::pointer wireNode = node.ptr();
+		graph_t::pointer outputWireGraph = graph.ptr();
+		output_t::const_pointer outputWire = output.ptr();
 
-			break;
+		for (const sim::wire_t &adjacentWire : outputWire->Wires())
+		{
+			switch (adjacentWire->wiringComponentType())
+			{
+			case WIRING_COMP_WIRE:
+			{
+				// Wire's adjacent wire tree node.
+				sim::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
+				sim::CGNode *adjacentWireNode =
+					registeredNode(adjacentWire->ID(), adjacentWireGraph);
+
+				// Broadcast value from Pin's Wire to adjacent Wire object as
+				// tree's edge.
+				sim::InstructionShared wvWireToWire =
+					sim::CreateBroadcastValue(outputWireGraph, adjacentWireGraph);
+				sim::CGEdge wireToWireEdge = { { outputWireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
+				wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
+
+				break;
+			}
+			case WIRING_COMP_TUNNEL:
+				throw std::logic_error("Not implemented.");
+			}
+			// Add to future BFS visiting.
+			bfsVisit.emplace_back(adjacentWire.cptr());
 		}
-		case WIRING_COMP_TUNNEL:
-			throw std::logic_error("Not implemented.");
-		}
-		// Add to future BFS visiting.
-		bfsVisit.emplace_back(adjacentWire.Ptr());
 	}
 }
 
 void sim::SimEngine::buildCircuit(std::deque< sim::support::PointerView< const sim::Component > > &bfsVisit)
 {
-	std::unordered_set< unsigned > visited;
+	std::unordered_set< sim::Identifier > visited;
 
 	while (!bfsVisit.empty())
 	{
@@ -757,8 +812,7 @@ void sim::SimEngine::buildCircuit(std::deque< sim::support::PointerView< const s
 			sim::support::PointerView< const sim::Component > comp = bfsVisit.front();
 			bfsVisit.pop_front();
 
-			const std::unordered_set< unsigned >::const_iterator found =
-				visited.find(comp->ID());
+			const auto found = visited.find(comp->ID());
 			if (found != visited.cend())
 				continue;
 

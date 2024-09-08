@@ -2,6 +2,7 @@
 #define SIM_MODEL_CIRCUIT_SPLITTER_H
 
 #include <sim/Component/CircuitComponent.h>
+#include <sim/Component/Identifier.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Wiring/Wire.h>
 
@@ -32,8 +33,8 @@ namespace sim
 		void SetWidthIn(Width newWidthIn) noexcept;
 		void SetWidthOut(std::size_t newWidthOut) noexcept;
 
-		virtual unsigned ID() const noexcept override;
-		virtual void Identify(unsigned ID) noexcept override;
+		virtual Identifier ID() const noexcept override final;
+		virtual Identifier identify(Identifier ID) noexcept override final;
 
 		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
 		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
@@ -48,13 +49,13 @@ namespace sim
 		static constexpr std::size_t NO_CONNECT =
 			std::numeric_limits< std::size_t >::max();
 
-		unsigned m_id;
+		Identifier m_id;
 
 		Width m_widthIn;
 		std::size_t m_widthOut;
 		std::array< std::size_t, CONNECTORS_SIZE > m_connectors;
-		sim::Wire m_wireIn;
-		std::array< sim::Wire, CONNECTORS_SIZE > m_wireOut;
+		Wire m_wireIn;
+		std::array< Wire, CONNECTORS_SIZE > m_wireOut;
 
 		void ResetConnectors() noexcept;
 	};

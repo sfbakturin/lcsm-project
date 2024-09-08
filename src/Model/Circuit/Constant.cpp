@@ -1,3 +1,4 @@
+#include <sim/Component/Identifier.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Constant.h>
 
@@ -5,7 +6,7 @@
 #include <utility>
 
 sim::Constant::Constant(sim::Width width, std::uint64_t value) :
-	m_id(0), m_width(width), m_value(value)
+	m_width(width), m_value(value)
 {
 }
 
@@ -75,14 +76,15 @@ const sim::Wire &sim::Constant::wire() const noexcept
 	return m_wireOut;
 }
 
-unsigned sim::Constant::ID() const noexcept
+sim::Identifier sim::Constant::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Constant::Identify(unsigned ID) noexcept
+sim::Identifier sim::Constant::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	return m_wireOut.identify(m_id.next());
 }
 
 void sim::Constant::ConnectIn(sim::wire_t &, std::size_t)

@@ -3,6 +3,7 @@
 
 #include <sim/Component/Component.h>
 #include <sim/Component/IOComponent.h>
+#include <sim/Component/Identifier.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Clock.h>
@@ -37,7 +38,8 @@ namespace sim
 		SimCircuit &operator=(const SimCircuit &other) = delete;
 		SimCircuit &operator=(SimCircuit &&other) noexcept = delete;
 
-		const std::unordered_map< unsigned, support::PointerView< Component > > &Pins() const noexcept;
+		const std::unordered_map< Identifier, support::PointerView< Component > > &
+			Pins() const noexcept;
 
 	  private:
 		friend class SimBuilder;
@@ -59,11 +61,11 @@ namespace sim
 
 		SimContext &m_context;
 
-		unsigned m_globalId;
+		Identifier m_globalId;
 
-		std::unordered_map< unsigned, support::PointerView< Component > > m_pin;
-		std::unordered_map< unsigned, support::PointerView< Component > > m_io;
-		std::unordered_map< unsigned, support::PointerView< Component > > m_comp;
+		std::unordered_map< Identifier, support::PointerView< Component > > m_pin;
+		std::unordered_map< Identifier, support::PointerView< Component > > m_io;
+		std::unordered_map< Identifier, support::PointerView< Component > > m_comp;
 	};
 }	 // namespace sim
 

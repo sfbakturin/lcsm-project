@@ -25,12 +25,12 @@ void sim::CGConstant::write(sim::Value &&)
 	throw std::logic_error("Not implemented");
 }
 
-sim::Width sim::CGConstant::width() const noexcept
+sim::Width sim::CGConstant::width() const
 {
 	return m_value.width();
 }
 
-bool sim::CGConstant::checkWidth(const sim::Value &value) const noexcept
+bool sim::CGConstant::checkWidth(const sim::Value &value) const
 {
 	return value.width() == width();
 }

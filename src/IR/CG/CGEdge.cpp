@@ -53,22 +53,22 @@ const sim::Instruction *sim::CGEdge::instruction() const noexcept
 
 sim::CGObject *sim::CGEdge::targetFrom() noexcept
 {
-	return m_targetFrom.Ptr();
+	return m_targetFrom.ptr();
 }
 
 const sim::CGObject *sim::CGEdge::targetFrom() const noexcept
 {
-	return m_targetFrom.Ptr();
+	return m_targetFrom.cptr();
 }
 
 sim::CGObject *sim::CGEdge::targetTo() noexcept
 {
-	return m_targetTo.Ptr();
+	return m_targetTo.ptr();
 }
 
 const sim::CGObject *sim::CGEdge::targetTo() const noexcept
 {
-	return m_targetTo.Ptr();
+	return m_targetTo.cptr();
 }
 
 void sim::CGEdge::setInstruction(const std::shared_ptr< sim::Instruction > &run) noexcept

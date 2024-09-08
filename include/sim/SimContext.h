@@ -46,20 +46,20 @@ namespace sim
 
 		void AddCircuit(SimCircuit *circuit);
 
-		Constant *AllocaConstant(unsigned ID, Width width, std::uint64_t value);
-		Ground *AllocaGround(unsigned ID, Width width);
-		Power *AllocaPower(unsigned ID, Width width);
-		Pin *AllocaPin(unsigned ID, bool output, Width width);
-		Splitter *AllocaSplitter(unsigned ID, Width widthIn, std::size_t widthOut);
-		Transistor *AllocaTransistor(unsigned ID, TransistorType type);
-		TransmissionGate *AllocaTransmissionGate(unsigned ID);
-		Clock *AllocaClock(unsigned ID, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
-		Button *AllocaButton(unsigned ID, bool activeOnPress);
-		Digit *AllocaDigit(unsigned ID, bool hasDecimalPoint);
-		Probe *AllocaProbe(unsigned ID);
+		Constant *AllocaConstant(Width width, std::uint64_t value);
+		Ground *AllocaGround(Width width);
+		Power *AllocaPower(Width width);
+		Pin *AllocaPin(bool output, Width width);
+		Splitter *AllocaSplitter(Width widthIn, std::size_t widthOut);
+		Transistor *AllocaTransistor(TransistorType type);
+		TransmissionGate *AllocaTransmissionGate();
+		Clock *AllocaClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
+		Button *AllocaButton(bool activeOnPress);
+		Digit *AllocaDigit(bool hasDecimalPoint);
+		Probe *AllocaProbe();
 
-		Wire *AllocaWire(unsigned ID);
-		Tunnel *AllocaTunnel(unsigned ID);
+		Wire *AllocaWire();
+		Tunnel *AllocaTunnel();
 
 		std::vector< support::PointerView< SimCircuit > > m_circuits;
 		std::vector< std::shared_ptr< Component > > m_allocated;

@@ -2,6 +2,7 @@
 #define SIM_MODEL_WIRING_WIRE_H
 
 #include <sim/Component/Component.h>
+#include <sim/Component/Identifier.h>
 #include <sim/Component/WiringComponent.h>
 #include <sim/Support/PointerView.hpp>
 
@@ -12,11 +13,11 @@ namespace sim
 	class Wire : public WiringComponent
 	{
 	  public:
-		Wire();
+		Wire() = default;
 		Wire(Component *comp);
 
-		virtual unsigned ID() const noexcept override;
-		virtual void Identify(unsigned ID) noexcept override;
+		virtual Identifier ID() const noexcept override final;
+		virtual Identifier identify(Identifier ID) noexcept override final;
 
 		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
 		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
@@ -36,7 +37,7 @@ namespace sim
 		virtual Wire *AsWire() noexcept override;
 
 	  private:
-		unsigned m_id;
+		Identifier m_id;
 
 		std::vector< wire_t > m_wires;
 		std::vector< component_t > m_connections;

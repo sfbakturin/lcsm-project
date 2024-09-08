@@ -46,8 +46,8 @@ namespace sim
 		virtual void write(const Value &value) = 0;
 		virtual void write(Value &&value) = 0;
 
-		virtual Width width() const noexcept = 0;
-		virtual bool checkWidth(const Value &value) const noexcept = 0;
+		virtual Width width() const = 0;
+		virtual bool checkWidth(const Value &value) const = 0;
 
 		virtual CGObjectT T() const noexcept = 0;
 
@@ -101,8 +101,8 @@ namespace sim
 		CGPin(const Value &value);
 		CGPin(Value &&value) noexcept;
 
-		virtual Width width() const noexcept override;
-		virtual bool checkWidth(const Value &value) const noexcept override;
+		virtual Width width() const override;
+		virtual bool checkWidth(const Value &value) const override;
 
 	  protected:
 		Value m_value;
@@ -111,11 +111,11 @@ namespace sim
 	class CGPinInput : public CGPin
 	{
 	  public:
-		virtual Value &read() override;
-		virtual const Value &read() const override;
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
 
-		virtual void write(const Value &value) override;
-		virtual void write(Value &&value) override;
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -129,11 +129,11 @@ namespace sim
 	class CGPinOutput : public CGPin
 	{
 	  public:
-		virtual Value &read() override;
-		virtual const Value &read() const override;
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
 
-		virtual void write(const Value &value) override;
-		virtual void write(Value &&value) override;
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -147,14 +147,14 @@ namespace sim
 	class CGWire : public CGObject
 	{
 	  public:
-		virtual Value &read() override;
-		virtual const Value &read() const override;
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
 
-		virtual void write(const Value &value) override;
-		virtual void write(Value &&value) override;
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
 
-		virtual Width width() const noexcept override;
-		virtual bool checkWidth(const Value &value) const noexcept override;
+		virtual Width width() const override final;
+		virtual bool checkWidth(const Value &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -170,14 +170,14 @@ namespace sim
 	  public:
 		CGConstant() noexcept = default;
 
-		virtual Value &read() override;
-		virtual const Value &read() const override;
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
 
-		virtual void write(const Value &value) override;
-		virtual void write(Value &&value) override;
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
 
-		virtual Width width() const noexcept override;
-		virtual bool checkWidth(const Value &value) const noexcept override;
+		virtual Width width() const override final;
+		virtual bool checkWidth(const Value &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -217,29 +217,68 @@ namespace sim
 
 	class CGState : public CGObject
 	{
+	  public:
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
+
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
+
+		virtual Width width() const override final;
+		virtual bool checkWidth(const Value &value) const override final;
 	};
 
 	class CGTransistorBase : public CGObject
 	{
 	  public:
+		CGTransistorBase() noexcept = default;
+
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
+
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
+
+		virtual Width width() const override final;
+		virtual bool checkWidth(const Value &value) const override final;
+
 		virtual CGObjectT T() const noexcept override;
 
 		virtual CGTransistorBase *asTransistorBase() noexcept override final;
 		virtual const CGTransistorBase *asTransistorBase() const noexcept override final;
+
+	  private:
+		Value m_value;
 	};
 
 	class CGTransistorInout : public CGObject
 	{
 	  public:
+		CGTransistorInout() noexcept = default;
+
+		virtual Value &read() override final;
+		virtual const Value &read() const override final;
+
+		virtual void write(const Value &value) override final;
+		virtual void write(Value &&value) override final;
+
+		virtual Width width() const override final;
+		virtual bool checkWidth(const Value &value) const override final;
+
 		virtual CGObjectT T() const noexcept override;
 
 		virtual CGTransistorInout *asTransistorInout() noexcept override final;
 		virtual const CGTransistorInout *asTransistorInout() const noexcept override final;
+
+	  private:
+		Value m_value;
 	};
 
 	class CGTransistorState : public CGState
 	{
 	  public:
+		CGTransistorState() noexcept = default;
+
 		virtual CGObjectT T() const noexcept override;
 
 		virtual CGTransistorState *asTransistorState() noexcept override final;

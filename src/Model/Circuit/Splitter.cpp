@@ -1,3 +1,4 @@
+#include <sim/Component/Identifier.h>
 #include <sim/IR/Width.h>
 #include <sim/Model/Circuit/Splitter.h>
 
@@ -6,7 +7,7 @@
 #include <utility>
 
 sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) :
-	m_id(0), m_widthIn(widthIn), m_widthOut(widthOut)
+	m_widthIn(widthIn), m_widthOut(widthOut)
 {
 	ResetConnectors();
 }
@@ -69,14 +70,18 @@ void sim::Splitter::SetWidthOut(std::size_t newWidthOut) noexcept
 	ResetConnectors();
 }
 
-unsigned sim::Splitter::ID() const noexcept
+sim::Identifier sim::Splitter::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Splitter::Identify(unsigned ID) noexcept
+sim::Identifier sim::Splitter::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	sim::Identifier next = m_wireIn.identify(m_id.next());
+	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
+		next = m_wireOut[i].identify(next.next());
+	return next;
 }
 
 void sim::Splitter::ConnectIn(sim::wire_t &wire, std::size_t i)

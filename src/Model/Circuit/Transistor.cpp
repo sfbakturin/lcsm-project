@@ -1,9 +1,10 @@
+#include <sim/Component/Identifier.h>
 #include <sim/Model/Circuit/Transistor.h>
 
 #include <stdexcept>
 #include <utility>
 
-sim::Transistor::Transistor(TransistorType type) : m_id(0), m_type(type) {}
+sim::Transistor::Transistor(TransistorType type) : m_type(type) {}
 
 sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type)
 {
@@ -33,14 +34,36 @@ void sim::Transistor::Swap(sim::Transistor &other) noexcept
 	std::swap(m_type, other.m_type);
 }
 
-unsigned sim::Transistor::ID() const noexcept
+sim::Identifier sim::Transistor::ID() const noexcept
 {
 	return m_id;
 }
 
-void sim::Transistor::Identify(unsigned ID) noexcept
+sim::Identifier sim::Transistor::identify(sim::Identifier ID) noexcept
 {
-	m_id = ID;
+	m_id = std::move(ID);
+	m_idBase = m_id.next();
+	m_idSrcA = m_idBase.next();
+	m_idSrcB = m_idSrcA.next();
+	sim::Identifier next = m_base.identify(m_idSrcB.next());
+	for (std::size_t i = 0; i < sim::Transistor::SRC_N; i++)
+		next = m_srcs[i].identify(next.next());
+	return next;
+}
+
+sim::Identifier sim::Transistor::idBase() const noexcept
+{
+	return m_idBase;
+}
+
+sim::Identifier sim::Transistor::idSrcA() const noexcept
+{
+	return m_idSrcA;
+}
+
+sim::Identifier sim::Transistor::idSrcB() const noexcept
+{
+	return m_idSrcB;
 }
 
 void sim::Transistor::ConnectIn(sim::wire_t &wire, std::size_t i)

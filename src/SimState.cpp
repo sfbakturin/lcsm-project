@@ -1,3 +1,4 @@
+#include <sim/Component/Identifier.h>
 #include <sim/IR/CG.h>
 #include <sim/SimState.h>
 #include <sim/Support/PointerView.hpp>
@@ -6,7 +7,7 @@
 #include <deque>
 #include <utility>
 
-sim::SimState::SimState(std::unordered_map< unsigned, std::shared_ptr< CGObject > > &objects) :
+sim::SimState::SimState(std::unordered_map< sim::Identifier, std::shared_ptr< CGObject > > &objects) :
 	m_globalTimer(0), m_objects(objects)
 {
 }
