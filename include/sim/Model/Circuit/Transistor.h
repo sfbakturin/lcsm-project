@@ -44,6 +44,10 @@ namespace sim
 		void ConnectSrcA(wire_t &wire);
 		void ConnectSrcB(wire_t &wire);
 
+		bool testConnectivityBase(const Wire *wire) const noexcept;
+		bool testConnectivitySrcA(const Wire *wire) const noexcept;
+		bool testConnectivitySrcB(const Wire *wire) const noexcept;
+
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 
 		virtual Transistor *asTransistor() noexcept override final;

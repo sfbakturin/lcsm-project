@@ -1,6 +1,7 @@
 #include <sim/Component/Identifier.h>
 #include <sim/Model/Circuit/Transistor.h>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -89,6 +90,21 @@ void sim::Transistor::ConnectSrcA(sim::wire_t &wire)
 void sim::Transistor::ConnectSrcB(sim::wire_t &wire)
 {
 	ConnectOut(wire, 2);
+}
+
+bool sim::Transistor::testConnectivityBase(const sim::Wire *wire) const noexcept
+{
+	return std::addressof(m_base) == wire;
+}
+
+bool sim::Transistor::testConnectivitySrcA(const sim::Wire *wire) const noexcept
+{
+	return std::addressof(m_srcs[0]) == wire;
+}
+
+bool sim::Transistor::testConnectivitySrcB(const sim::Wire *wire) const noexcept
+{
+	return std::addressof(m_srcs[1]) == wire;
 }
 
 sim::CircuitComponentType sim::Transistor::circuitComponentType() const noexcept

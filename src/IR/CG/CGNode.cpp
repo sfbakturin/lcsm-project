@@ -24,10 +24,45 @@ sim::CGNode &sim::CGNode::operator=(sim::CGNode &&other) noexcept
 	return *this;
 }
 
+sim::NodeT sim::CGNode::T() const noexcept
+{
+	return sim::NodeT::NODE_UNKNOWN;
+}
+
 void sim::CGNode::swap(sim::CGNode &other) noexcept
 {
 	std::swap(m_target, other.m_target);
 	std::swap(m_instructions, other.m_instructions);
+}
+
+bool sim::CGNode::isStatic() const noexcept
+{
+	return T() == sim::NodeT::NODE_STATIC;
+}
+
+bool sim::CGNode::isDynamic() const noexcept
+{
+	return T() == sim::NodeT::NODE_DYNAMIC;
+}
+
+sim::CGStaticNode *sim::CGNode::asStatic() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGStaticNode *sim::CGNode::asStatic() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGDynamicNode *sim::CGNode::asDynamic() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGDynamicNode *sim::CGNode::asDynamic() const noexcept
+{
+	return nullptr;
 }
 
 sim::CGObjectView &sim::CGNode::object() noexcept

@@ -172,4 +172,28 @@ const T &sim::support::PointerView< T >::cref() const noexcept
 	return *m_ptr;
 }
 
+template< typename T >
+bool operator==(const sim::support::PointerView< T > &left, T *right) noexcept
+{
+	return left.cptr() == right;
+}
+
+template< typename T >
+bool operator==(const sim::support::PointerView< T > &left, const T *right) noexcept
+{
+	return left.cptr() == right;
+}
+
+template< typename T >
+bool operator==(T *left, const sim::support::PointerView< T > &right) noexcept
+{
+	return left == right.cptr();
+}
+
+template< typename T >
+bool operator==(const T *left, const sim::support::PointerView< T > &right) noexcept
+{
+	return left == right.cptr();
+}
+
 #endif /* SIM_SUPPORT_POINTERVIEW_HPP */

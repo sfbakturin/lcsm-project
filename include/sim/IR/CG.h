@@ -53,12 +53,23 @@ namespace sim
 
 	using CGEdgeView = support::PointerView< CGEdge >;
 
+	enum NodeT : unsigned
+	{
+		NODE_UNKNOWN,
+		NODE_STATIC,
+		NODE_DYNAMIC
+	};
+
+	class CGStaticNode;
+	class CGDynamicNode;
+
 	class CGNode
 	{
 	  public:
 		using view_type = support::PointerView< CGNode >;
 
 		CGNode() = default;
+		virtual ~CGNode() noexcept = default;
 
 		CGNode(const CGObjectView &object);
 		CGNode(CGObjectView &&object);
@@ -71,6 +82,16 @@ namespace sim
 		CGNode &operator=(CGNode &&other) noexcept;
 
 		void swap(CGNode &other) noexcept;
+
+		virtual NodeT T() const noexcept;
+
+		bool isStatic() const noexcept;
+		bool isDynamic() const noexcept;
+
+		virtual CGStaticNode *asStatic() noexcept;
+		virtual const CGStaticNode *asStatic() const noexcept;
+		virtual CGDynamicNode *asDynamic() noexcept;
+		virtual const CGDynamicNode *asDynamic() const noexcept;
 
 		CGObjectView &object() noexcept;
 		const CGObjectView &object() const noexcept;
@@ -87,6 +108,38 @@ namespace sim
 	  private:
 		CGObjectView m_target;
 		std::vector< std::pair< CGEdge, view_type > > m_instructions;
+	};
+
+	class CGStaticNode : public CGNode
+	{
+	  public:
+		CGStaticNode() = default;
+		~CGStaticNode() noexcept = default;
+
+		CGStaticNode(const CGObjectView &object);
+		CGStaticNode(CGObjectView &&object);
+		CGStaticNode(CGObject *object);
+
+		virtual NodeT T() const noexcept override final;
+
+		virtual CGStaticNode *asStatic() noexcept override;
+		virtual const CGStaticNode *asStatic() const noexcept override;
+	};
+
+	class CGDynamicNode : public CGNode
+	{
+	  public:
+		CGDynamicNode() = default;
+		~CGDynamicNode() noexcept = default;
+
+		CGDynamicNode(const CGObjectView &object);
+		CGDynamicNode(CGObjectView &&object);
+		CGDynamicNode(CGObject *object);
+
+		virtual NodeT T() const noexcept override final;
+
+		virtual CGDynamicNode *asDynamic() noexcept override;
+		virtual const CGDynamicNode *asDynamic() const noexcept override;
 	};
 
 	using CGNodeView = CGNode::view_type;

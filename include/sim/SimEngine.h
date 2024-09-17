@@ -49,7 +49,8 @@ namespace sim
 		CGTransistorInout *registeredTransistorInout(Identifier ID);
 		CGTransistorState *registeredTransistorState(Identifier ID);
 
-		CGNode *registeredNode(Identifier ID, CGObject *object);
+		CGStaticNode *registeredStaticNode(Identifier ID, CGObject *object);
+		CGDynamicNode *registeredDynamicNode(Identifier ID, CGObject *object);
 
 		void buildCircuitIOComp(
 			std::unordered_set< sim::Identifier > &visited,
@@ -69,7 +70,7 @@ namespace sim
 		unsigned m_circuits;
 		CG m_inputs;
 		std::unordered_map< Identifier, std::shared_ptr< CGObject > > m_objects;
-		std::unordered_map< Identifier, CGNode > m_nodes;
+		std::unordered_map< Identifier, std::shared_ptr< CGNode > > m_nodes;
 	};
 }	 // namespace sim
 

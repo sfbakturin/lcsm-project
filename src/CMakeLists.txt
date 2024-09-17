@@ -41,6 +41,8 @@
     IR/CG/CGWire.cpp
     IR/CG/CGEdge.cpp
     IR/CG/CGNode.cpp
+    IR/CG/CGStaticNode.cpp
+    IR/CG/CGDynamicNode.cpp
     IR/CG/CG.cpp
 
     SimContext.cpp
