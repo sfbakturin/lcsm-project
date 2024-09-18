@@ -42,6 +42,8 @@
     IR/CG/CGEdge.cpp
     IR/CG/CGNode.cpp
     IR/CG/CGStaticNode.cpp
+    IR/CG/CGFastNode.cpp
+    IR/CG/CGCompositeNode.cpp
     IR/CG/CGDynamicNode.cpp
     IR/CG/CG.cpp
 

@@ -5,7 +5,11 @@
 #include <stdexcept>
 #include <utility>
 
-sim::Transistor::Transistor(TransistorType type) : m_type(type) {}
+sim::Transistor::Transistor(TransistorType type) : m_type(type), m_base(this)
+{
+	m_srcs[0] = this;
+	m_srcs[1] = this;
+}
 
 sim::Transistor::Transistor(const sim::Transistor &other) : m_type(other.m_type)
 {
@@ -48,7 +52,7 @@ sim::Identifier sim::Transistor::identify(sim::Identifier ID) noexcept
 	m_idSrcB = m_idSrcA.next();
 	sim::Identifier next = m_base.identify(m_idSrcB.next());
 	for (std::size_t i = 0; i < sim::Transistor::SRC_N; i++)
-		next = m_srcs[i].identify(next.next());
+		next = m_srcs[i].identify(next);
 	return next;
 }
 
@@ -155,8 +159,19 @@ const sim::Wire &sim::Transistor::wireSrcB() const noexcept
 void sim::Transistor::Connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
+	{
 		m_base.ConnectWire(wire);
+		wire->ConnectWire(m_base);
+	}
 	else if (i - 1 < sim::Transistor::SRC_N)
+	{
 		m_srcs[i - 1].ConnectWire(wire);
-	throw std::logic_error("Transistor element has only 3 inout connections.");
+		wire->ConnectWire(m_srcs[i - 1]);
+	}
+	else
+	{
+		throw std::logic_error(
+			"Transistor element has only 3 inout "
+			"connections.");
+	}
 }

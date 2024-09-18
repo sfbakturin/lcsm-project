@@ -91,7 +91,7 @@ sim::Transistor *sim::SimCircuit::RegisterTransistor(sim::TransistorType type)
 	const sim::Identifier prev = m_globalId;
 	sim::Transistor *transistor = m_context.AllocaTransistor(type);
 
-	transistor->identify(prev);
+	m_globalId = transistor->identify(prev);
 	m_comp[prev] = sim::support::PointerView< sim::Component >(transistor);
 
 	return transistor;
@@ -102,7 +102,7 @@ sim::TransmissionGate *sim::SimCircuit::RegisterTransmissionGate()
 	const sim::Identifier prev = m_globalId;
 	sim::TransmissionGate *transmissionGate = m_context.AllocaTransmissionGate();
 
-	transmissionGate->identify(prev);
+	m_globalId = transmissionGate->identify(prev);
 	m_comp[prev] = sim::support::PointerView< sim::Component >(transmissionGate);
 
 	return transmissionGate;

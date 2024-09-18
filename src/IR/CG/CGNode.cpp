@@ -40,6 +40,16 @@ bool sim::CGNode::isStatic() const noexcept
 	return T() == sim::NodeT::NODE_STATIC;
 }
 
+bool sim::CGNode::isFast() const noexcept
+{
+	return T() == sim::NodeT::NODE_FAST;
+}
+
+bool sim::CGNode::isComposite() const noexcept
+{
+	return T() == sim::NodeT::NODE_COMPOSITE;
+}
+
 bool sim::CGNode::isDynamic() const noexcept
 {
 	return T() == sim::NodeT::NODE_DYNAMIC;
@@ -51,6 +61,26 @@ sim::CGStaticNode *sim::CGNode::asStatic() noexcept
 }
 
 const sim::CGStaticNode *sim::CGNode::asStatic() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGFastNode *sim::CGNode::asFast() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGFastNode *sim::CGNode::asFast() const noexcept
+{
+	return nullptr;
+}
+
+sim::CGCompositeNode *sim::CGNode::asComposite() noexcept
+{
+	return nullptr;
+}
+
+const sim::CGCompositeNode *sim::CGNode::asComposite() const noexcept
 {
 	return nullptr;
 }

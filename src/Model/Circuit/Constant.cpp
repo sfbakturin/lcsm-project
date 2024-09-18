@@ -6,7 +6,7 @@
 #include <utility>
 
 sim::Constant::Constant(sim::Width width, std::uint64_t value) :
-	m_width(width), m_value(value)
+	m_width(width), m_value(value), m_wireOut(this)
 {
 }
 
@@ -95,8 +95,14 @@ void sim::Constant::ConnectIn(sim::wire_t &, std::size_t)
 void sim::Constant::ConnectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
+	{
 		m_wireOut.ConnectWire(wire);
-	throw std::logic_error("Constant element has only one output.");
+		wire->ConnectWire(m_wireOut);
+	}
+	else
+	{
+		throw std::logic_error("Constant element has only one output.");
+	}
 }
 
 void sim::Constant::Connect(sim::wire_t &wire)

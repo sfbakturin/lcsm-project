@@ -46,8 +46,7 @@ bool sim::SimState::step()
 	if (m_scheduled.empty())
 		return false;
 
-	std::unordered_map< unsigned, std::deque< sim::CGNodeView > >::const_iterator found =
-		m_scheduled.find(m_globalTimer);
+	const auto found = m_scheduled.find(m_globalTimer);
 	if (found == m_scheduled.cend())
 	{
 		m_globalTimer++;

@@ -12,8 +12,8 @@ int main()
 	sim::SimBuilder builder(dummy);
 	sim::SimEngine engine;
 
-	sim::Pin *in0 = builder.CreatePin(true);
-	sim::Pin *out0 = builder.CreatePin(false);
+	sim::Pin *in0 = builder.CreatePin(false);
+	sim::Pin *out0 = builder.CreatePin(true);
 
 	builder.ConnectPin(in0, out0, 0);
 

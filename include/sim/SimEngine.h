@@ -50,6 +50,8 @@ namespace sim
 		CGTransistorState *registeredTransistorState(Identifier ID);
 
 		CGStaticNode *registeredStaticNode(Identifier ID, CGObject *object);
+		CGFastNode *registeredFastNode(Identifier ID, CGObject *object);
+		CGCompositeNode *registeredCompositeNode(Identifier ID, CGObject *object);
 		CGDynamicNode *registeredDynamicNode(Identifier ID, CGObject *object);
 
 		void buildCircuitIOComp(

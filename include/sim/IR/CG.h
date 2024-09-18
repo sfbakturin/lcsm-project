@@ -57,10 +57,14 @@ namespace sim
 	{
 		NODE_UNKNOWN,
 		NODE_STATIC,
-		NODE_DYNAMIC
+		NODE_FAST,
+		NODE_COMPOSITE,
+		NODE_DYNAMIC,
 	};
 
 	class CGStaticNode;
+	class CGFastNode;
+	class CGCompositeNode;
 	class CGDynamicNode;
 
 	class CGNode
@@ -86,10 +90,16 @@ namespace sim
 		virtual NodeT T() const noexcept;
 
 		bool isStatic() const noexcept;
+		bool isFast() const noexcept;
+		bool isComposite() const noexcept;
 		bool isDynamic() const noexcept;
 
 		virtual CGStaticNode *asStatic() noexcept;
 		virtual const CGStaticNode *asStatic() const noexcept;
+		virtual CGFastNode *asFast() noexcept;
+		virtual const CGFastNode *asFast() const noexcept;
+		virtual CGCompositeNode *asComposite() noexcept;
+		virtual const CGCompositeNode *asComposite() const noexcept;
 		virtual CGDynamicNode *asDynamic() noexcept;
 		virtual const CGDynamicNode *asDynamic() const noexcept;
 
@@ -122,8 +132,40 @@ namespace sim
 
 		virtual NodeT T() const noexcept override final;
 
-		virtual CGStaticNode *asStatic() noexcept override;
-		virtual const CGStaticNode *asStatic() const noexcept override;
+		virtual CGStaticNode *asStatic() noexcept override final;
+		virtual const CGStaticNode *asStatic() const noexcept override final;
+	};
+
+	class CGFastNode : public CGNode
+	{
+	  public:
+		CGFastNode() = default;
+		~CGFastNode() noexcept = default;
+
+		CGFastNode(const CGObjectView &object);
+		CGFastNode(CGObjectView &&object);
+		CGFastNode(CGObject *object);
+
+		virtual NodeT T() const noexcept override final;
+
+		virtual CGFastNode *asFast() noexcept override final;
+		virtual const CGFastNode *asFast() const noexcept override final;
+	};
+
+	class CGCompositeNode : public CGNode
+	{
+	  public:
+		CGCompositeNode() = default;
+		~CGCompositeNode() noexcept = default;
+
+		CGCompositeNode(const CGObjectView &object);
+		CGCompositeNode(CGObjectView &&object);
+		CGCompositeNode(CGObject *object);
+
+		virtual NodeT T() const noexcept override final;
+
+		virtual CGCompositeNode *asComposite() noexcept override final;
+		virtual const CGCompositeNode *asComposite() const noexcept override final;
 	};
 
 	class CGDynamicNode : public CGNode
