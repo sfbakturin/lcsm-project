@@ -5,8 +5,6 @@
 #include <sim/Component/Identifier.h>
 #include <sim/Model/Wiring/Wire.h>
 
-#include <array>
-
 namespace sim
 {
 	class Pin;
@@ -14,7 +12,15 @@ namespace sim
 	class TransmissionGate : public CircuitComponent
 	{
 	  public:
-		TransmissionGate() = default;
+		enum CompositeIndex : std::size_t
+		{
+			BASE = 0,
+			INOUT_A = 1,
+			INOUT_B = 2,
+			INOUT_C = 3
+		};
+
+		TransmissionGate();
 
 		TransmissionGate(const TransmissionGate &other);
 		TransmissionGate(TransmissionGate &&other) noexcept;
@@ -26,33 +32,33 @@ namespace sim
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
 		Identifier idBase() const noexcept;
-		Identifier idSrcA() const noexcept;
-		Identifier idSrcB() const noexcept;
-		Identifier idSrcC() const noexcept;
+		Identifier idInoutA() const noexcept;
+		Identifier idInoutB() const noexcept;
+		Identifier idInoutC() const noexcept;
 
 		virtual void connectIn(wire_t &wire, std::size_t i) override final;
 		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
 		void connectBase(wire_t &wire);
-		void connectSrcA(wire_t &wire);
-		void connectSrcB(wire_t &wire);
-		void connectSrcC(wire_t &wire);
+		void connectInoutA(wire_t &wire);
+		void connectInoutB(wire_t &wire);
+		void connectInoutC(wire_t &wire);
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 	  private:
-		static constexpr std::size_t SRC_N = 3;
-
 		void connect(wire_t &wire, std::size_t i);
 
 		Identifier m_id;
 		Identifier m_idBase;
-		Identifier m_idSrcA;
-		Identifier m_idSrcB;
-		Identifier m_idSrcC;
+		Identifier m_idInoutA;
+		Identifier m_idInoutB;
+		Identifier m_idInoutC;
 
 		Wire m_base;
-		std::array< Wire, SRC_N > m_srcs;
+		Wire m_inoutA;
+		Wire m_inoutB;
+		Wire m_inoutC;
 	};
 }	 // namespace sim
 

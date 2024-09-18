@@ -5,14 +5,12 @@
 #include <sim/Component/Identifier.h>
 #include <sim/Model/Wiring/Wire.h>
 
-#include <array>
-
 namespace sim
 {
 	enum TransistorType
 	{
-		P,
-		N
+		TRANSISTOR_TYPE_P,
+		TRANSISTOR_TYPE_N
 	};
 
 	class Pin;
@@ -20,6 +18,13 @@ namespace sim
 	class Transistor : public CircuitComponent
 	{
 	  public:
+		enum CompositeIndex : std::size_t
+		{
+			BASE = 0,
+			INOUT_A = 1,
+			INOUT_B = 2
+		};
+
 		Transistor(TransistorType type);
 
 		Transistor(const Transistor &other);
@@ -34,19 +39,20 @@ namespace sim
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
 		Identifier idBase() const noexcept;
-		Identifier idSrcA() const noexcept;
-		Identifier idSrcB() const noexcept;
+		Identifier idInoutA() const noexcept;
+		Identifier idInoutB() const noexcept;
 
 		virtual void connectIn(wire_t &wire, std::size_t i) override final;
 		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
 		void connectBase(wire_t &wire);
-		void connectSrcA(wire_t &wire);
-		void connectSrcB(wire_t &wire);
+		void connectInoutA(wire_t &wire);
+		void connectInoutB(wire_t &wire);
 
+		std::size_t testConnectivity(const Wire *wire) const noexcept;
 		bool testConnectivityBase(const Wire *wire) const noexcept;
-		bool testConnectivitySrcA(const Wire *wire) const noexcept;
-		bool testConnectivitySrcB(const Wire *wire) const noexcept;
+		bool testConnectivityInoutA(const Wire *wire) const noexcept;
+		bool testConnectivityInoutB(const Wire *wire) const noexcept;
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
@@ -56,25 +62,25 @@ namespace sim
 		Wire &wireBase() noexcept;
 		const Wire &wireBase() const noexcept;
 
-		Wire &wireSrcA() noexcept;
-		const Wire &wireSrcA() const noexcept;
+		Wire &wireInoutA() noexcept;
+		const Wire &wireInoutA() const noexcept;
 
-		Wire &wireSrcB() noexcept;
-		const Wire &wireSrcB() const noexcept;
+		Wire &wireInoutB() noexcept;
+		const Wire &wireInoutB() const noexcept;
 
 	  private:
-		static constexpr std::size_t SRC_N = 2;
-
 		void connect(wire_t &wire, std::size_t i);
 
 		Identifier m_id;
 		Identifier m_idBase;
-		Identifier m_idSrcA;
-		Identifier m_idSrcB;
+		Identifier m_idInoutA;
+		Identifier m_idInoutB;
 
 		TransistorType m_type;
+
 		Wire m_base;
-		std::array< Wire, SRC_N > m_srcs;
+		Wire m_inoutA;
+		Wire m_inoutB;
 	};
 }	 // namespace sim
 

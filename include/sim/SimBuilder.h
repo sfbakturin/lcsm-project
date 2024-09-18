@@ -38,7 +38,7 @@ namespace sim
 		Power *CreatePower(Width width = Width::W1);
 		Pin *CreatePin(bool output, Width width = Width::W1);
 		Splitter *CreateSplitter(Width widthIn = Width::W2, std::size_t widthOut = 2);
-		Transistor *CreateTransistor(TransistorType type = TransistorType::P);
+		Transistor *CreateTransistor(TransistorType type = TransistorType::TRANSISTOR_TYPE_P);
 		TransmissionGate *CreateTransmissionGate();
 		Clock *CreateClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
 		Button *CreateButton(bool activeOnPress = true);
@@ -53,7 +53,11 @@ namespace sim
 		Wire *ConnectPin(Pin *pinOut, Component *compIn, std::size_t iIn);
 		Wire *ConnectSplitter(Splitter *splitterOut, std::size_t iOut, Component *compIn, std::size_t iIn);
 		Wire *ConnectTransistor(Transistor *transistorOut, std::size_t iOut, Component *compIn, std::size_t iIn);
-		Wire *ConnectTransmissionGate(TransmissionGate *transmissionGateOut, std::size_t iOut, Component *compIn, std::size_t iIn);
+		Wire *ConnectTransmissionGate(
+			TransmissionGate *transmissionGateOut,
+			std::size_t iOut,
+			Component *compIn,
+			std::size_t iIn);
 		Wire *ConnectClock(Clock *clockOut, Component *compIn, std::size_t iIn);
 		Wire *ConnectButton(Button *buttonOut, Component *compIn, std::size_t iIn);
 		Wire *ConnectDigit(Digit *digitOut, Component *compIn, std::size_t iIn);

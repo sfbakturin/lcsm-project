@@ -542,56 +542,40 @@ void sim::SimEngine::buildCircuitWiringComp(
 				case CIRCUIT_COMP_TRANSISTOR:
 				{
 					const sim::Transistor *transistor = circComp->asTransistor();
+					sim::CGObject *transistorElementGraph = nullptr;
+					sim::Identifier elementId;
 
-					if (transistor->testConnectivityBase(wire))
+					switch (transistor->testConnectivity(wire))
 					{
-						sim::CGTransistorBase *transistorBaseGraph =
-							registeredTransistorBase(transistor->idBase());
-
-						// Make connection between Base's Wire to Base
-						// object as tree node.
-						sim::CGNode *transistorBaseNode =
-							registeredCompositeNode(transistor->idBase(), transistorBaseGraph);
-
-						sim::InstructionShared wvWireToBase =
-							sim::CreateWriteValue(wireGraph, transistorBaseGraph);
-						sim::CGEdge wireToBaseEdge = {
-							{ wireGraph },
-							{ transistorBaseGraph },
-							std::move(wvWireToBase)
-						};
-						wireNode->addInstruction(std::move(wireToBaseEdge), transistorBaseNode);
-
+					case sim::Transistor::CompositeIndex::BASE:
+						elementId = transistor->idBase();
+						transistorElementGraph = registeredTransistorBase(elementId);
 						break;
+					case sim::Transistor::CompositeIndex::INOUT_A:
+						elementId = transistor->idInoutA();
+						transistorElementGraph = registeredTransistorInout(elementId);
+						break;
+					case sim::Transistor::CompositeIndex::INOUT_B:
+						elementId = transistor->idInoutB();
+						transistorElementGraph = registeredTransistorInout(elementId);
+						break;
+					default:
+						throw std::logic_error("");
 					}
 
-					sim::Identifier inoutId;
-					sim::CGTransistorInout *transistorInoutGraph = nullptr;
-
-					if (transistor->testConnectivitySrcA(wire))
-						inoutId = transistor->idSrcA();
-					else if (transistor->testConnectivitySrcB(wire))
-						inoutId = transistor->idSrcB();
-					else
-						throw std::runtime_error(
-							"Dangling wire is ghostly "
-							"connected to transistor.");
-
-					transistorInoutGraph = registeredTransistorInout(inoutId);
-
-					// Make connection between Inout's Wire to Inout
-					// object as tree node.
-					sim::CGNode *transistorInoutNode =
-						registeredCompositeNode(inoutId, transistorInoutGraph);
+					// Make connection between Transistor element's Wire to
+					// Transistor element object as tree node.
+					sim::CGNode *transistorElementNode =
+						registeredCompositeNode(elementId, transistorElementGraph);
 
 					sim::InstructionShared wvWireToInout =
-						sim::CreateWriteValue(wireGraph, transistorInoutGraph);
-					sim::CGEdge wireToInoutEdge = {
+						sim::CreateWriteValue(wireGraph, transistorElementGraph);
+					sim::CGEdge wireToElementEdge = {
 						{ wireGraph },
-						{ transistorInoutGraph },
+						{ transistorElementGraph },
 						std::move(wvWireToInout)
 					};
-					wireNode->addInstruction(std::move(wireToInoutEdge), transistorInoutNode);
+					wireNode->addInstruction(std::move(wireToElementEdge), transistorElementNode);
 
 					break;
 				}
@@ -788,8 +772,8 @@ void sim::SimEngine::buildCircuitCircuitComp(
 	{
 		const sim::Transistor *transistor = circuitComp->asTransistor();
 		const sim::Wire &wireBase = transistor->wireBase();
-		const sim::Wire &wireSrcA = transistor->wireSrcA();
-		const sim::Wire &wireSrcB = transistor->wireSrcB();
+		const sim::Wire &wireSrcA = transistor->wireInoutA();
+		const sim::Wire &wireSrcB = transistor->wireInoutB();
 
 		sim::CGWire *transistorWireBaseGraph = registeredWire(wireBase.ID());
 		sim::CGWire *transistorWireSrcAGraph = registeredWire(wireSrcA.ID());
@@ -798,9 +782,9 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGTransistorBase *transistorBaseGraph =
 			registeredTransistorBase(transistor->idBase());
 		sim::CGTransistorInout *transistorSrcAGraph =
-			registeredTransistorInout(transistor->idSrcA());
+			registeredTransistorInout(transistor->idInoutA());
 		sim::CGTransistorInout *transistorSrcBGraph =
-			registeredTransistorInout(transistor->idSrcB());
+			registeredTransistorInout(transistor->idInoutB());
 		sim::CGTransistorState *transistorStateGraph =
 			registeredTransistorState(transistor->ID());
 
@@ -822,11 +806,11 @@ void sim::SimEngine::buildCircuitCircuitComp(
 
 		// SrcA's tree node.
 		sim::CGNode *transistorSrcANode =
-			registeredCompositeNode(transistor->idSrcA(), transistorSrcAGraph);
+			registeredCompositeNode(transistor->idInoutA(), transistorSrcAGraph);
 
 		// SrcB's tree node.
 		sim::CGNode *transistorSrcBNode =
-			registeredCompositeNode(transistor->idSrcB(), transistorWireSrcBGraph);
+			registeredCompositeNode(transistor->idInoutB(), transistorWireSrcBGraph);
 
 		// State's tree node.
 		sim::CGNode *transistorStateNode =
@@ -900,8 +884,8 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		// Add as visited objects.
 		visited.insert(transistor->ID());
 		visited.insert(transistor->idBase());
-		visited.insert(transistor->idSrcA());
-		visited.insert(transistor->idSrcB());
+		visited.insert(transistor->idInoutA());
+		visited.insert(transistor->idInoutB());
 		visited.insert(wireBase.ID());
 		visited.insert(wireSrcA.ID());
 		visited.insert(wireSrcB.ID());
