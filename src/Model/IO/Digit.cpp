@@ -1,10 +1,16 @@
+#include <sim/Component/IOComponent.h>
 #include <sim/Component/Identifier.h>
 #include <sim/Model/IO/Digit.h>
+#include <sim/Model/Wiring/Wire.h>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
-sim::Digit::Digit(bool hasDecimalPoint) : m_hasDecimalPoint(hasDecimalPoint) {}
+sim::Digit::Digit(bool hasDecimalPoint) :
+	m_hasDecimalPoint(hasDecimalPoint), m_data(this), m_decimalPoint(this)
+{
+}
 
 sim::Digit::Digit(const sim::Digit &other) :
 	m_hasDecimalPoint(other.m_hasDecimalPoint)
@@ -46,14 +52,42 @@ sim::Identifier sim::Digit::identify(sim::Identifier ID) noexcept
 
 void sim::Digit::connectIn(sim::wire_t &wire, std::size_t i)
 {
-	if (i == 0)
-		m_data.connectWire(wire);
-	else if (i == 1)
-		m_decimalPoint.connectWire(wire);
-	else
-		throw std::logic_error("Digit element has only 2 inputs.");
+	sim::Wire *selected = nullptr;
+
+	switch (i)
+	{
+	case sim::Digit::CompositeIndex::DIGIT_INDEX_DATA:
+		selected = std::addressof(m_data);
+		break;
+	case sim::Digit::CompositeIndex::DIGIT_INDEX_DECIMAL_POINT:
+		selected = std::addressof(m_decimalPoint);
+		break;
+	default:
+		throw std::logic_error(
+			"Digit element has only data and decimal point "
+			"element");
+	}
+
+	selected->connectWire(wire);
+	wire->connectWire(selected);
 }
+
 void sim::Digit::connectOut(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Digit element doesn't have any outputs.");
+}
+
+bool sim::Digit::hasDecimalPoint() const noexcept
+{
+	return m_hasDecimalPoint;
+}
+
+void sim::Digit::setHasDecimalPoint(bool hasDecimalPoint) noexcept
+{
+	m_hasDecimalPoint = hasDecimalPoint;
+}
+
+sim::IOComponentType sim::Digit::ioComponentType() const noexcept
+{
+	return sim::IOComponentType::IO_COMP_DIGIT;
 }

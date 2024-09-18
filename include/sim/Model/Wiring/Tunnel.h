@@ -19,7 +19,7 @@ namespace sim
 		Tunnel &operator=(const Tunnel &other);
 		Tunnel &operator=(Tunnel &&other) noexcept;
 
-		void Swap(Tunnel &other) noexcept;
+		void swap(Tunnel &other) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;

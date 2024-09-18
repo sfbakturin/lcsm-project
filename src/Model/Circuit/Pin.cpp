@@ -82,19 +82,14 @@ sim::Identifier sim::Pin::identify(sim::Identifier ID) noexcept
 
 void sim::Pin::connectIn(sim::wire_t &wire, std::size_t i)
 {
-	if (i != 0)
-		throw std::logic_error("Constant element has only one input.");
-	else
-		m_wire.connectWire(wire);
-	wire->connectWire(m_wire);
+	connectOut(wire, i);
 }
 
 void sim::Pin::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
-		throw std::logic_error("Constant element has only one output.");
-	else
-		m_wire.connectWire(wire);
+		throw std::logic_error("Constant element has only one input/output.");
+	m_wire.connectWire(wire);
 	wire->connectWire(m_wire);
 }
 

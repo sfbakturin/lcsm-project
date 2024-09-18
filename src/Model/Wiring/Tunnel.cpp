@@ -15,18 +15,18 @@ sim::Tunnel::Tunnel(sim::Tunnel &&other) noexcept :
 sim::Tunnel &sim::Tunnel::operator=(const sim::Tunnel &other)
 {
 	if (this != &other)
-		sim::Tunnel(other).Swap(*this);
+		sim::Tunnel(other).swap(*this);
 	return *this;
 }
 
 sim::Tunnel &sim::Tunnel::operator=(sim::Tunnel &&other) noexcept
 {
 	if (this != &other)
-		sim::Tunnel(std::move(other)).Swap(*this);
+		sim::Tunnel(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Tunnel::Swap(sim::Tunnel &other) noexcept
+void sim::Tunnel::swap(sim::Tunnel &other) noexcept
 {
 	std::swap(m_tunnel, other.m_tunnel);
 }

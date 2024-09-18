@@ -48,6 +48,7 @@ namespace sim
 		unsigned m_highDuration;
 		unsigned m_lowDuration;
 		unsigned m_phaseOffset;
+
 		Wire m_wireOut;
 	};
 }	 // namespace sim

@@ -88,15 +88,11 @@ void sim::Constant::connectIn(sim::wire_t &, std::size_t)
 
 void sim::Constant::connectOut(sim::wire_t &wire, std::size_t i)
 {
-	if (i == 0)
-	{
-		m_wireOut.connectWire(wire);
-		wire->connectWire(m_wireOut);
-	}
-	else
-	{
+	if (i != 0)
 		throw std::logic_error("Constant element has only one output.");
-	}
+
+	m_wireOut.connectWire(wire);
+	wire->connectWire(m_wireOut);
 }
 
 void sim::Constant::connect(sim::wire_t &wire)

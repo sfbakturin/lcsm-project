@@ -7,7 +7,8 @@
 #include <utility>
 
 sim::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	m_highDuration(highDuration), m_lowDuration(lowDuration),
+	m_phaseOffset(phaseOffset), m_wireOut(this)
 {
 }
 
@@ -65,6 +66,7 @@ void sim::Clock::connectOut(sim::wire_t &wire, std::size_t i)
 	if (i != 0)
 		throw std::logic_error("Clock element has only 1 output.");
 	m_wireOut.connectWire(wire);
+	wire->connectWire(m_wireOut);
 }
 
 unsigned sim::Clock::highDuration() const noexcept

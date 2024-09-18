@@ -52,6 +52,7 @@ namespace sim
 
 		Width m_width;
 		std::uint64_t m_value;
+
 		Wire m_wireOut;
 	};
 }	 // namespace sim

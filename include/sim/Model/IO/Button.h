@@ -26,6 +26,11 @@ namespace sim
 		virtual void connectIn(wire_t &wire, std::size_t i) override final;
 		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
+		bool activeOnPress() const noexcept;
+		void setActiveOnPress(bool activeOnPress) noexcept;
+
+		virtual IOComponentType ioComponentType() const noexcept final;
+
 	  private:
 		Identifier m_id;
 
