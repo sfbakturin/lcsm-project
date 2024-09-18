@@ -23,45 +23,39 @@ sim::Constant::Constant(sim::Constant &&other) noexcept :
 sim::Constant &sim::Constant::operator=(const sim::Constant &other)
 {
 	if (this != &other)
-	{
-		Constant(other).Swap(*this);
-	}
-
+		Constant(other).swap(*this);
 	return *this;
 }
 
 sim::Constant &sim::Constant::operator=(sim::Constant &&other) noexcept
 {
 	if (this != &other)
-	{
-		Constant(std::move(other)).Swap(*this);
-	}
-
+		Constant(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Constant::Swap(sim::Constant &other) noexcept
+void sim::Constant::swap(sim::Constant &other) noexcept
 {
 	std::swap(m_value, other.m_value);
 	std::swap(m_width, other.m_width);
 }
 
-sim::Width sim::Constant::GetWidth() const noexcept
+sim::Width sim::Constant::width() const noexcept
 {
 	return m_width;
 }
 
-std::uint64_t sim::Constant::GetValue() const noexcept
+std::uint64_t sim::Constant::value() const noexcept
 {
 	return m_value;
 }
 
-void sim::Constant::SetWidth(sim::Width newWidth) noexcept
+void sim::Constant::setWidth(sim::Width newWidth) noexcept
 {
 	m_width = newWidth;
 }
 
-void sim::Constant::SetValue(std::uint64_t newValue) noexcept
+void sim::Constant::setValue(std::uint64_t newValue) noexcept
 {
 	m_value = newValue;
 }
@@ -87,17 +81,17 @@ sim::Identifier sim::Constant::identify(sim::Identifier ID) noexcept
 	return m_wireOut.identify(m_id.next());
 }
 
-void sim::Constant::ConnectIn(sim::wire_t &, std::size_t)
+void sim::Constant::connectIn(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Constant element doesn't have input.");
 }
 
-void sim::Constant::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Constant::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
 	{
-		m_wireOut.ConnectWire(wire);
-		wire->ConnectWire(m_wireOut);
+		m_wireOut.connectWire(wire);
+		wire->connectWire(m_wireOut);
 	}
 	else
 	{
@@ -105,9 +99,9 @@ void sim::Constant::ConnectOut(sim::wire_t &wire, std::size_t i)
 	}
 }
 
-void sim::Constant::Connect(sim::wire_t &wire)
+void sim::Constant::connect(sim::wire_t &wire)
 {
-	ConnectOut(wire, 0);
+	connectOut(wire, 0);
 }
 
 sim::CircuitComponentType sim::Constant::circuitComponentType() const noexcept

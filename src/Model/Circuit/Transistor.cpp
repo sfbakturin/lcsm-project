@@ -23,18 +23,18 @@ sim::Transistor::Transistor(sim::Transistor &&other) noexcept :
 sim::Transistor &sim::Transistor::operator=(const sim::Transistor &other)
 {
 	if (this != &other)
-		sim::Transistor(other).Swap(*this);
+		sim::Transistor(other).swap(*this);
 	return *this;
 }
 
 sim::Transistor &sim::Transistor::operator=(sim::Transistor &&other)
 {
 	if (this != &other)
-		sim::Transistor(std::move(other)).Swap(*this);
+		sim::Transistor(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Transistor::Swap(sim::Transistor &other) noexcept
+void sim::Transistor::swap(sim::Transistor &other) noexcept
 {
 	std::swap(m_type, other.m_type);
 }
@@ -71,29 +71,29 @@ sim::Identifier sim::Transistor::idSrcB() const noexcept
 	return m_idSrcB;
 }
 
-void sim::Transistor::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Transistor::connectIn(sim::wire_t &wire, std::size_t i)
 {
-	Connect(wire, i);
+	connect(wire, i);
 }
 
-void sim::Transistor::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Transistor::connectOut(sim::wire_t &wire, std::size_t i)
 {
-	Connect(wire, i);
+	connect(wire, i);
 }
 
-void sim::Transistor::ConnectBase(sim::wire_t &wire)
+void sim::Transistor::connectBase(sim::wire_t &wire)
 {
-	ConnectIn(wire, 0);
+	connectIn(wire, 0);
 }
 
-void sim::Transistor::ConnectSrcA(sim::wire_t &wire)
+void sim::Transistor::connectSrcA(sim::wire_t &wire)
 {
-	ConnectOut(wire, 1);
+	connectOut(wire, 1);
 }
 
-void sim::Transistor::ConnectSrcB(sim::wire_t &wire)
+void sim::Transistor::connectSrcB(sim::wire_t &wire)
 {
-	ConnectOut(wire, 2);
+	connectOut(wire, 2);
 }
 
 bool sim::Transistor::testConnectivityBase(const sim::Wire *wire) const noexcept
@@ -156,17 +156,17 @@ const sim::Wire &sim::Transistor::wireSrcB() const noexcept
 	return m_srcs[1];
 }
 
-void sim::Transistor::Connect(sim::wire_t &wire, std::size_t i)
+void sim::Transistor::connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
 	{
-		m_base.ConnectWire(wire);
-		wire->ConnectWire(m_base);
+		m_base.connectWire(wire);
+		wire->connectWire(m_base);
 	}
 	else if (i - 1 < sim::Transistor::SRC_N)
 	{
-		m_srcs[i - 1].ConnectWire(wire);
-		wire->ConnectWire(m_srcs[i - 1]);
+		m_srcs[i - 1].connectWire(wire);
+		wire->connectWire(m_srcs[i - 1]);
 	}
 	else
 	{

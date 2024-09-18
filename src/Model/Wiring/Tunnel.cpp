@@ -42,36 +42,36 @@ sim::Identifier sim::Tunnel::identify(sim::Identifier ID) noexcept
 	return m_wire.identify(m_id.next());
 }
 
-void sim::Tunnel::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Tunnel::connectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Tunnel element has only 1 inout.");
-	ConnectWire(wire);
+	connectWire(wire);
 }
 
-void sim::Tunnel::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Tunnel::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Tunnel element has only 1 inout.");
-	ConnectWire(wire);
+	connectWire(wire);
 }
 
-void sim::Tunnel::ConnectWire(const sim::wire_t &wire)
+void sim::Tunnel::connectWire(const sim::wire_t &wire)
 {
-	m_wire.ConnectWire(wire);
+	m_wire.connectWire(wire);
 }
 
-void sim::Tunnel::ConnectWire(sim::wire_t &&wire)
+void sim::Tunnel::connectWire(sim::wire_t &&wire)
 {
-	m_wire.ConnectWire(std::move(wire));
+	m_wire.connectWire(std::move(wire));
 }
 
-void sim::Tunnel::Connect(const sim::tunnel_t &tunnel) noexcept
+void sim::Tunnel::connect(const sim::tunnel_t &tunnel) noexcept
 {
 	m_tunnel = tunnel;
 }
 
-void sim::Tunnel::Connect(sim::tunnel_t &&tunnel) noexcept
+void sim::Tunnel::connect(sim::tunnel_t &&tunnel) noexcept
 {
 	m_tunnel = std::move(tunnel);
 }
@@ -81,12 +81,12 @@ sim::WiringComponentType sim::Tunnel::wiringComponentType() const noexcept
 	return sim::WiringComponentType::WIRING_COMP_TUNNEL;
 }
 
-const sim::Wire *sim::Tunnel::AsWire() const noexcept
+sim::Tunnel *sim::Tunnel::asTunnel() noexcept
 {
-	return nullptr;
+	return this;
 }
 
-sim::Wire *sim::Tunnel::AsWire() noexcept
+const sim::Tunnel *sim::Tunnel::asTunnel() const noexcept
 {
-	return nullptr;
+	return this;
 }

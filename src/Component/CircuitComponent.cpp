@@ -1,46 +1,19 @@
 #include <sim/Component/CircuitComponent.h>
 #include <sim/Component/Component.h>
-#include <sim/Component/IOComponent.h>
-#include <sim/Component/WiringComponent.h>
 
 sim::ComponentType sim::CircuitComponent::componentType() const noexcept
 {
 	return sim::ComponentType::COMP_CIRCUIT;
 }
 
-const sim::CircuitComponent *sim::CircuitComponent::AsCircuit() const noexcept
+sim::CircuitComponent *sim::CircuitComponent::asCircuit() noexcept
 {
 	return this;
 }
 
-sim::CircuitComponent *sim::CircuitComponent::AsCircuit() noexcept
+const sim::CircuitComponent *sim::CircuitComponent::asCircuit() const noexcept
 {
 	return this;
-}
-
-const sim::IOComponent *sim::CircuitComponent::AsIO() const noexcept
-{
-	return nullptr;
-}
-
-sim::IOComponent *sim::CircuitComponent::AsIO() noexcept
-{
-	return nullptr;
-}
-
-const sim::WiringComponent *sim::CircuitComponent::AsWiring() const noexcept
-{
-	return nullptr;
-}
-
-sim::WiringComponent *sim::CircuitComponent::AsWiring() noexcept
-{
-	return nullptr;
-}
-
-bool sim::CircuitComponent::IsPin() const noexcept
-{
-	return asPin() != nullptr;
 }
 
 sim::Pin *sim::CircuitComponent::asPin() noexcept

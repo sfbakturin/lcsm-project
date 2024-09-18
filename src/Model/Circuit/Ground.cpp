@@ -18,20 +18,20 @@ sim::Ground::Ground(sim::Ground &&other) noexcept :
 sim::Ground &sim::Ground::operator=(const sim::Ground &other)
 {
 	if (this != &other)
-		sim::Ground(other).Swap(*this);
+		sim::Ground(other).swap(*this);
 	return *this;
 }
 sim::Ground &sim::Ground::operator=(sim::Ground &&other) noexcept
 {
 	if (this != &other)
-		sim::Ground(std::move(other)).Swap(*this);
+		sim::Ground(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Ground::Swap(sim::Ground &other) noexcept
+void sim::Ground::swap(sim::Ground &other) noexcept
 {
 	sim::Constant &left = *this;
-	left.Swap(other);
+	left.swap(other);
 }
 
 sim::CircuitComponentType sim::Ground::circuitComponentType() const noexcept

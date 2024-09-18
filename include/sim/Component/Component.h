@@ -24,26 +24,26 @@ namespace sim
 
 		virtual ComponentType componentType() const noexcept = 0;
 
-		bool IsIO() const noexcept;
-		bool IsWiring() const noexcept;
-		bool IsCircuit() const noexcept;
+		bool isIO() const noexcept;
+		bool isWiring() const noexcept;
+		bool isCircuit() const noexcept;
 
 		virtual Identifier ID() const noexcept = 0;
 		virtual Identifier identify(Identifier ID) noexcept = 0;
 
 		virtual void
-			ConnectIn(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
+			connectIn(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
 		virtual void
-			ConnectOut(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
+			connectOut(sim::support::PointerView< WiringComponent > &wire, std::size_t i) = 0;
 
-		virtual const CircuitComponent *AsCircuit() const noexcept = 0;
-		virtual CircuitComponent *AsCircuit() noexcept = 0;
+		virtual CircuitComponent *asCircuit() noexcept;
+		virtual const CircuitComponent *asCircuit() const noexcept;
 
-		virtual const IOComponent *AsIO() const noexcept = 0;
-		virtual IOComponent *AsIO() noexcept = 0;
+		virtual IOComponent *asIO() noexcept;
+		virtual const IOComponent *asIO() const noexcept;
 
-		virtual const WiringComponent *AsWiring() const noexcept = 0;
-		virtual WiringComponent *AsWiring() noexcept = 0;
+		virtual WiringComponent *asWiring() noexcept;
+		virtual const WiringComponent *asWiring() const noexcept;
 	};
 
 	using component_t = support::PointerView< Component >;

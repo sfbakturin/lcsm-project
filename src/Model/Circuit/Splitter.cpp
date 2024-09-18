@@ -9,7 +9,7 @@
 sim::Splitter::Splitter(sim::Width widthIn, std::size_t widthOut) :
 	m_widthIn(widthIn), m_widthOut(widthOut)
 {
-	ResetConnectors();
+	resetConnectors();
 }
 
 sim::Splitter::Splitter(const sim::Splitter &other) :
@@ -29,18 +29,18 @@ sim::Splitter::Splitter(sim::Splitter &&other) noexcept :
 sim::Splitter &sim::Splitter::operator=(const sim::Splitter &other)
 {
 	if (this != &other)
-		sim::Splitter(other).Swap(*this);
+		sim::Splitter(other).swap(*this);
 	return *this;
 }
 
 sim::Splitter &sim::Splitter::operator=(sim::Splitter &&other) noexcept
 {
 	if (this != &other)
-		sim::Splitter(std::move(other)).Swap(*this);
+		sim::Splitter(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Splitter::Swap(sim::Splitter &other) noexcept
+void sim::Splitter::swap(sim::Splitter &other) noexcept
 {
 	std::swap(m_widthIn, other.m_widthIn);
 	std::swap(m_widthOut, other.m_widthOut);
@@ -48,26 +48,26 @@ void sim::Splitter::Swap(sim::Splitter &other) noexcept
 		std::swap(m_connectors[i], other.m_connectors[i]);
 }
 
-sim::Width sim::Splitter::GetWidthIn() const noexcept
+sim::Width sim::Splitter::widthIn() const noexcept
 {
 	return m_widthIn;
 }
 
-std::size_t sim::Splitter::GetWidthOut() const noexcept
+std::size_t sim::Splitter::widthOut() const noexcept
 {
 	return m_widthOut;
 }
 
-void sim::Splitter::SetWidthIn(sim::Width newWidthIn) noexcept
+void sim::Splitter::setWidthIn(sim::Width newWidthIn) noexcept
 {
 	m_widthIn = newWidthIn;
-	ResetConnectors();
+	resetConnectors();
 }
 
-void sim::Splitter::SetWidthOut(std::size_t newWidthOut) noexcept
+void sim::Splitter::setWidthOut(std::size_t newWidthOut) noexcept
 {
 	m_widthOut = newWidthOut;
-	ResetConnectors();
+	resetConnectors();
 }
 
 sim::Identifier sim::Splitter::ID() const noexcept
@@ -84,30 +84,30 @@ sim::Identifier sim::Splitter::identify(sim::Identifier ID) noexcept
 	return next;
 }
 
-void sim::Splitter::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Splitter::connectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Splitter element have only 1 input.");
-	m_wireIn.ConnectWire(wire);
+	m_wireIn.connectWire(wire);
 }
 
-void sim::Splitter::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Splitter::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i >= m_widthOut)
 		throw std::logic_error(
 			"Splitter element has only widthOut output "
 			"connections.");
-	m_wireOut[i].ConnectWire(wire);
+	m_wireOut[i].connectWire(wire);
 }
 
-void sim::Splitter::ConnectBits(sim::wire_t &wire)
+void sim::Splitter::connectBits(sim::wire_t &wire)
 {
-	ConnectIn(wire, 0);
+	connectIn(wire, 0);
 }
 
-void sim::Splitter::ConnectBitN(sim::wire_t &wire, std::size_t i)
+void sim::Splitter::connectBitN(sim::wire_t &wire, std::size_t i)
 {
-	ConnectOut(wire, i);
+	connectOut(wire, i);
 }
 
 sim::CircuitComponentType sim::Splitter::circuitComponentType() const noexcept
@@ -120,7 +120,7 @@ static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept
 	return left < right ? left : right;
 }
 
-void sim::Splitter::ResetConnectors() noexcept
+void sim::Splitter::resetConnectors() noexcept
 {
 	for (std::size_t i = 0; i < sim::Splitter::CONNECTORS_SIZE; i++)
 		m_connectors[i] = sim::Splitter::NO_CONNECT;

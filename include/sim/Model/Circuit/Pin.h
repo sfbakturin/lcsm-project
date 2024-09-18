@@ -20,25 +20,25 @@ namespace sim
 		Pin &operator=(const Pin &other);
 		Pin &operator=(Pin &&other) noexcept;
 
-		void Swap(Pin &other) noexcept;
+		void swap(Pin &other) noexcept;
 
-		bool IsOutput() const noexcept;
-		Width GetWidth() const noexcept;
-		Wire &GetWire() noexcept;
-		const Wire &GetWire() const noexcept;
+		bool isOutput() const noexcept;
+		Width width() const noexcept;
+		Wire &wire() noexcept;
+		const Wire &wire() const noexcept;
 
-		void SetOutput(bool newOutput) noexcept;
-		void SetWidth(Width newWidth) noexcept;
+		void setOutput(bool newOutput) noexcept;
+		void setWidth(Width newWidth) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override;
+		virtual void connectOut(wire_t &wire, std::size_t i) override;
 
-		void Connect(wire_t &wire);
+		void connect(wire_t &wire);
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 		virtual Pin *asPin() noexcept override final;
 		virtual const Pin *asPin() const noexcept override final;

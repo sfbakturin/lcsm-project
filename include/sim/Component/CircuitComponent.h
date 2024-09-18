@@ -2,7 +2,6 @@
 #define SIM_COMPONENT_CIRCUITCOMPONENT_H
 
 #include <sim/Component/Component.h>
-#include <sim/Model/Wiring/Wire.h>
 
 namespace sim
 {
@@ -31,18 +30,16 @@ namespace sim
 
 		virtual ComponentType componentType() const noexcept override;
 
-		virtual const CircuitComponent *AsCircuit() const noexcept override;
-		virtual CircuitComponent *AsCircuit() noexcept override;
-
-		virtual const IOComponent *AsIO() const noexcept override;
-		virtual IOComponent *AsIO() noexcept override;
-
-		virtual const WiringComponent *AsWiring() const noexcept override;
-		virtual WiringComponent *AsWiring() noexcept override;
+		virtual CircuitComponent *asCircuit() noexcept override final;
+		virtual const CircuitComponent *asCircuit() const noexcept override final;
 
 		virtual CircuitComponentType circuitComponentType() const noexcept = 0;
 
-		bool IsPin() const noexcept;
+		bool isPin() const noexcept;
+		bool isConstant() const noexcept;
+		bool isGround() const noexcept;
+		bool isPower() const noexcept;
+		bool isTransistor() const noexcept;
 
 		virtual Pin *asPin() noexcept;
 		virtual const Pin *asPin() const noexcept;

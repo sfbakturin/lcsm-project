@@ -30,20 +30,20 @@ namespace sim
 		Identifier idSrcB() const noexcept;
 		Identifier idSrcC() const noexcept;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		void ConnectBase(wire_t &wire);
-		void ConnectSrcA(wire_t &wire);
-		void ConnectSrcB(wire_t &wire);
-		void ConnectSrcC(wire_t &wire);
+		void connectBase(wire_t &wire);
+		void connectSrcA(wire_t &wire);
+		void connectSrcB(wire_t &wire);
+		void connectSrcC(wire_t &wire);
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 	  private:
 		static constexpr std::size_t SRC_N = 3;
 
-		void Connect(wire_t &wire, std::size_t i);
+		void connect(wire_t &wire, std::size_t i);
 
 		Identifier m_id;
 		Identifier m_idBase;

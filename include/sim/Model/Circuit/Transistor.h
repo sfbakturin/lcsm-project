@@ -28,7 +28,7 @@ namespace sim
 		Transistor &operator=(const Transistor &other);
 		Transistor &operator=(Transistor &&other);
 
-		void Swap(Transistor &other) noexcept;
+		void swap(Transistor &other) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
@@ -37,18 +37,18 @@ namespace sim
 		Identifier idSrcA() const noexcept;
 		Identifier idSrcB() const noexcept;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		void ConnectBase(wire_t &wire);
-		void ConnectSrcA(wire_t &wire);
-		void ConnectSrcB(wire_t &wire);
+		void connectBase(wire_t &wire);
+		void connectSrcA(wire_t &wire);
+		void connectSrcB(wire_t &wire);
 
 		bool testConnectivityBase(const Wire *wire) const noexcept;
 		bool testConnectivitySrcA(const Wire *wire) const noexcept;
 		bool testConnectivitySrcB(const Wire *wire) const noexcept;
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 		virtual Transistor *asTransistor() noexcept override final;
 		virtual const Transistor *asTransistor() const noexcept override final;
@@ -65,7 +65,7 @@ namespace sim
 	  private:
 		static constexpr std::size_t SRC_N = 2;
 
-		void Connect(wire_t &wire, std::size_t i);
+		void connect(wire_t &wire, std::size_t i);
 
 		Identifier m_id;
 		Identifier m_idBase;

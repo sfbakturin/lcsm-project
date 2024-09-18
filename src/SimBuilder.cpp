@@ -16,7 +16,10 @@
 #include <sim/SimBuilder.h>
 #include <sim/SimCircuit.h>
 
-sim::SimBuilder::SimBuilder(sim::SimCircuit &circuit) noexcept : m_circuit(circuit) {}
+sim::SimBuilder::SimBuilder(sim::SimCircuit &circuit) noexcept :
+	m_circuit(circuit)
+{
+}
 
 sim::Constant *sim::SimBuilder::CreateConstant(sim::Width width, std::uint64_t value)
 {
@@ -73,16 +76,18 @@ sim::Probe *sim::SimBuilder::CreateProbe()
 	return m_circuit.RegisterProbe();
 }
 
-sim::Wire *sim::SimBuilder::Connect(sim::Component *compOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
+sim::Wire *
+	sim::SimBuilder::Connect(sim::Component *compOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
 {
 	sim::Wire *w = m_circuit.RegisterWire();
 	sim::wire_t wpv = sim::wire_t(w);
-	compOut->ConnectOut(wpv, iOut);
-	compIn->ConnectIn(wpv, iIn);
+	compOut->connectOut(wpv, iOut);
+	compIn->connectIn(wpv, iIn);
 	return w;
 }
 
-sim::Wire *sim::SimBuilder::ConnectConstant(sim::Constant *constantOut, sim::Component *compIn, std::size_t iIn)
+sim::Wire *
+	sim::SimBuilder::ConnectConstant(sim::Constant *constantOut, sim::Component *compIn, std::size_t iIn)
 {
 	return Connect(constantOut, 0, compIn, iIn);
 }
@@ -102,18 +107,26 @@ sim::Wire *sim::SimBuilder::ConnectPin(sim::Pin *pinOut, sim::Component *compIn,
 	return Connect(pinOut, 0, compIn, iIn);
 }
 
-sim::Wire *sim::SimBuilder::ConnectSplitter(sim::Splitter *splitterOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
+sim::Wire *
+	sim::SimBuilder::ConnectSplitter(sim::Splitter *splitterOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
 {
 	return Connect(splitterOut, iOut, compIn, iIn);
 }
 
-sim::Wire *sim::SimBuilder::ConnectTransistor(sim::Transistor *transistorOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
+sim::Wire *sim::SimBuilder::ConnectTransistor(
+	sim::Transistor *transistorOut,
+	std::size_t iOut,
+	sim::Component *compIn,
+	std::size_t iIn)
 {
 	return Connect(transistorOut, iOut, compIn, iIn);
 }
 
-sim::Wire *
-	sim::SimBuilder::ConnectTransmissionGate(sim::TransmissionGate *transmissionGateOut, std::size_t iOut, sim::Component *compIn, std::size_t iIn)
+sim::Wire *sim::SimBuilder::ConnectTransmissionGate(
+	sim::TransmissionGate *transmissionGateOut,
+	std::size_t iOut,
+	sim::Component *compIn,
+	std::size_t iIn)
 {
 	return Connect(transmissionGateOut, iOut, compIn, iIn);
 }

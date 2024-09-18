@@ -22,49 +22,49 @@ sim::Pin::Pin(sim::Pin &&other) noexcept :
 sim::Pin &sim::Pin::operator=(const sim::Pin &other)
 {
 	if (this != &other)
-		sim::Pin(other).Swap(*this);
+		sim::Pin(other).swap(*this);
 	return *this;
 }
 
 sim::Pin &sim::Pin::operator=(sim::Pin &&other) noexcept
 {
 	if (this != &other)
-		sim::Pin(std::move(other)).Swap(*this);
+		sim::Pin(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Pin::Swap(sim::Pin &other) noexcept
+void sim::Pin::swap(sim::Pin &other) noexcept
 {
 	std::swap(m_output, other.m_output);
 	std::swap(m_width, other.m_width);
 }
 
-bool sim::Pin::IsOutput() const noexcept
+bool sim::Pin::isOutput() const noexcept
 {
 	return m_output;
 }
 
-sim::Width sim::Pin::GetWidth() const noexcept
+sim::Width sim::Pin::width() const noexcept
 {
 	return m_width;
 }
 
-sim::Wire &sim::Pin::GetWire() noexcept
+sim::Wire &sim::Pin::wire() noexcept
 {
 	return m_wire;
 }
 
-const sim::Wire &sim::Pin::GetWire() const noexcept
+const sim::Wire &sim::Pin::wire() const noexcept
 {
 	return m_wire;
 }
 
-void sim::Pin::SetOutput(bool newOutput) noexcept
+void sim::Pin::setOutput(bool newOutput) noexcept
 {
 	m_output = newOutput;
 }
 
-void sim::Pin::SetWidth(sim::Width newWidth) noexcept
+void sim::Pin::setWidth(sim::Width newWidth) noexcept
 {
 	m_width = newWidth;
 }
@@ -80,27 +80,27 @@ sim::Identifier sim::Pin::identify(sim::Identifier ID) noexcept
 	return m_wire.identify(m_id.next());
 }
 
-void sim::Pin::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Pin::connectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Constant element has only one input.");
 	else
-		m_wire.ConnectWire(wire);
-	wire->ConnectWire(m_wire);
+		m_wire.connectWire(wire);
+	wire->connectWire(m_wire);
 }
 
-void sim::Pin::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Pin::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Constant element has only one output.");
 	else
-		m_wire.ConnectWire(wire);
-	wire->ConnectWire(m_wire);
+		m_wire.connectWire(wire);
+	wire->connectWire(m_wire);
 }
 
-void sim::Pin::Connect(sim::wire_t &wire)
+void sim::Pin::connect(sim::wire_t &wire)
 {
-	ConnectOut(wire, 0);
+	connectOut(wire, 0);
 }
 
 sim::CircuitComponentType sim::Pin::circuitComponentType() const noexcept

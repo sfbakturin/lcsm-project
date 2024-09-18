@@ -42,9 +42,9 @@ void sim::SimEngine::addCircuit(sim::SimCircuit &circuit)
 
 	for (auto it = circuit.Pins().begin(); it != circuit.Pins().end(); it++)
 	{
-		const sim::Pin *pin = it->second->AsCircuit()->asPin();
+		const sim::Pin *pin = it->second->asCircuit()->asPin();
 
-		if (pin->IsOutput())
+		if (pin->isOutput())
 			continue;
 
 		// Initialize future nodes for calculation graph.
@@ -415,7 +415,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 	{
 	case WIRING_COMP_WIRE:
 	{
-		const sim::Wire *wire = wiringComp->AsWire();
+		const sim::Wire *wire = wiringComp->asWire();
 		sim::CGWire *wireGraph = registeredWire(wire->ID());
 
 		// Wire's tree node.
@@ -423,7 +423,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 
 		// Make connections from Wire object to his adjacent wires as
 		// tree's edges.
-		for (const sim::wire_t &adjacentWire : wire->Wires())
+		for (const sim::wire_t &adjacentWire : wire->wires())
 		{
 			switch (adjacentWire->wiringComponentType())
 			{
@@ -452,7 +452,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 
 		// This wire might be some object's wire, so we should make connection
 		// as tree's edge.
-		for (const sim::component_t &comp : wire->Connections())
+		for (const sim::component_t &comp : wire->connections())
 		{
 			switch (comp->componentType())
 			{
@@ -462,7 +462,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 				throw std::logic_error("Impossible");
 			case COMP_CIRCUIT:
 			{
-				const sim::CircuitComponent *circComp = comp->AsCircuit();
+				const sim::CircuitComponent *circComp = comp->asCircuit();
 				switch (circComp->circuitComponentType())
 				{
 				case CIRCUIT_COMP_PIN:
@@ -470,7 +470,7 @@ void sim::SimEngine::buildCircuitWiringComp(
 					const sim::Pin *pin = circComp->asPin();
 					sim::CGPin *pinGraph = nullptr;
 
-					if (pin->IsOutput())
+					if (pin->isOutput())
 						pinGraph = registeredPinOutput(pin->ID());
 					else
 						pinGraph = registeredPinInput(pin->ID());
@@ -634,11 +634,11 @@ void sim::SimEngine::buildCircuitCircuitComp(
 	case sim::CircuitComponentType::CIRCUIT_COMP_PIN:
 	{
 		const sim::Pin *pin = circuitComp->asPin();
-		const sim::Wire &pinWire = pin->GetWire();
+		const sim::Wire &pinWire = pin->wire();
 
 		sim::CGPin *pinGraph = nullptr;
 
-		if (pin->IsOutput())
+		if (pin->isOutput())
 			pinGraph = registeredPinOutput(pin->ID());
 		else
 			pinGraph = registeredPinInput(pin->ID());
@@ -678,7 +678,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGConstant *constantGraph = registeredConstant(constant->ID());
 		sim::CGWire *constantWireGraph = registeredWire(constantWire.ID());
 
-		constantGraph->emplaceValue(constant->GetWidth(), constant->GetValue());
+		constantGraph->emplaceValue(constant->width(), constant->value());
 
 		// Constant's tree node.
 		sim::CGNode *constantNode = registeredStaticNode(constant->ID(), constantGraph);
@@ -715,7 +715,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGPower *powerGraph = registeredPower(power->ID());
 		sim::CGWire *powerWireGraph = registeredWire(powerWire.ID());
 
-		powerGraph->setWidth(power->GetWidth());
+		powerGraph->setWidth(power->width());
 
 		// Power's tree node.
 		sim::CGNode *powerNode = registeredStaticNode(power->ID(), powerGraph);
@@ -751,7 +751,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		sim::CGGround *groundGraph = registeredGround(ground->ID());
 		sim::CGWire *groundWireGraph = registeredWire(groundWire.ID());
 
-		groundGraph->setWidth(ground->GetWidth());
+		groundGraph->setWidth(ground->width());
 
 		// Ground's tree node.
 		sim::CGNode *groundNode = registeredStaticNode(ground->ID(), groundGraph);
@@ -924,7 +924,7 @@ void sim::SimEngine::buildCircuitCircuitComp(
 		graph_t::pointer outputWireGraph = graph.ptr();
 		output_t::const_pointer outputWire = output.ptr();
 
-		for (const sim::wire_t &adjacentWire : outputWire->Wires())
+		for (const sim::wire_t &adjacentWire : outputWire->wires())
 		{
 			switch (adjacentWire->wiringComponentType())
 			{
@@ -975,13 +975,13 @@ void sim::SimEngine::buildCircuit(std::deque< sim::support::PointerView< const s
 			switch (comp->componentType())
 			{
 			case COMP_IO:
-				buildCircuitIOComp(visited, bfsVisit, comp->AsIO());
+				buildCircuitIOComp(visited, bfsVisit, comp->asIO());
 				break;
 			case COMP_WIRING:
-				buildCircuitWiringComp(visited, bfsVisit, comp->AsWiring());
+				buildCircuitWiringComp(visited, bfsVisit, comp->asWiring());
 				break;
 			case COMP_CIRCUIT:
-				buildCircuitCircuitComp(visited, bfsVisit, comp->AsCircuit());
+				buildCircuitCircuitComp(visited, bfsVisit, comp->asCircuit());
 				break;
 			}
 		}

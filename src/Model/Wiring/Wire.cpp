@@ -9,7 +9,7 @@
 
 sim::Wire::Wire(sim::Component *comp)
 {
-	Connect(sim::support::PointerView< sim::Component >(comp));
+	connect(sim::support::PointerView< sim::Component >(comp));
 }
 
 sim::Identifier sim::Wire::ID() const noexcept
@@ -23,54 +23,54 @@ sim::Identifier sim::Wire::identify(sim::Identifier ID) noexcept
 	return m_id.next();
 }
 
-void sim::Wire::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Wire::connectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("");
-	ConnectWire(wire);
+	connectWire(wire);
 }
 
-void sim::Wire::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Wire::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("");
-	ConnectWire(wire);
+	connectWire(wire);
 }
 
-void sim::Wire::ConnectWire(const sim::wire_t &wire)
+void sim::Wire::connectWire(const sim::wire_t &wire)
 {
 	m_wires.push_back(wire);
 }
 
-void sim::Wire::ConnectWire(sim::wire_t &&wire)
+void sim::Wire::connectWire(sim::wire_t &&wire)
 {
 	m_wires.push_back(std::move(wire));
 }
 
-void sim::Wire::Connect(const sim::component_t &connect)
+void sim::Wire::connect(const sim::component_t &connect)
 {
-	if (connect->IsWiring())
+	if (connect->isWiring())
 		throw std::logic_error(
 			"All wiring components should be connected via "
 			"ConnectWire method.");
 	m_connections.push_back(connect);
 }
 
-void sim::Wire::Connect(sim::component_t &&connect)
+void sim::Wire::connect(sim::component_t &&connect)
 {
-	if (connect->IsWiring())
+	if (connect->isWiring())
 		throw std::logic_error(
 			"All wiring components should be connected via "
 			"ConnectWire method.");
 	m_connections.push_back(std::move(connect));
 }
 
-const std::vector< sim::wire_t > &sim::Wire::Wires() const noexcept
+const std::vector< sim::wire_t > &sim::Wire::wires() const noexcept
 {
 	return m_wires;
 }
 
-const std::vector< sim::component_t > &sim::Wire::Connections() const noexcept
+const std::vector< sim::component_t > &sim::Wire::connections() const noexcept
 {
 	return m_connections;
 }
@@ -80,12 +80,12 @@ sim::WiringComponentType sim::Wire::wiringComponentType() const noexcept
 	return sim::WiringComponentType::WIRING_COMP_WIRE;
 }
 
-const sim::Wire *sim::Wire::AsWire() const noexcept
+sim::Wire *sim::Wire::asWire() noexcept
 {
 	return this;
 }
 
-sim::Wire *sim::Wire::AsWire() noexcept
+const sim::Wire *sim::Wire::asWire() const noexcept
 {
 	return this;
 }

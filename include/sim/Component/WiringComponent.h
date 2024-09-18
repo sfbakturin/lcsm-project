@@ -13,6 +13,7 @@ namespace sim
 	};
 
 	class Wire;
+	class Tunnel;
 
 	class WiringComponent : public Component
 	{
@@ -21,24 +22,22 @@ namespace sim
 
 		virtual ComponentType componentType() const noexcept override;
 
-		virtual const CircuitComponent *AsCircuit() const noexcept override;
-		virtual CircuitComponent *AsCircuit() noexcept override;
+		virtual WiringComponent *asWiring() noexcept override final;
+		virtual const WiringComponent *asWiring() const noexcept override final;
 
-		virtual const IOComponent *AsIO() const noexcept override;
-		virtual IOComponent *AsIO() noexcept override;
-
-		virtual const WiringComponent *AsWiring() const noexcept override;
-		virtual WiringComponent *AsWiring() noexcept override;
-
-		virtual void ConnectWire(const support::PointerView< WiringComponent > &wire) = 0;
-		virtual void ConnectWire(support::PointerView< WiringComponent > &&wire) = 0;
+		virtual void connectWire(const support::PointerView< WiringComponent > &wire) = 0;
+		virtual void connectWire(support::PointerView< WiringComponent > &&wire) = 0;
 
 		virtual WiringComponentType wiringComponentType() const noexcept = 0;
 
-		bool IsWire() const noexcept;
+		bool isWire() const noexcept;
+		bool isTunnel() const noexcept;
 
-		virtual const Wire *AsWire() const noexcept = 0;
-		virtual Wire *AsWire() noexcept = 0;
+		virtual Wire *asWire() noexcept;
+		virtual const Wire *asWire() const noexcept;
+
+		virtual Tunnel *asTunnel() noexcept;
+		virtual const Tunnel *asTunnel() const noexcept;
 	};
 
 	using wire_t = support::PointerView< WiringComponent >;

@@ -18,17 +18,17 @@ sim::Button::Button(sim::Button &&other) noexcept :
 sim::Button &sim::Button::operator=(const sim::Button &other)
 {
 	if (this != &other)
-		sim::Button(other).Swap(*this);
+		sim::Button(other).swap(*this);
 	return *this;
 }
 sim::Button &sim::Button::operator=(sim::Button &&other) noexcept
 {
 	if (this != &other)
-		sim::Button(std::move(other)).Swap(*this);
+		sim::Button(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Button::Swap(sim::Button &other) noexcept
+void sim::Button::swap(sim::Button &other) noexcept
 {
 	std::swap(m_activeOnPress, other.m_activeOnPress);
 }
@@ -44,13 +44,13 @@ sim::Identifier sim::Button::identify(sim::Identifier ID) noexcept
 	return m_wireOut.identify(m_id.next());
 }
 
-void sim::Button::ConnectIn(sim::wire_t &, std::size_t)
+void sim::Button::connectIn(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Button element doesn't have any inputs.");
 }
-void sim::Button::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::Button::connectOut(sim::wire_t &wire, std::size_t i)
 {
 	if (i != 0)
 		throw std::logic_error("Button element has only 1 output.");
-	m_wireOut.ConnectWire(wire);
+	m_wireOut.connectWire(wire);
 }

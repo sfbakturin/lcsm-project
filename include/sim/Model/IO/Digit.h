@@ -18,13 +18,13 @@ namespace sim
 		Digit &operator=(const Digit &other);
 		Digit &operator=(Digit &other) noexcept;
 
-		void Swap(Digit &other) noexcept;
+		void swap(Digit &other) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
 	  private:
 		Identifier m_id;

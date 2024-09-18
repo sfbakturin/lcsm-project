@@ -25,24 +25,24 @@ namespace sim
 		Splitter &operator=(const Splitter &other);
 		Splitter &operator=(Splitter &&other) noexcept;
 
-		void Swap(Splitter &other) noexcept;
+		void swap(Splitter &other) noexcept;
 
-		Width GetWidthIn() const noexcept;
-		std::size_t GetWidthOut() const noexcept;
+		Width widthIn() const noexcept;
+		std::size_t widthOut() const noexcept;
 
-		void SetWidthIn(Width newWidthIn) noexcept;
-		void SetWidthOut(std::size_t newWidthOut) noexcept;
+		void setWidthIn(Width newWidthIn) noexcept;
+		void setWidthOut(std::size_t newWidthOut) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		void ConnectBits(wire_t &wire);
-		void ConnectBitN(wire_t &wire, std::size_t i);
+		void connectBits(wire_t &wire);
+		void connectBitN(wire_t &wire, std::size_t i);
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 	  private:
 		static constexpr std::size_t CONNECTORS_SIZE = Width::W64;
@@ -57,7 +57,7 @@ namespace sim
 		Wire m_wireIn;
 		std::array< Wire, CONNECTORS_SIZE > m_wireOut;
 
-		void ResetConnectors() noexcept;
+		void resetConnectors() noexcept;
 	};
 }	 // namespace sim
 

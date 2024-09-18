@@ -21,9 +21,9 @@ namespace sim
 		Ground &operator=(const Ground &other);
 		Ground &operator=(Ground &&other) noexcept;
 
-		void Swap(Ground &other) noexcept;
+		void swap(Ground &other) noexcept;
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 		virtual Ground *asGround() noexcept override final;
 		virtual const Ground *asGround() const noexcept override final;

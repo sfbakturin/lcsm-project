@@ -22,25 +22,25 @@ namespace sim
 		Clock &operator=(const Clock &other);
 		Clock &operator=(Clock &&other) noexcept;
 
-		void Swap(Clock &other) noexcept;
+		void swap(Clock &other) noexcept;
 
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		unsigned GetHighDuration() const noexcept;
-		unsigned GetLowDuration() const noexcept;
-		unsigned GetPhaseOffset() const noexcept;
+		unsigned highDuration() const noexcept;
+		unsigned lowDuration() const noexcept;
+		unsigned phaseOffset() const noexcept;
 
-		void SetHighDuration(unsigned newHighDuration) noexcept;
-		void GetLowDuration(unsigned newLowDuration) noexcept;
-		void GetPhaseOffset(unsigned newPhaseOffset) noexcept;
+		void setHighDuration(unsigned newHighDuration) noexcept;
+		void setLowDuration(unsigned newLowDuration) noexcept;
+		void setPhaseOffset(unsigned newPhaseOffset) noexcept;
 
-		void Connect(wire_t &wire);
+		void connect(wire_t &wire);
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 	  private:
 		Identifier m_id;

@@ -48,34 +48,34 @@ sim::Identifier sim::TransmissionGate::idSrcC() const noexcept
 	return m_idSrcC;
 }
 
-void sim::TransmissionGate::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::TransmissionGate::connectIn(sim::wire_t &wire, std::size_t i)
 {
-	Connect(wire, i);
+	connect(wire, i);
 }
 
-void sim::TransmissionGate::ConnectOut(sim::wire_t &wire, std::size_t i)
+void sim::TransmissionGate::connectOut(sim::wire_t &wire, std::size_t i)
 {
-	Connect(wire, i);
+	connect(wire, i);
 }
 
-void sim::TransmissionGate::ConnectBase(sim::wire_t &wire)
+void sim::TransmissionGate::connectBase(sim::wire_t &wire)
 {
-	ConnectIn(wire, 0);
+	connectIn(wire, 0);
 }
 
-void sim::TransmissionGate::ConnectSrcA(sim::wire_t &wire)
+void sim::TransmissionGate::connectSrcA(sim::wire_t &wire)
 {
-	ConnectOut(wire, 1);
+	connectOut(wire, 1);
 }
 
-void sim::TransmissionGate::ConnectSrcB(sim::wire_t &wire)
+void sim::TransmissionGate::connectSrcB(sim::wire_t &wire)
 {
-	ConnectOut(wire, 2);
+	connectOut(wire, 2);
 }
 
-void sim::TransmissionGate::ConnectSrcC(sim::wire_t &wire)
+void sim::TransmissionGate::connectSrcC(sim::wire_t &wire)
 {
-	ConnectOut(wire, 3);
+	connectOut(wire, 3);
 }
 
 sim::CircuitComponentType sim::TransmissionGate::circuitComponentType() const noexcept
@@ -83,12 +83,12 @@ sim::CircuitComponentType sim::TransmissionGate::circuitComponentType() const no
 	return sim::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE;
 }
 
-void sim::TransmissionGate::Connect(sim::wire_t &wire, std::size_t i)
+void sim::TransmissionGate::connect(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
-		m_base.ConnectWire(wire);
+		m_base.connectWire(wire);
 	else if (i - 1 < sim::TransmissionGate::SRC_N)
-		m_srcs[i].ConnectWire(wire);
+		m_srcs[i].connectWire(wire);
 	throw std::logic_error(
 		"TransmissionGate element has only 4 inout "
 		"connections.");

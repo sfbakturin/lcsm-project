@@ -24,19 +24,19 @@ namespace sim
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		virtual void ConnectWire(const wire_t &wire) override;
-		virtual void ConnectWire(wire_t &&wire) override;
+		virtual void connectWire(const wire_t &wire) override final;
+		virtual void connectWire(wire_t &&wire) override final;
 
-		void Connect(const support::PointerView< Tunnel > &tunnel) noexcept;
-		void Connect(support::PointerView< Tunnel > &&tunnel) noexcept;
+		void connect(const support::PointerView< Tunnel > &tunnel) noexcept;
+		void connect(support::PointerView< Tunnel > &&tunnel) noexcept;
 
-		virtual WiringComponentType wiringComponentType() const noexcept override;
+		virtual WiringComponentType wiringComponentType() const noexcept override final;
 
-		virtual const Wire *AsWire() const noexcept override;
-		virtual Wire *AsWire() noexcept override;
+		virtual Tunnel *asTunnel() noexcept override final;
+		virtual const Tunnel *asTunnel() const noexcept override final;
 
 	  private:
 		Identifier m_id;

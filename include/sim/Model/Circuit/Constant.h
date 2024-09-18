@@ -23,13 +23,13 @@ namespace sim
 		Constant &operator=(const Constant &other);
 		Constant &operator=(Constant &&other) noexcept;
 
-		void Swap(Constant &other) noexcept;
+		void swap(Constant &other) noexcept;
 
-		Width GetWidth() const noexcept;
-		std::uint64_t GetValue() const noexcept;
+		Width width() const noexcept;
+		std::uint64_t value() const noexcept;
 
-		void SetWidth(Width newWidth) noexcept;
-		void SetValue(std::uint64_t newValue) noexcept;
+		void setWidth(Width newWidth) noexcept;
+		void setValue(std::uint64_t newValue) noexcept;
 
 		Wire &wire() noexcept;
 		const Wire &wire() const noexcept;
@@ -37,10 +37,10 @@ namespace sim
 		virtual Identifier ID() const noexcept override final;
 		virtual Identifier identify(Identifier ID) noexcept override final;
 
-		virtual void ConnectIn(wire_t &wire, std::size_t i) override;
-		virtual void ConnectOut(wire_t &wire, std::size_t i) override;
+		virtual void connectIn(wire_t &wire, std::size_t i) override final;
+		virtual void connectOut(wire_t &wire, std::size_t i) override final;
 
-		void Connect(wire_t &wire);
+		void connect(wire_t &wire);
 
 		virtual CircuitComponentType circuitComponentType() const noexcept override;
 

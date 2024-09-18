@@ -18,17 +18,17 @@ sim::Digit::Digit(sim::Digit &&other) noexcept :
 sim::Digit &sim::Digit::operator=(const sim::Digit &other)
 {
 	if (this != &other)
-		sim::Digit(other).Swap(*this);
+		sim::Digit(other).swap(*this);
 	return *this;
 }
 sim::Digit &sim::Digit::operator=(sim::Digit &other) noexcept
 {
 	if (this != &other)
-		sim::Digit(std::move(other)).Swap(*this);
+		sim::Digit(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Digit::Swap(sim::Digit &other) noexcept
+void sim::Digit::swap(sim::Digit &other) noexcept
 {
 	std::swap(m_hasDecimalPoint, other.m_hasDecimalPoint);
 }
@@ -44,16 +44,16 @@ sim::Identifier sim::Digit::identify(sim::Identifier ID) noexcept
 	return m_decimalPoint.identify(m_data.identify(m_id.next()));
 }
 
-void sim::Digit::ConnectIn(sim::wire_t &wire, std::size_t i)
+void sim::Digit::connectIn(sim::wire_t &wire, std::size_t i)
 {
 	if (i == 0)
-		m_data.ConnectWire(wire);
+		m_data.connectWire(wire);
 	else if (i == 1)
-		m_decimalPoint.ConnectWire(wire);
+		m_decimalPoint.connectWire(wire);
 	else
 		throw std::logic_error("Digit element has only 2 inputs.");
 }
-void sim::Digit::ConnectOut(sim::wire_t &, std::size_t)
+void sim::Digit::connectOut(sim::wire_t &, std::size_t)
 {
 	throw std::logic_error("Digit element doesn't have any outputs.");
 }

@@ -21,9 +21,9 @@ namespace sim
 		Power &operator=(const Power &other);
 		Power &operator=(Power &&other) noexcept;
 
-		void Swap(Power &other) noexcept;
+		void swap(Power &other) noexcept;
 
-		virtual CircuitComponentType circuitComponentType() const noexcept override;
+		virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 		virtual Power *asPower() noexcept override final;
 		virtual const Power *asPower() const noexcept override final;

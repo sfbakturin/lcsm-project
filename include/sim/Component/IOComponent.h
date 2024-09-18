@@ -2,7 +2,6 @@
 #define SIM_COMPONENT_IOCOMPONENT_H
 
 #include <sim/Component/Component.h>
-#include <sim/Model/Wiring/Wire.h>
 
 namespace sim
 {
@@ -13,14 +12,8 @@ namespace sim
 
 		virtual ComponentType componentType() const noexcept override;
 
-		virtual const CircuitComponent *AsCircuit() const noexcept override;
-		virtual CircuitComponent *AsCircuit() noexcept override;
-
-		virtual const IOComponent *AsIO() const noexcept override;
-		virtual IOComponent *AsIO() noexcept override;
-
-		virtual const WiringComponent *AsWiring() const noexcept override;
-		virtual WiringComponent *AsWiring() noexcept override;
+		virtual IOComponent *asIO() noexcept override final;
+		virtual const IOComponent *asIO() const noexcept override final;
 	};
 }	 // namespace sim
 

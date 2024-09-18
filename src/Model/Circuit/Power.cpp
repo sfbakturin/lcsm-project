@@ -18,21 +18,21 @@ sim::Power::Power(sim::Power &&other) noexcept : sim::Constant(std::move(other))
 sim::Power &sim::Power::operator=(const sim::Power &other)
 {
 	if (this != &other)
-		sim::Power(other).Swap(*this);
+		sim::Power(other).swap(*this);
 	return *this;
 }
 
 sim::Power &sim::Power::operator=(sim::Power &&other) noexcept
 {
 	if (this != &other)
-		sim::Power(std::move(other)).Swap(*this);
+		sim::Power(std::move(other)).swap(*this);
 	return *this;
 }
 
-void sim::Power::Swap(sim::Power &other) noexcept
+void sim::Power::swap(sim::Power &other) noexcept
 {
 	sim::Constant &left = *this;
-	left.Swap(other);
+	left.swap(other);
 }
 
 sim::CircuitComponentType sim::Power::circuitComponentType() const noexcept
