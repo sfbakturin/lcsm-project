@@ -15,7 +15,7 @@ AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 BinPackArguments: false
 BinPackParameters: false
 BitFieldColonSpacing: Both

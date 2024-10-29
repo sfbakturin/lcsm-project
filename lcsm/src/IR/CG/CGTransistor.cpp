@@ -1,0 +1,110 @@
+#include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/Value.h>
+#include <lcsm/IR/Width.h>
+
+#include <utility>
+
+lcsm::Value &lcsm::CGTransistorBase::read()
+{
+	return m_value;
+}
+
+const lcsm::Value &lcsm::CGTransistorBase::read() const
+{
+	return m_value;
+}
+
+void lcsm::CGTransistorBase::write(const lcsm::Value &value)
+{
+	m_value = value;
+}
+
+void lcsm::CGTransistorBase::write(lcsm::Value &&value)
+{
+	m_value = std::move(value);
+}
+
+lcsm::Width lcsm::CGTransistorBase::width() const
+{
+	return m_value.width();
+}
+
+bool lcsm::CGTransistorBase::checkWidth(const lcsm::Value &value) const
+{
+	return m_value.width() == value.width();
+}
+
+lcsm::CGObjectT lcsm::CGTransistorBase::T() const noexcept
+{
+	return lcsm::CGObjectT::OBJ_TRANSISTOR_BASE;
+}
+
+lcsm::CGTransistorBase *lcsm::CGTransistorBase::asTransistorBase() noexcept
+{
+	return this;
+}
+
+const lcsm::CGTransistorBase *lcsm::CGTransistorBase::asTransistorBase() const noexcept
+{
+	return this;
+}
+
+lcsm::Value &lcsm::CGTransistorInout::read()
+{
+	return m_value;
+}
+
+const lcsm::Value &lcsm::CGTransistorInout::read() const
+{
+	return m_value;
+}
+
+void lcsm::CGTransistorInout::write(const lcsm::Value &value)
+{
+	m_value = value;
+}
+
+void lcsm::CGTransistorInout::write(lcsm::Value &&value)
+{
+	m_value = std::move(value);
+}
+
+lcsm::Width lcsm::CGTransistorInout::width() const
+{
+	return m_value.width();
+}
+
+bool lcsm::CGTransistorInout::checkWidth(const lcsm::Value &value) const
+{
+	return m_value.width() == value.width();
+}
+
+lcsm::CGObjectT lcsm::CGTransistorInout::T() const noexcept
+{
+	return lcsm::CGObjectT::OBJ_TRANSISTOR_INOUT;
+}
+
+lcsm::CGTransistorInout *lcsm::CGTransistorInout::asTransistorInout() noexcept
+{
+	return this;
+}
+
+const lcsm::CGTransistorInout *lcsm::CGTransistorInout::asTransistorInout() const noexcept
+{
+	return this;
+}
+
+lcsm::CGObjectT lcsm::CGTransistorState::T() const noexcept
+{
+	return lcsm::CGObjectT::OBJ_TRANSISTOR_STATE;
+}
+
+lcsm::CGTransistorState *lcsm::CGTransistorState::asTransistorState() noexcept
+{
+	return this;
+}
+
+const lcsm::CGTransistorState *lcsm::CGTransistorState::asTransistorState() const noexcept
+{
+	return this;
+}
