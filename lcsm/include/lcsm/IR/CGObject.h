@@ -1,8 +1,8 @@
 #ifndef LCSM_IR_CGOBJECT_H
 #define LCSM_IR_CGOBJECT_H
 
-#include <lcsm/IR/Value.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/IR/DataBits.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <cstdint>
@@ -40,14 +40,14 @@ namespace lcsm
 	  public:
 		virtual ~CGObject() noexcept = default;
 
-		virtual Value &read() = 0;
-		virtual const Value &read() const = 0;
+		virtual DataBits &read() = 0;
+		virtual const DataBits &read() const = 0;
 
-		virtual void write(const Value &value) = 0;
-		virtual void write(Value &&value) = 0;
+		virtual void write(const DataBits &value) = 0;
+		virtual void write(DataBits &&value) = 0;
 
 		virtual Width width() const = 0;
-		virtual bool checkWidth(const Value &value) const = 0;
+		virtual bool checkWidth(const DataBits &value) const = 0;
 
 		virtual CGObjectT T() const noexcept = 0;
 
@@ -98,29 +98,29 @@ namespace lcsm
 
 		virtual ~CGPin() noexcept = default;
 
-		CGPin(const Value &value);
-		CGPin(Value &&value) noexcept;
+		CGPin(const DataBits &value);
+		CGPin(DataBits &&value) noexcept;
 
 		virtual Width width() const override;
-		virtual bool checkWidth(const Value &value) const override;
+		virtual bool checkWidth(const DataBits &value) const override;
 
 	  protected:
-		Value m_value;
+		DataBits m_value;
 	};
 
 	class CGPinInput : public CGPin
 	{
 	  public:
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual CGObjectT T() const noexcept override;
 
-		void externalWrite(const Value &value);
-		void externalWrite(Value &&value) noexcept;
+		void externalWrite(const DataBits &value);
+		void externalWrite(DataBits &&value) noexcept;
 
 		virtual CGPinInput *asPinInput() noexcept override final;
 		virtual const CGPinInput *asPinInput() const noexcept override final;
@@ -129,16 +129,16 @@ namespace lcsm
 	class CGPinOutput : public CGPin
 	{
 	  public:
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual CGObjectT T() const noexcept override;
 
-		Value &externalRead() noexcept;
-		const Value &externalRead() const noexcept;
+		DataBits &externalRead() noexcept;
+		const DataBits &externalRead() const noexcept;
 
 		virtual CGPinOutput *asPinOutput() noexcept override final;
 		virtual const CGPinOutput *asPinOutput() const noexcept override final;
@@ -147,14 +147,14 @@ namespace lcsm
 	class CGWire : public CGObject
 	{
 	  public:
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual Width width() const override final;
-		virtual bool checkWidth(const Value &value) const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -162,7 +162,7 @@ namespace lcsm
 		virtual const CGWire *asWire() const noexcept override final;
 
 	  private:
-		Value m_value;
+		DataBits m_value;
 	};
 
 	class CGConstant : public CGObject
@@ -170,27 +170,27 @@ namespace lcsm
 	  public:
 		CGConstant() noexcept = default;
 
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual Width width() const override final;
-		virtual bool checkWidth(const Value &value) const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
 		virtual CGConstant *asConstant() noexcept override final;
 		virtual const CGConstant *asConstant() const noexcept override final;
 
-		void emplaceValue(Width width, std::uint64_t value);
+		void emplaceDataBits(Width width, std::uint64_t value);
 
 	  protected:
-		void setValue(const Value &value);
-		void setValue(Value &&value) noexcept;
+		void setDataBits(const DataBits &value);
+		void setDataBits(DataBits &&value) noexcept;
 
-		Value m_value;
+		DataBits m_value;
 	};
 
 	class CGPower : public CGConstant
@@ -218,14 +218,14 @@ namespace lcsm
 	class CGState : public CGObject
 	{
 	  public:
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual Width width() const override final;
-		virtual bool checkWidth(const Value &value) const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
 	};
 
 	class CGTransistorBase : public CGObject
@@ -233,14 +233,14 @@ namespace lcsm
 	  public:
 		CGTransistorBase() noexcept = default;
 
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual Width width() const override final;
-		virtual bool checkWidth(const Value &value) const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -248,7 +248,7 @@ namespace lcsm
 		virtual const CGTransistorBase *asTransistorBase() const noexcept override final;
 
 	  private:
-		Value m_value;
+		DataBits m_value;
 	};
 
 	class CGTransistorInout : public CGObject
@@ -256,14 +256,14 @@ namespace lcsm
 	  public:
 		CGTransistorInout() noexcept = default;
 
-		virtual Value &read() override final;
-		virtual const Value &read() const override final;
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
 
-		virtual void write(const Value &value) override final;
-		virtual void write(Value &&value) override final;
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
 
 		virtual Width width() const override final;
-		virtual bool checkWidth(const Value &value) const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
 
@@ -271,7 +271,7 @@ namespace lcsm
 		virtual const CGTransistorInout *asTransistorInout() const noexcept override final;
 
 	  private:
-		Value m_value;
+		DataBits m_value;
 	};
 
 	class CGTransistorState : public CGState

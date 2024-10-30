@@ -1,7 +1,7 @@
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/IR/Value.h>
 
 lcsm::UpdateState::UpdateState(lcsm::CGObject *target) noexcept : m_target(target) {}
 

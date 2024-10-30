@@ -1,6 +1,6 @@
-#include <lcsm/IR/Width.h>
 #include <lcsm/Model/Circuit/Constant.h>
 #include <lcsm/Model/Circuit/Power.h>
+#include <lcsm/Model/Width.h>
 
 #include <utility>
 

@@ -3,7 +3,7 @@
 
 #include <lcsm/Component/CircuitComponent.h>
 #include <lcsm/Component/Identifier.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wiring/Wire.h>
 
 #include <array>
@@ -47,7 +47,7 @@ namespace lcsm
 			virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
 		  private:
-			static constexpr std::size_t CONNECTORS_SIZE = Width::W64;
+			static constexpr std::size_t CONNECTORS_SIZE = Width::MaxWidth;
 			static constexpr std::size_t NO_CONNECT = std::numeric_limits< std::size_t >::max();
 
 			Identifier m_id;

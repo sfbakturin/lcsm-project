@@ -1,7 +1,6 @@
 #include <lcsm/Component/CircuitComponent.h>
 #include <lcsm/Component/Component.h>
 #include <lcsm/Component/WiringComponent.h>
-#include <lcsm/IR/Width.h>
 #include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Circuit/Clock.h>
@@ -15,6 +14,7 @@
 #include <lcsm/Model/IO/Button.h>
 #include <lcsm/Model/IO/Digit.h>
 #include <lcsm/Model/IO/Probe.h>
+#include <lcsm/Model/Width.h>
 
 lcsm::LCSMBuilder::LCSMBuilder(lcsm::LCSMCircuit &circuit) noexcept : m_circuit(circuit) {}
 

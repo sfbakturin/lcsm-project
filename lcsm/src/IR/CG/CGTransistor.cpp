@@ -1,25 +1,25 @@
 #include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/Value.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/IR/DataBits.h>
+#include <lcsm/Model/Width.h>
 
 #include <utility>
 
-lcsm::Value &lcsm::CGTransistorBase::read()
+lcsm::DataBits &lcsm::CGTransistorBase::read()
 {
 	return m_value;
 }
 
-const lcsm::Value &lcsm::CGTransistorBase::read() const
+const lcsm::DataBits &lcsm::CGTransistorBase::read() const
 {
 	return m_value;
 }
 
-void lcsm::CGTransistorBase::write(const lcsm::Value &value)
+void lcsm::CGTransistorBase::write(const lcsm::DataBits &value)
 {
 	m_value = value;
 }
 
-void lcsm::CGTransistorBase::write(lcsm::Value &&value)
+void lcsm::CGTransistorBase::write(lcsm::DataBits &&value)
 {
 	m_value = std::move(value);
 }
@@ -29,7 +29,7 @@ lcsm::Width lcsm::CGTransistorBase::width() const
 	return m_value.width();
 }
 
-bool lcsm::CGTransistorBase::checkWidth(const lcsm::Value &value) const
+bool lcsm::CGTransistorBase::checkWidth(const lcsm::DataBits &value) const
 {
 	return m_value.width() == value.width();
 }
@@ -49,22 +49,22 @@ const lcsm::CGTransistorBase *lcsm::CGTransistorBase::asTransistorBase() const n
 	return this;
 }
 
-lcsm::Value &lcsm::CGTransistorInout::read()
+lcsm::DataBits &lcsm::CGTransistorInout::read()
 {
 	return m_value;
 }
 
-const lcsm::Value &lcsm::CGTransistorInout::read() const
+const lcsm::DataBits &lcsm::CGTransistorInout::read() const
 {
 	return m_value;
 }
 
-void lcsm::CGTransistorInout::write(const lcsm::Value &value)
+void lcsm::CGTransistorInout::write(const lcsm::DataBits &value)
 {
 	m_value = value;
 }
 
-void lcsm::CGTransistorInout::write(lcsm::Value &&value)
+void lcsm::CGTransistorInout::write(lcsm::DataBits &&value)
 {
 	m_value = std::move(value);
 }
@@ -74,7 +74,7 @@ lcsm::Width lcsm::CGTransistorInout::width() const
 	return m_value.width();
 }
 
-bool lcsm::CGTransistorInout::checkWidth(const lcsm::Value &value) const
+bool lcsm::CGTransistorInout::checkWidth(const lcsm::DataBits &value) const
 {
 	return m_value.width() == value.width();
 }

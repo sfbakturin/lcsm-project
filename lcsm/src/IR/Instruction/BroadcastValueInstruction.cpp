@@ -1,6 +1,6 @@
 #include <lcsm/IR/CG.h>
+#include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/IR/Value.h>
 
 #include <stdexcept>
 #include <utility>
@@ -14,7 +14,7 @@ void lcsm::BroadcastValue::invoke()
 {
 	if (m_targetFrom->isWire() && m_targetTo->isWire())
 	{
-		lcsm::Value value = m_targetFrom->read();
+		lcsm::DataBits value = m_targetFrom->read();
 		m_targetTo->write(std::move(value));
 	}
 	else

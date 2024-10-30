@@ -1,4 +1,3 @@
-
 #include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMContext.h>

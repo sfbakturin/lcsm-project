@@ -1,7 +1,7 @@
-#include <lcsm/IR/Bit.h>
 #include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/Value.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/IR/DataBits.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Verilog/Bit.h>
 
 lcsm::CGObjectT lcsm::CGPower::T() const noexcept
 {
@@ -20,5 +20,5 @@ const lcsm::CGPower *lcsm::CGPower::asPower() const noexcept
 
 void lcsm::CGPower::setWidth(lcsm::Width width)
 {
-	setValue(lcsm::Value(width, lcsm::LogisimBit::LOGISIM_TRUE));
+	setDataBits(lcsm::DataBits(width, lcsm::verilog::Bit::True));
 }

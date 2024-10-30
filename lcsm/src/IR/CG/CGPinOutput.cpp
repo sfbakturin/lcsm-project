@@ -1,25 +1,25 @@
 #include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/Value.h>
+#include <lcsm/IR/DataBits.h>
 
 #include <stdexcept>
 #include <utility>
 
-lcsm::Value &lcsm::CGPinOutput::read()
+lcsm::DataBits &lcsm::CGPinOutput::read()
 {
 	throw std::logic_error("Can't write value from only output Pin.");
 }
 
-const lcsm::Value &lcsm::CGPinOutput::read() const
+const lcsm::DataBits &lcsm::CGPinOutput::read() const
 {
 	throw std::logic_error("Can't write value from only output Pin.");
 }
 
-void lcsm::CGPinOutput::write(const lcsm::Value &value)
+void lcsm::CGPinOutput::write(const lcsm::DataBits &value)
 {
 	m_value = value;
 }
 
-void lcsm::CGPinOutput::write(lcsm::Value &&value)
+void lcsm::CGPinOutput::write(lcsm::DataBits &&value)
 {
 	m_value = std::move(value);
 }
@@ -29,12 +29,12 @@ lcsm::CGObjectT lcsm::CGPinOutput::T() const noexcept
 	return lcsm::CGObjectT::OBJ_PIN_OUTPUT;
 }
 
-const lcsm::Value &lcsm::CGPinOutput::externalRead() const noexcept
+const lcsm::DataBits &lcsm::CGPinOutput::externalRead() const noexcept
 {
 	return m_value;
 }
 
-lcsm::Value &lcsm::CGPinOutput::externalRead() noexcept
+lcsm::DataBits &lcsm::CGPinOutput::externalRead() noexcept
 {
 	return m_value;
 }

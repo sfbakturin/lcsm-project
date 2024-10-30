@@ -1,5 +1,4 @@
 ﻿#include <lcsm/Component/WiringComponent.h>
-#include <lcsm/IR/Bit.h>
 #include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMContext.h>
 #include <lcsm/LCSMEngine.h>
@@ -18,6 +17,4 @@ int main()
 	builder.ConnectPin(in0, out0, 0);
 
 	engine.addCircuit(dummy);
-
-	engine.invokeFull({ { lcsm::LogisimBit::LOGISIM_TRUE } });
 }

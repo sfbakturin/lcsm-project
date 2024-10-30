@@ -6,8 +6,8 @@
 #include <lcsm/Component/Identifier.h>
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/IR/Value.h>
 #include <lcsm/LCSMContext.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
@@ -26,7 +26,7 @@ namespace lcsm
 
 		void addCircuit(LCSMCircuit &circuit);
 
-		std::vector< Value > invokeFull(std::initializer_list< Value > I);
+		std::vector< DataBits > invokeFull(std::initializer_list< DataBits > I);
 
 	  private:
 		CGWire *registerWire(Identifier ID);
@@ -54,10 +54,9 @@ namespace lcsm
 		CGCompositeNode *registeredCompositeNode(Identifier ID, CGObject *object);
 		CGDynamicNode *registeredDynamicNode(Identifier ID, CGObject *object);
 
-		void buildCircuitIOComp(
-			std::unordered_set< lcsm::Identifier > &visited,
-			std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-			const lcsm::IOComponent *ioComp);
+		void buildCircuitIOComp(std::unordered_set< lcsm::Identifier > &visited,
+								std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
+								const lcsm::IOComponent *ioComp);
 		void buildCircuitWiringComp(
 			std::unordered_set< lcsm::Identifier > &visited,
 			std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,

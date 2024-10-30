@@ -3,7 +3,7 @@
 
 #include <lcsm/Component/CircuitComponent.h>
 #include <lcsm/Component/Identifier.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wiring/Wire.h>
 
 #include <cstdint>

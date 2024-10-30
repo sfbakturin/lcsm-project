@@ -1,7 +1,7 @@
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/IR/Value.h>
 
 #include <stdexcept>
 #include <utility>
@@ -37,10 +37,10 @@ void lcsm::WriteValue::invoke()
 	if (writeable(fromT, toT) && m_targetFrom->checkWidth(m_targetTo->read()))
 	{
 		// Permitted combination: from PinOutput to Wire, Wire to Wire.
-		lcsm::Value value = m_targetFrom->read();
+		lcsm::DataBits value = m_targetFrom->read();
 		m_targetTo->write(std::move(value));
 	}
-	else if (CondProh(fromT, toT) && m_targetFrom->read() == m_targetTo->read())
+	else if (CondProh(fromT, toT) /* && m_targetFrom->read() == m_targetTo->read() -- it should be rewritten */)
 	{
 		// Conditionally prohibited: when Wire to PinInput, for stabilized
 		// situation, writing value must equals to PinInput value, otherwise --

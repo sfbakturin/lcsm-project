@@ -1,0 +1,54 @@
+#ifndef LCSM_VERILOG_VALUE_H
+#define LCSM_VERILOG_VALUE_H
+
+#include <lcsm/Verilog/Bit.h>
+#include <lcsm/Verilog/Strength.h>
+
+namespace lcsm
+{
+	namespace verilog
+	{
+		class Value
+		{
+		  public:
+			Value() noexcept;
+			Value(Bit bit) noexcept;
+			Value(Strength strength, Bit bit) noexcept;
+
+			Value(const Value &other) noexcept;
+			Value(Value &&other) noexcept;
+
+			Value &operator=(const Value &other) noexcept;
+			Value &operator=(Value &&other) noexcept;
+
+			static int compareInner(const Value &left, const Value &right) noexcept;
+			static int compareOuter(const Value &left, const Value &right) noexcept;
+
+			bool lessInner(const Value &other) const noexcept;
+			bool greaterInner(const Value &other) const noexcept;
+			bool equalsInner(const Value &other) const noexcept;
+
+			bool lessOuter(const Value &other) const noexcept;
+			bool greaterOuter(const Value &other) const noexcept;
+			bool equalsOuter(const Value &other) const noexcept;
+
+			void swap(Value &other) noexcept;
+
+			static Value one(Strength strength) noexcept;
+			static Value zero(Strength strength) noexcept;
+
+			Strength strength() const noexcept;
+			void setStrength(Strength newStrength) noexcept;
+
+			Bit bit() const noexcept;
+			void setBit(Bit newBit) noexcept;
+			void flip() noexcept;
+
+		  private:
+			Strength m_strength;
+			Bit m_bit;
+		};
+	}	 // namespace verilog
+}	 // namespace lcsm
+
+#endif

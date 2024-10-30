@@ -1,19 +1,19 @@
 #include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/Value.h>
-#include <lcsm/IR/Width.h>
+#include <lcsm/IR/DataBits.h>
+#include <lcsm/Model/Width.h>
 
 #include <utility>
 
-lcsm::CGPin::CGPin(const lcsm::Value &value) : m_value(value) {}
+lcsm::CGPin::CGPin(const lcsm::DataBits &value) : m_value(value) {}
 
-lcsm::CGPin::CGPin(lcsm::Value &&value) noexcept : m_value(std::move(value)) {}
+lcsm::CGPin::CGPin(lcsm::DataBits &&value) noexcept : m_value(std::move(value)) {}
 
 lcsm::Width lcsm::CGPin::width() const
 {
 	return m_value.width();
 }
 
-bool lcsm::CGPin::checkWidth(const lcsm::Value &value) const
+bool lcsm::CGPin::checkWidth(const lcsm::DataBits &value) const
 {
 	return value.width() == width();
 }

@@ -1,7 +1,6 @@
 #include <lcsm/Component/Component.h>
 #include <lcsm/Component/IOComponent.h>
 #include <lcsm/Component/WiringComponent.h>
-#include <lcsm/IR/Width.h>
 #include <lcsm/LCSMContext.h>
 #include <lcsm/Model/Circuit/Clock.h>
 #include <lcsm/Model/Circuit/Constant.h>
@@ -14,6 +13,7 @@
 #include <lcsm/Model/IO/Button.h>
 #include <lcsm/Model/IO/Digit.h>
 #include <lcsm/Model/IO/Probe.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wiring/Tunnel.h>
 #include <lcsm/Model/Wiring/Wire.h>
 #include <lcsm/Support/PointerView.hpp>

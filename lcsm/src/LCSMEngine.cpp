@@ -5,8 +5,8 @@
 #include <lcsm/Component/WiringComponent.h>
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/IR/Value.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMContext.h>
 #include <lcsm/LCSMEngine.h>
@@ -58,7 +58,7 @@ void lcsm::LCSMEngine::addCircuit(lcsm::LCSMCircuit &circuit)
 	buildCircuit(bfsVisit);
 }
 
-std::vector< lcsm::Value > lcsm::LCSMEngine::invokeFull(std::initializer_list< lcsm::Value >)
+std::vector< lcsm::DataBits > lcsm::LCSMEngine::invokeFull(std::initializer_list< lcsm::DataBits >)
 {
 	return {};
 }
@@ -647,7 +647,7 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		lcsm::CGConstant *constantGraph = registeredConstant(constant->ID());
 		lcsm::CGWire *constantWireGraph = registeredWire(constantWire.ID());
 
-		constantGraph->emplaceValue(constant->width(), constant->value());
+		constantGraph->emplaceDataBits(constant->width(), constant->value());
 
 		// Constant's tree node.
 		lcsm::CGNode *constantNode = registeredStaticNode(constant->ID(), constantGraph);

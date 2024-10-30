@@ -4,7 +4,6 @@
 #include <lcsm/Component/CircuitComponent.h>
 #include <lcsm/Component/Component.h>
 #include <lcsm/Component/WiringComponent.h>
-#include <lcsm/IR/Width.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Circuit/Clock.h>
 #include <lcsm/Model/Circuit/Constant.h>
@@ -17,6 +16,7 @@
 #include <lcsm/Model/IO/Button.h>
 #include <lcsm/Model/IO/Digit.h>
 #include <lcsm/Model/IO/Probe.h>
+#include <lcsm/Model/Width.h>
 
 #include <cstddef>
 
@@ -33,11 +33,11 @@ namespace lcsm
 		LCSMBuilder &operator=(const LCSMBuilder &other) = delete;
 		LCSMBuilder &operator=(LCSMBuilder &&other) noexcept = delete;
 
-		model::Constant *CreateConstant(Width width = Width::W1, std::uint64_t value = 0x1);
-		model::Ground *CreateGround(Width width = Width::W1);
-		model::Power *CreatePower(Width width = Width::W1);
-		model::Pin *CreatePin(bool output, Width width = Width::W1);
-		model::Splitter *CreateSplitter(Width widthIn = Width::W2, std::size_t widthOut = 2);
+		model::Constant *CreateConstant(Width width = Width::Bit1, std::uint64_t value = 0x1);
+		model::Ground *CreateGround(Width width = Width::Bit1);
+		model::Power *CreatePower(Width width = Width::Bit1);
+		model::Pin *CreatePin(bool output, Width width = Width::Bit1);
+		model::Splitter *CreateSplitter(Width widthIn = Width::Bit2, std::size_t widthOut = 2);
 		model::Transistor *CreateTransistor(model::TransistorType type = model::TransistorType::TRANSISTOR_TYPE_P);
 		model::TransmissionGate *CreateTransmissionGate();
 		model::Clock *CreateClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);

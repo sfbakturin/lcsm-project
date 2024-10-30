@@ -43,8 +43,9 @@ ADD_LIBRARY(${PROJECT_NAME}
     Model/IO/Digit.cpp
     Model/IO/Probe.cpp
 
-    IR/Bit.cpp
-    IR/Value.cpp
+    Verilog/Value.cpp
+
+    IR/DataBits.cpp
 
     IR/Instruction.cpp
     IR/Instruction/WriteValueInstruction.cpp

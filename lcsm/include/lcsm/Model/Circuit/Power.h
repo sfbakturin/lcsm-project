@@ -2,8 +2,8 @@
 #define LCSM_MODEL_CIRCUIT_POWER_H
 
 #include <lcsm/Component/CircuitComponent.h>
-#include <lcsm/IR/Width.h>
 #include <lcsm/Model/Circuit/Constant.h>
+#include <lcsm/Model/Width.h>
 
 #include <cstdint>
 #include <limits>

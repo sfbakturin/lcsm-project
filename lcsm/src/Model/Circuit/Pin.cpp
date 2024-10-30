@@ -1,6 +1,6 @@
 #include <lcsm/Component/Identifier.h>
-#include <lcsm/IR/Width.h>
 #include <lcsm/Model/Circuit/Pin.h>
+#include <lcsm/Model/Width.h>
 
 #include <stdexcept>
 #include <utility>
