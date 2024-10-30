@@ -4,7 +4,7 @@
 
 #include <utility>
 
-lcsm::model::Power::Power(lcsm::Width width) : lcsm::model::Constant(width, lcsm::model::Power::POWER_VALUE) {}
+lcsm::model::Power::Power(lcsm::model::Width width) : lcsm::model::Constant(width, lcsm::model::Power::POWER_VALUE) {}
 
 lcsm::model::Power::Power(const lcsm::model::Power &other) : lcsm::model::Constant(other) {}
 

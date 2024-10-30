@@ -41,34 +41,34 @@ void lcsm::LCSMContext::AddCircuit(lcsm::LCSMCircuit *circuit)
 	m_circuits.push_back(lcsm::support::PointerView< lcsm::LCSMCircuit >(circuit));
 }
 
-lcsm::model::Constant *lcsm::LCSMContext::AllocaConstant(lcsm::Width width, std::uint64_t value)
+lcsm::model::Constant *lcsm::LCSMContext::AllocaConstant(lcsm::model::Width width, std::uint64_t value)
 {
 	std::shared_ptr< lcsm::model::Constant > constant = std::make_shared< lcsm::model::Constant >(width, value);
 	m_allocated.push_back(constant);
 	return constant.get();
 }
 
-lcsm::model::Ground *lcsm::LCSMContext::AllocaGround(lcsm::Width width)
+lcsm::model::Ground *lcsm::LCSMContext::AllocaGround(lcsm::model::Width width)
 {
 	std::shared_ptr< lcsm::model::Ground > ground = std::make_shared< lcsm::model::Ground >(width);
 	m_allocated.push_back(ground);
 	return ground.get();
 }
 
-lcsm::model::Power *lcsm::LCSMContext::AllocaPower(lcsm::Width width)
+lcsm::model::Power *lcsm::LCSMContext::AllocaPower(lcsm::model::Width width)
 {
 	std::shared_ptr< lcsm::model::Power > power = std::make_shared< lcsm::model::Power >(width);
 	m_allocated.push_back(power);
 	return power.get();
 }
 
-lcsm::model::Pin *lcsm::LCSMContext::AllocaPin(bool output, lcsm::Width width)
+lcsm::model::Pin *lcsm::LCSMContext::AllocaPin(bool output, lcsm::model::Width width)
 {
 	std::shared_ptr< lcsm::model::Pin > pin = std::make_shared< lcsm::model::Pin >(output, width);
 	m_allocated.push_back(pin);
 	return pin.get();
 }
-lcsm::model::Splitter *lcsm::LCSMContext::AllocaSplitter(lcsm::Width widthIn, std::size_t widthOut)
+lcsm::model::Splitter *lcsm::LCSMContext::AllocaSplitter(lcsm::model::Width widthIn, std::size_t widthOut)
 {
 	std::shared_ptr< lcsm::model::Splitter > splitter = std::make_shared< lcsm::model::Splitter >(widthIn, widthOut);
 	m_allocated.push_back(splitter);

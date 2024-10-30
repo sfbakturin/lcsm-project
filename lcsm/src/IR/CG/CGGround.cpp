@@ -17,7 +17,7 @@ const lcsm::CGGround *lcsm::CGGround::asGround() const noexcept
 	return this;
 }
 
-void lcsm::CGGround::setWidth(lcsm::Width width)
+void lcsm::CGGround::setWidth(lcsm::model::Width width)
 {
 	setDataBits(lcsm::DataBits(width));
 }

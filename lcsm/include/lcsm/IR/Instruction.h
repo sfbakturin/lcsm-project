@@ -13,8 +13,7 @@ namespace lcsm
 	{
 		INSTR_WRITE_VALUE,
 		INSTR_BROADCAST_VALUE,
-		INSTR_UPDATE_ELEMENT_STATE,
-		INSTR_WRITE_VALUE_STABILIZED,
+		INSTR_UPDATE_ELEMENT_STATE
 	};
 
 	class Instruction
@@ -29,7 +28,6 @@ namespace lcsm
 		bool isWrite() const noexcept;
 		bool isBroadcast() const noexcept;
 		bool isUpdateElementState() const noexcept;
-		bool isWriteValueStabilized() const noexcept;
 
 		virtual bool mayStabilized() const noexcept = 0;
 	};

@@ -46,7 +46,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) = 0;
 		virtual void write(DataBits &&value) = 0;
 
-		virtual Width width() const = 0;
+		virtual model::Width width() const = 0;
 		virtual bool checkWidth(const DataBits &value) const = 0;
 
 		virtual CGObjectT T() const noexcept = 0;
@@ -101,7 +101,7 @@ namespace lcsm
 		CGPin(const DataBits &value);
 		CGPin(DataBits &&value) noexcept;
 
-		virtual Width width() const override;
+		virtual model::Width width() const override;
 		virtual bool checkWidth(const DataBits &value) const override;
 
 	  protected:
@@ -153,7 +153,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual Width width() const override final;
+		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
@@ -176,7 +176,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual Width width() const override final;
+		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
@@ -184,7 +184,7 @@ namespace lcsm
 		virtual CGConstant *asConstant() noexcept override final;
 		virtual const CGConstant *asConstant() const noexcept override final;
 
-		void emplaceDataBits(Width width, std::uint64_t value);
+		void emplaceDataBits(model::Width width, std::uint64_t value);
 
 	  protected:
 		void setDataBits(const DataBits &value);
@@ -201,7 +201,7 @@ namespace lcsm
 		virtual CGPower *asPower() noexcept override final;
 		virtual const CGPower *asPower() const noexcept override final;
 
-		void setWidth(Width width);
+		void setWidth(model::Width width);
 	};
 
 	class CGGround : public CGConstant
@@ -212,7 +212,7 @@ namespace lcsm
 		virtual CGGround *asGround() noexcept override final;
 		virtual const CGGround *asGround() const noexcept override final;
 
-		void setWidth(Width width);
+		void setWidth(model::Width width);
 	};
 
 	class CGState : public CGObject
@@ -224,7 +224,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual Width width() const override final;
+		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 	};
 
@@ -239,7 +239,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual Width width() const override final;
+		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;
@@ -262,7 +262,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual Width width() const override final;
+		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
 		virtual CGObjectT T() const noexcept override;

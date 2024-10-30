@@ -17,11 +17,11 @@ namespace lcsm
 	  public:
 		DataBits() noexcept;
 
-		DataBits(Width width) noexcept;
-		DataBits(Width width, const verilog::Value &value) noexcept;
-		DataBits(Width width, verilog::Value &&value) noexcept;
-		DataBits(Width width, verilog::Bit bit) noexcept;
-		DataBits(Width width, verilog::Strength strength, verilog::Bit bit) noexcept;
+		DataBits(model::Width width) noexcept;
+		DataBits(model::Width width, const verilog::Value &value) noexcept;
+		DataBits(model::Width width, verilog::Value &&value) noexcept;
+		DataBits(model::Width width, verilog::Bit bit) noexcept;
+		DataBits(model::Width width, verilog::Strength strength, verilog::Bit bit) noexcept;
 
 		DataBits(std::initializer_list< verilog::Bit > bits);
 		DataBits(std::initializer_list< verilog::Value > values);
@@ -34,7 +34,7 @@ namespace lcsm
 
 		void swap(DataBits &other) noexcept;
 
-		Width width() const noexcept;
+		model::Width width() const noexcept;
 		bool checkWidth(const DataBits &other) const noexcept;
 
 		verilog::Bit bit(std::size_t index) const;
@@ -50,10 +50,10 @@ namespace lcsm
 		void setValue(std::size_t index, const verilog::Value &newValue);
 		void setValue(std::size_t index, verilog::Value &&newValue);
 
-		static constexpr std::size_t MaxWidth = Width::MaxWidth;
+		static constexpr std::size_t MaxWidth = model::Width::MaxWidth;
 
 	  private:
-		Width m_width;
+		model::Width m_width;
 		support::StaticArray< verilog::Value, MaxWidth > m_bits;
 	};
 }	 // namespace lcsm

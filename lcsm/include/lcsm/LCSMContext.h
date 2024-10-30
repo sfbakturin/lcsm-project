@@ -46,11 +46,11 @@ namespace lcsm
 
 		void AddCircuit(LCSMCircuit *circuit);
 
-		model::Constant *AllocaConstant(Width width, std::uint64_t value);
-		model::Ground *AllocaGround(Width width);
-		model::Power *AllocaPower(Width width);
-		model::Pin *AllocaPin(bool output, Width width);
-		model::Splitter *AllocaSplitter(Width widthIn, std::size_t widthOut);
+		model::Constant *AllocaConstant(model::Width width, std::uint64_t value);
+		model::Ground *AllocaGround(model::Width width);
+		model::Power *AllocaPower(model::Width width);
+		model::Pin *AllocaPin(bool output, model::Width width);
+		model::Splitter *AllocaSplitter(model::Width widthIn, std::size_t widthOut);
 		model::Transistor *AllocaTransistor(model::TransistorType type);
 		model::TransmissionGate *AllocaTransmissionGate();
 		model::Clock *AllocaClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);

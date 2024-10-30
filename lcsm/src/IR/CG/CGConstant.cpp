@@ -24,7 +24,7 @@ void lcsm::CGConstant::write(lcsm::DataBits &&)
 	throw std::logic_error("Not implemented");
 }
 
-lcsm::Width lcsm::CGConstant::width() const
+lcsm::model::Width lcsm::CGConstant::width() const
 {
 	return m_value.width();
 }
@@ -49,7 +49,7 @@ const lcsm::CGConstant *lcsm::CGConstant::asConstant() const noexcept
 	return this;
 }
 
-void lcsm::CGConstant::emplaceDataBits(lcsm::Width width, std::uint64_t value)
+void lcsm::CGConstant::emplaceDataBits(lcsm::model::Width width, std::uint64_t value)
 {
 	// TODO: emplace value with width.
 	// m_value.setWidth(width);

@@ -3,22 +3,25 @@
 
 namespace lcsm
 {
-	enum Width : unsigned
+	namespace model
 	{
-		Bit1 = 1,
-		Bit2 = 2,
-		Bit3 = 3,
-		Bit4 = 4,
-		Bit5 = 5,
-		Bit6 = 6,
-		Bit7 = 7,
-		Byte = 8,
-		Word = 16,
-		ShortWord = 24,
-		DoubleWord = 32,
-		QuadWord = 64,
-		MaxWidth = QuadWord
-	};
+		enum Width : unsigned
+		{
+			Bit1 = 1,
+			Bit2 = 2,
+			Bit3 = 3,
+			Bit4 = 4,
+			Bit5 = 5,
+			Bit6 = 6,
+			Bit7 = 7,
+			Byte = 8,
+			Word = 16,
+			ShortWord = 24,
+			DoubleWord = 32,
+			QuadWord = 64,
+			MaxWidth = QuadWord
+		};
+	}	 // namespace model
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */

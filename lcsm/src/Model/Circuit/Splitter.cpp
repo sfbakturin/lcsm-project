@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Splitter::Splitter(lcsm::Width widthIn, std::size_t widthOut) : m_widthIn(widthIn), m_widthOut(widthOut)
+lcsm::model::Splitter::Splitter(lcsm::model::Width widthIn, std::size_t widthOut) :
+	m_widthIn(widthIn), m_widthOut(widthOut)
 {
 	resetConnectors();
 }
@@ -47,7 +48,7 @@ void lcsm::model::Splitter::swap(lcsm::model::Splitter &other) noexcept
 		std::swap(m_connectors[i], other.m_connectors[i]);
 }
 
-lcsm::Width lcsm::model::Splitter::widthIn() const noexcept
+lcsm::model::Width lcsm::model::Splitter::widthIn() const noexcept
 {
 	return m_widthIn;
 }
@@ -57,7 +58,7 @@ std::size_t lcsm::model::Splitter::widthOut() const noexcept
 	return m_widthOut;
 }
 
-void lcsm::model::Splitter::setWidthIn(lcsm::Width newWidthIn) noexcept
+void lcsm::model::Splitter::setWidthIn(lcsm::model::Width newWidthIn) noexcept
 {
 	m_widthIn = newWidthIn;
 	resetConnectors();

@@ -18,27 +18,27 @@
 
 lcsm::LCSMBuilder::LCSMBuilder(lcsm::LCSMCircuit &circuit) noexcept : m_circuit(circuit) {}
 
-lcsm::model::Constant *lcsm::LCSMBuilder::CreateConstant(lcsm::Width width, std::uint64_t value)
+lcsm::model::Constant *lcsm::LCSMBuilder::CreateConstant(lcsm::model::Width width, std::uint64_t value)
 {
 	return m_circuit.RegisterConstant(width, value);
 }
 
-lcsm::model::Ground *lcsm::LCSMBuilder::CreateGround(lcsm::Width width)
+lcsm::model::Ground *lcsm::LCSMBuilder::CreateGround(lcsm::model::Width width)
 {
 	return m_circuit.RegisterGround(width);
 }
 
-lcsm::model::Power *lcsm::LCSMBuilder::CreatePower(lcsm::Width width)
+lcsm::model::Power *lcsm::LCSMBuilder::CreatePower(lcsm::model::Width width)
 {
 	return m_circuit.RegisterPower(width);
 }
 
-lcsm::model::Pin *lcsm::LCSMBuilder::CreatePin(bool output, lcsm::Width width)
+lcsm::model::Pin *lcsm::LCSMBuilder::CreatePin(bool output, lcsm::model::Width width)
 {
 	return m_circuit.RegisterPin(output, width);
 }
 
-lcsm::model::Splitter *lcsm::LCSMBuilder::CreateSplitter(lcsm::Width widthIn, std::size_t widthOut)
+lcsm::model::Splitter *lcsm::LCSMBuilder::CreateSplitter(lcsm::model::Width widthIn, std::size_t widthOut)
 {
 	return m_circuit.RegisterSplitter(widthIn, widthOut);
 }

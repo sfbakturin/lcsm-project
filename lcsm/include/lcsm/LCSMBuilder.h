@@ -33,11 +33,11 @@ namespace lcsm
 		LCSMBuilder &operator=(const LCSMBuilder &other) = delete;
 		LCSMBuilder &operator=(LCSMBuilder &&other) noexcept = delete;
 
-		model::Constant *CreateConstant(Width width = Width::Bit1, std::uint64_t value = 0x1);
-		model::Ground *CreateGround(Width width = Width::Bit1);
-		model::Power *CreatePower(Width width = Width::Bit1);
-		model::Pin *CreatePin(bool output, Width width = Width::Bit1);
-		model::Splitter *CreateSplitter(Width widthIn = Width::Bit2, std::size_t widthOut = 2);
+		model::Constant *CreateConstant(model::Width width = model::Width::Bit1, std::uint64_t value = 0x1);
+		model::Ground *CreateGround(model::Width width = model::Width::Bit1);
+		model::Power *CreatePower(model::Width width = model::Width::Bit1);
+		model::Pin *CreatePin(bool output, model::Width width = model::Width::Bit1);
+		model::Splitter *CreateSplitter(model::Width widthIn = model::Width::Bit2, std::size_t widthOut = 2);
 		model::Transistor *CreateTransistor(model::TransistorType type = model::TransistorType::TRANSISTOR_TYPE_P);
 		model::TransmissionGate *CreateTransmissionGate();
 		model::Clock *CreateClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);

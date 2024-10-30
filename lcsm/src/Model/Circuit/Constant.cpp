@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Constant::Constant(lcsm::Width width, std::uint64_t value) :
+lcsm::model::Constant::Constant(lcsm::model::Width width, std::uint64_t value) :
 	m_width(width), m_value(value), m_wireOut(this)
 {
 }
@@ -36,7 +36,7 @@ void lcsm::model::Constant::swap(lcsm::model::Constant &other) noexcept
 	std::swap(m_width, other.m_width);
 }
 
-lcsm::Width lcsm::model::Constant::width() const noexcept
+lcsm::model::Width lcsm::model::Constant::width() const noexcept
 {
 	return m_width;
 }
@@ -46,7 +46,7 @@ std::uint64_t lcsm::model::Constant::value() const noexcept
 	return m_value;
 }
 
-void lcsm::model::Constant::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::model::Constant::setWidth(lcsm::model::Width newWidth) noexcept
 {
 	m_width = newWidth;
 }

@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_width(width), m_wire(this) {}
+lcsm::model::Pin::Pin(bool output, lcsm::model::Width width) : m_output(output), m_width(width), m_wire(this) {}
 
 lcsm::model::Pin::Pin(const lcsm::model::Pin &other) : m_output(other.m_output), m_width(other.m_width) {}
 lcsm::model::Pin::Pin(lcsm::model::Pin &&other) noexcept : m_output(other.m_output), m_width(other.m_width) {}
@@ -35,7 +35,7 @@ bool lcsm::model::Pin::isOutput() const noexcept
 	return m_output;
 }
 
-lcsm::Width lcsm::model::Pin::width() const noexcept
+lcsm::model::Width lcsm::model::Pin::width() const noexcept
 {
 	return m_width;
 }
@@ -55,7 +55,7 @@ void lcsm::model::Pin::setOutput(bool newOutput) noexcept
 	m_output = newOutput;
 }
 
-void lcsm::model::Pin::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::model::Pin::setWidth(lcsm::model::Width newWidth) noexcept
 {
 	m_width = newWidth;
 }

@@ -8,7 +8,7 @@ lcsm::CGPin::CGPin(const lcsm::DataBits &value) : m_value(value) {}
 
 lcsm::CGPin::CGPin(lcsm::DataBits &&value) noexcept : m_value(std::move(value)) {}
 
-lcsm::Width lcsm::CGPin::width() const
+lcsm::model::Width lcsm::CGPin::width() const
 {
 	return m_value.width();
 }

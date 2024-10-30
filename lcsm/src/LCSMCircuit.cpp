@@ -30,7 +30,7 @@ const std::unordered_map< lcsm::Identifier, lcsm::support::PointerView< lcsm::Co
 	return m_pin;
 }
 
-lcsm::model::Constant *lcsm::LCSMCircuit::RegisterConstant(lcsm::Width width, std::uint64_t value)
+lcsm::model::Constant *lcsm::LCSMCircuit::RegisterConstant(lcsm::model::Width width, std::uint64_t value)
 {
 	const lcsm::Identifier prev = m_globalId;
 	lcsm::model::Constant *constant = m_context.AllocaConstant(width, value);
@@ -41,7 +41,7 @@ lcsm::model::Constant *lcsm::LCSMCircuit::RegisterConstant(lcsm::Width width, st
 	return constant;
 }
 
-lcsm::model::Ground *lcsm::LCSMCircuit::RegisterGround(lcsm::Width width)
+lcsm::model::Ground *lcsm::LCSMCircuit::RegisterGround(lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
 	lcsm::model::Ground *ground = m_context.AllocaGround(width);
@@ -52,7 +52,7 @@ lcsm::model::Ground *lcsm::LCSMCircuit::RegisterGround(lcsm::Width width)
 	return ground;
 }
 
-lcsm::model::Power *lcsm::LCSMCircuit::RegisterPower(lcsm::Width width)
+lcsm::model::Power *lcsm::LCSMCircuit::RegisterPower(lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
 	lcsm::model::Power *power = m_context.AllocaPower(width);
@@ -63,7 +63,7 @@ lcsm::model::Power *lcsm::LCSMCircuit::RegisterPower(lcsm::Width width)
 	return power;
 }
 
-lcsm::model::Pin *lcsm::LCSMCircuit::RegisterPin(bool output, lcsm::Width width)
+lcsm::model::Pin *lcsm::LCSMCircuit::RegisterPin(bool output, lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
 	lcsm::model::Pin *pin = m_context.AllocaPin(output, width);
@@ -74,7 +74,7 @@ lcsm::model::Pin *lcsm::LCSMCircuit::RegisterPin(bool output, lcsm::Width width)
 	return pin;
 }
 
-lcsm::model::Splitter *lcsm::LCSMCircuit::RegisterSplitter(lcsm::Width widthIn, std::size_t widthOut)
+lcsm::model::Splitter *lcsm::LCSMCircuit::RegisterSplitter(lcsm::model::Width widthIn, std::size_t widthOut)
 {
 	const lcsm::Identifier prev = m_globalId;
 	lcsm::model::Splitter *splitter = m_context.AllocaSplitter(widthIn, widthOut);

@@ -18,7 +18,7 @@ const lcsm::CGPower *lcsm::CGPower::asPower() const noexcept
 	return this;
 }
 
-void lcsm::CGPower::setWidth(lcsm::Width width)
+void lcsm::CGPower::setWidth(lcsm::model::Width width)
 {
 	setDataBits(lcsm::DataBits(width, lcsm::verilog::Bit::True));
 }

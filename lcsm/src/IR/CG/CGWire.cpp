@@ -24,7 +24,7 @@ void lcsm::CGWire::write(lcsm::DataBits &&value)
 	m_value = std::move(value);
 }
 
-lcsm::Width lcsm::CGWire::width() const
+lcsm::model::Width lcsm::CGWire::width() const
 {
 	return m_value.width();
 }

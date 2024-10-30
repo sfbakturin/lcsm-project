@@ -10,28 +10,29 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::DataBits::DataBits() noexcept : lcsm::DataBits(lcsm::Width::Bit1) {}
+lcsm::DataBits::DataBits() noexcept : lcsm::DataBits(lcsm::model::Width::Bit1) {}
 
-lcsm::DataBits::DataBits(lcsm::Width width) noexcept :
+lcsm::DataBits::DataBits(lcsm::model::Width width) noexcept :
 	lcsm::DataBits(width, lcsm::verilog::Strength::StrongDrive, lcsm::verilog::Bit::False)
 {
 }
 
-lcsm::DataBits::DataBits(lcsm::Width width, const lcsm::verilog::Value &value) noexcept : m_width(width), m_bits(value)
+lcsm::DataBits::DataBits(lcsm::model::Width width, const lcsm::verilog::Value &value) noexcept :
+	m_width(width), m_bits(value)
 {
 }
 
-lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Value &&value) noexcept :
+lcsm::DataBits::DataBits(lcsm::model::Width width, lcsm::verilog::Value &&value) noexcept :
 	m_width(width), m_bits(std::move(value))
 {
 }
 
-lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Bit bit) noexcept :
+lcsm::DataBits::DataBits(lcsm::model::Width width, lcsm::verilog::Bit bit) noexcept :
 	lcsm::DataBits(width, lcsm::verilog::Strength::StrongDrive, bit)
 {
 }
 
-lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept :
+lcsm::DataBits::DataBits(lcsm::model::Width width, lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept :
 	lcsm::DataBits(width, lcsm::verilog::Value(strength, bit))
 {
 }
@@ -43,18 +44,18 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
 	/* Check compatible size via switch-case optimizations. */
 	switch (width)
 	{
-	case Bit1:
-	case Bit2:
-	case Bit3:
-	case Bit4:
-	case Bit5:
-	case Bit6:
-	case Bit7:
-	case Byte:
-	case Word:
-	case ShortWord:
-	case DoubleWord:
-	case QuadWord:
+	case lcsm::model::Width::Bit1:
+	case lcsm::model::Width::Bit2:
+	case lcsm::model::Width::Bit3:
+	case lcsm::model::Width::Bit4:
+	case lcsm::model::Width::Bit5:
+	case lcsm::model::Width::Bit6:
+	case lcsm::model::Width::Bit7:
+	case lcsm::model::Width::Byte:
+	case lcsm::model::Width::Word:
+	case lcsm::model::Width::ShortWord:
+	case lcsm::model::Width::DoubleWord:
+	case lcsm::model::Width::QuadWord:
 		break;
 	default:
 		throw std::logic_error("Incompatible size for DataBits");
@@ -65,7 +66,7 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
 	for (lcsm::verilog::Bit b : bits)
 		m_bits[i++] = { b };
 
-	m_width = static_cast< lcsm::Width >(width);
+	m_width = static_cast< lcsm::model::Width >(width);
 }
 
 lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values)
@@ -75,18 +76,18 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values)
 	/* Check compatible size via switch-case optimizations. */
 	switch (width)
 	{
-	case Bit1:
-	case Bit2:
-	case Bit3:
-	case Bit4:
-	case Bit5:
-	case Bit6:
-	case Bit7:
-	case Byte:
-	case Word:
-	case ShortWord:
-	case DoubleWord:
-	case QuadWord:
+	case lcsm::model::Width::Bit1:
+	case lcsm::model::Width::Bit2:
+	case lcsm::model::Width::Bit3:
+	case lcsm::model::Width::Bit4:
+	case lcsm::model::Width::Bit5:
+	case lcsm::model::Width::Bit6:
+	case lcsm::model::Width::Bit7:
+	case lcsm::model::Width::Byte:
+	case lcsm::model::Width::Word:
+	case lcsm::model::Width::ShortWord:
+	case lcsm::model::Width::DoubleWord:
+	case lcsm::model::Width::QuadWord:
 		break;
 	default:
 		throw std::logic_error("Incompatible size for DataBits");
@@ -97,7 +98,7 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values)
 	for (const lcsm::verilog::Value &v : values)
 		m_bits[i++] = v;
 
-	m_width = static_cast< lcsm::Width >(width);
+	m_width = static_cast< lcsm::model::Width >(width);
 }
 
 lcsm::DataBits::DataBits(const DataBits &other) noexcept : m_width(other.m_width), m_bits(other.m_bits) {}
@@ -126,7 +127,7 @@ void lcsm::DataBits::swap(lcsm::DataBits &other) noexcept
 	std::swap(m_bits, other.m_bits);
 }
 
-lcsm::Width lcsm::DataBits::width() const noexcept
+lcsm::model::Width lcsm::DataBits::width() const noexcept
 {
 	return m_width;
 }

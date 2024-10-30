@@ -24,7 +24,7 @@ void lcsm::CGTransistorBase::write(lcsm::DataBits &&value)
 	m_value = std::move(value);
 }
 
-lcsm::Width lcsm::CGTransistorBase::width() const
+lcsm::model::Width lcsm::CGTransistorBase::width() const
 {
 	return m_value.width();
 }
@@ -69,7 +69,7 @@ void lcsm::CGTransistorInout::write(lcsm::DataBits &&value)
 	m_value = std::move(value);
 }
 
-lcsm::Width lcsm::CGTransistorInout::width() const
+lcsm::model::Width lcsm::CGTransistorInout::width() const
 {
 	return m_value.width();
 }

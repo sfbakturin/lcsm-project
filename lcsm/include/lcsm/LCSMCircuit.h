@@ -43,11 +43,11 @@ namespace lcsm
 	  private:
 		friend class LCSMBuilder;
 
-		model::Constant *RegisterConstant(Width width, std::uint64_t value);
-		model::Ground *RegisterGround(Width width);
-		model::Power *RegisterPower(Width width);
-		model::Pin *RegisterPin(bool output, Width width);
-		model::Splitter *RegisterSplitter(Width widthIn, std::size_t widthOut);
+		model::Constant *RegisterConstant(model::Width width, std::uint64_t value);
+		model::Ground *RegisterGround(model::Width width);
+		model::Power *RegisterPower(model::Width width);
+		model::Pin *RegisterPin(bool output, model::Width width);
+		model::Splitter *RegisterSplitter(model::Width widthIn, std::size_t widthOut);
 		model::Transistor *RegisterTransistor(model::TransistorType type);
 		model::TransmissionGate *RegisterTransmissionGate();
 		model::Clock *RegisterClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);

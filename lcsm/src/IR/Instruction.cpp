@@ -19,11 +19,6 @@ bool lcsm::Instruction::isUpdateElementState() const noexcept
 	return T() == lcsm::InstructionT::INSTR_UPDATE_ELEMENT_STATE;
 }
 
-bool lcsm::Instruction::isWriteValueStabilized() const noexcept
-{
-	return T() == lcsm::InstructionT::INSTR_WRITE_VALUE_STABILIZED;
-}
-
 template< typename I, typename... Args >
 static std::shared_ptr< lcsm::Instruction > CreateInstruction(Args &&...args)
 {

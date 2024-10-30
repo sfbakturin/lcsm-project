@@ -24,7 +24,7 @@ void lcsm::CGState::write(lcsm::DataBits &&)
 	throw std::logic_error("State can't be written by value");
 }
 
-lcsm::Width lcsm::CGState::width() const
+lcsm::model::Width lcsm::CGState::width() const
 {
 	throw std::logic_error("There is no certain width of State object.");
 }

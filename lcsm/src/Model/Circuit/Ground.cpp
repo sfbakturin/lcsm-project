@@ -4,7 +4,9 @@
 
 #include <utility>
 
-lcsm::model::Ground::Ground(lcsm::Width width) : lcsm::model::Constant(width, lcsm::model::Ground::GROUND_VALUE) {}
+lcsm::model::Ground::Ground(lcsm::model::Width width) : lcsm::model::Constant(width, lcsm::model::Ground::GROUND_VALUE)
+{
+}
 
 lcsm::model::Ground::Ground(const lcsm::model::Ground &other) : lcsm::model::Constant(other) {}
 lcsm::model::Ground::Ground(lcsm::model::Ground &&other) noexcept : lcsm::model::Constant(std::move(other)) {}
