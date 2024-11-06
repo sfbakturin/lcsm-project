@@ -3,9 +3,9 @@
 #include <lcsm/Model/Width.h>
 #include <lcsm/Verilog/Bit.h>
 
-lcsm::CGObjectT lcsm::CGPower::T() const noexcept
+lcsm::CGObjectType lcsm::CGPower::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_POWER;
+	return lcsm::CGObjectType::Power;
 }
 
 lcsm::CGPower *lcsm::CGPower::asPower() noexcept

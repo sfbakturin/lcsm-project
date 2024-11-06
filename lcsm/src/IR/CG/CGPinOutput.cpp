@@ -24,9 +24,9 @@ void lcsm::CGPinOutput::write(lcsm::DataBits &&value)
 	m_value = std::move(value);
 }
 
-lcsm::CGObjectT lcsm::CGPinOutput::T() const noexcept
+lcsm::CGObjectType lcsm::CGPinOutput::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_PIN_OUTPUT;
+	return lcsm::CGObjectType::PinOutput;
 }
 
 const lcsm::DataBits &lcsm::CGPinOutput::externalRead() const noexcept

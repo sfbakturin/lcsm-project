@@ -9,9 +9,9 @@ lcsm::CGFastNode::CGFastNode(lcsm::CGObjectView &&object) : CGNode(std::move(obj
 
 lcsm::CGFastNode::CGFastNode(lcsm::CGObject *object) : CGNode(object) {}
 
-lcsm::NodeT lcsm::CGFastNode::T() const noexcept
+lcsm::CGNodeType lcsm::CGFastNode::nodeType() const noexcept
 {
-	return lcsm::NodeT::NODE_FAST;
+	return lcsm::CGNodeType::Fast;
 }
 
 lcsm::CGFastNode *lcsm::CGFastNode::asFast() noexcept

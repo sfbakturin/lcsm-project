@@ -34,9 +34,9 @@ bool lcsm::CGConstant::checkWidth(const lcsm::DataBits &value) const
 	return value.width() == width();
 }
 
-lcsm::CGObjectT lcsm::CGConstant::T() const noexcept
+lcsm::CGObjectType lcsm::CGConstant::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_CONSTANT;
+	return lcsm::CGObjectType::Constant;
 }
 
 lcsm::CGConstant *lcsm::CGConstant::asConstant() noexcept

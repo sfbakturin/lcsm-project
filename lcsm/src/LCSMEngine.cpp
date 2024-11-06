@@ -330,7 +330,7 @@ lcsm::CGStaticNode *lcsm::LCSMEngine::registeredStaticNode(lcsm::Identifier ID, 
 
 	if (found != m_nodes.end())
 	{
-		if (found->second->object() == object && found->second->isStatic())
+		if (found->second->target() == object && found->second->isStatic())
 			return found->second->asStatic();
 		else
 			throw std::logic_error("Static node registered, objects not same");
@@ -348,7 +348,7 @@ lcsm::CGFastNode *lcsm::LCSMEngine::registeredFastNode(lcsm::Identifier ID, lcsm
 
 	if (found != m_nodes.end())
 	{
-		if (found->second->object() == object && found->second->isFast())
+		if (found->second->target() == object && found->second->isFast())
 			return found->second->asFast();
 		else
 			throw std::logic_error("Static node registered, objects not same");
@@ -366,7 +366,7 @@ lcsm::CGCompositeNode *lcsm::LCSMEngine::registeredCompositeNode(lcsm::Identifie
 
 	if (found != m_nodes.end())
 	{
-		if (found->second->object() == object && found->second->isComposite())
+		if (found->second->target() == object && found->second->isComposite())
 			return found->second->asComposite();
 		else
 			throw std::logic_error("Static node registered, objects not same");
@@ -384,7 +384,7 @@ lcsm::CGDynamicNode *lcsm::LCSMEngine::registeredDynamicNode(lcsm::Identifier ID
 
 	if (found != m_nodes.end())
 	{
-		if (found->second->object() == object && found->second->isDynamic())
+		if (found->second->target() == object && found->second->isDynamic())
 			return found->second->asDynamic();
 		else
 			throw std::logic_error("Static node registered, objects not same");
@@ -431,12 +431,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 				lcsm::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
 				lcsm::CGNode *adjacentWireNode = registeredFastNode(adjacentWire->ID(), adjacentWireGraph);
 
-				// Broadcast value from Wire to adjacent Wire object as
-				// tree's edge.
-				lcsm::InstructionShared wvWireToWire = lcsm::CreateBroadcastValue(wireGraph, adjacentWireGraph);
-				lcsm::CGEdge wireToWireEdge = { { wireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
-				wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
-
 				break;
 			}
 			case WIRING_COMP_TUNNEL:
@@ -475,10 +469,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 					// node.
 					lcsm::CGNode *pinNode = registeredStaticNode(pin->ID(), pinGraph);
 
-					lcsm::InstructionShared wvWireToPin = lcsm::CreateWriteValue(wireGraph, pinGraph);
-					lcsm::CGEdge wireToPinEdge = { { wireGraph }, { pinGraph }, std::move(wvWireToPin) };
-					wireNode->addInstruction(std::move(wireToPinEdge), pinNode);
-
 					break;
 				}
 				case CIRCUIT_COMP_CONSTANT:
@@ -489,10 +479,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 					// Make connection between Constant's Wire to Constant
 					// object as tree node.
 					lcsm::CGNode *constantNode = registeredStaticNode(constant->ID(), constantGraph);
-
-					lcsm::InstructionShared wvWireToConstant = lcsm::CreateWriteValue(wireGraph, constantGraph);
-					lcsm::CGEdge wireToConstantEdge = { { wireGraph }, { constantGraph }, std::move(wvWireToConstant) };
-					wireNode->addInstruction(std::move(wireToConstantEdge), constantNode);
 
 					break;
 				}
@@ -505,10 +491,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 					// object as tree node.
 					lcsm::CGNode *powerNode = registeredStaticNode(power->ID(), powerGraph);
 
-					lcsm::InstructionShared wvWireToPower = lcsm::CreateWriteValue(wireGraph, powerGraph);
-					lcsm::CGEdge wireToPowerEdge = { { wireGraph }, { powerGraph }, std::move(wvWireToPower) };
-					wireNode->addInstruction(std::move(wireToPowerEdge), powerNode);
-
 					break;
 				}
 				case CIRCUIT_COMP_GROUND:
@@ -519,10 +501,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 					// Make connection between Ground's Wire to Ground
 					// object as tree node.
 					lcsm::CGNode *groundNode = registeredStaticNode(ground->ID(), groundGraph);
-
-					lcsm::InstructionShared wvWireToGround = lcsm::CreateWriteValue(wireGraph, groundGraph);
-					lcsm::CGEdge wireToGroundEdge = { { wireGraph }, { groundGraph }, std::move(wvWireToGround) };
-					wireNode->addInstruction(std::move(wireToGroundEdge), groundNode);
 
 					break;
 				}
@@ -557,10 +535,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 					// Make connection between Transistor element's Wire to
 					// Transistor element object as tree node.
 					lcsm::CGNode *transistorElementNode = registeredCompositeNode(elementId, transistorElementGraph);
-
-					lcsm::InstructionShared wvWireToInout = lcsm::CreateWriteValue(wireGraph, transistorElementGraph);
-					lcsm::CGEdge wireToElementEdge = { { wireGraph }, { transistorElementGraph }, std::move(wvWireToInout) };
-					wireNode->addInstruction(std::move(wireToElementEdge), transistorElementNode);
 
 					break;
 				}
@@ -620,16 +594,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's tree node as Pin's child.
 		lcsm::CGNode *pinWireNode = registeredFastNode(pinWire.ID(), pinWireGraph);
 
-		// Write value from Pin to Pin's Wire object as tree's edge.
-		lcsm::InstructionShared wvPinToWire = lcsm::CreateWriteValue(pinGraph, pinWireGraph);
-		lcsm::CGEdge pinToWireEdge = { { pinGraph }, { pinWireGraph }, std::move(wvPinToWire) };
-		pinNode->addInstruction(std::move(pinToWireEdge), pinWireNode);
-
-		// Write value from Pin's Wire object to Pin as tree's edge.
-		lcsm::InstructionShared wvWireToPin = lcsm::CreateWriteValue(pinWireGraph, pinGraph);
-		lcsm::CGEdge wireToPinEdge = { { pinWireGraph }, { pinGraph }, std::move(wvWireToPin) };
-		pinWireNode->addInstruction(std::move(wireToPinEdge), pinNode);
-
 		// Set output's wire to make connections from Pin's Wire object.
 		outputs.emplace_back(pinWireNode, pinWireGraph, pinWire);
 
@@ -654,16 +618,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 
 		// Wire's tree node as Constant's child.
 		lcsm::CGNode *constantWireNode = registeredFastNode(constantWire.ID(), constantWireGraph);
-
-		// Write value from Constant to Constant's Wire object as tree's edge.
-		lcsm::InstructionShared wvConstantToWire = lcsm::CreateWriteValue(constantGraph, constantWireGraph);
-		lcsm::CGEdge constantToWireEdge = { { constantGraph }, { constantWireGraph }, std::move(wvConstantToWire) };
-		constantNode->addInstruction(std::move(constantToWireEdge), constantWireNode);
-
-		// Write value from Constant's Wire object to Constant as tree's edge.
-		lcsm::InstructionShared wvWireToConstant = lcsm::CreateWriteValue(constantWireGraph, constantGraph);
-		lcsm::CGEdge wireToConstantEdge = { { constantWireGraph }, { constantGraph }, std::move(wvWireToConstant) };
-		constantWireNode->addInstruction(std::move(wireToConstantEdge), constantNode);
 
 		// Set output's wire to make connections from Constant's Wire object.
 		outputs.emplace_back(constantWireNode, constantWireGraph, constantWire);
@@ -690,16 +644,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's value tree node as Power's child.
 		lcsm::CGNode *powerWireNode = registeredFastNode(powerWire.ID(), powerWireGraph);
 
-		// Write value from Power to Power's Wire object as tree's edge.
-		lcsm::InstructionShared wvPowerToWire = lcsm::CreateWriteValue(powerGraph, powerWireGraph);
-		lcsm::CGEdge powerToWireEdge = { { powerGraph }, { powerWireGraph }, std::move(wvPowerToWire) };
-		powerNode->addInstruction(std::move(powerToWireEdge), powerWireNode);
-
-		// Write value from Power's Wire object to Power as tree's edge.
-		lcsm::InstructionShared wvWireToPower = lcsm::CreateWriteValue(powerWireGraph, powerGraph);
-		lcsm::CGEdge wireToPowerEdge = { { powerWireGraph }, { powerGraph }, std::move(wvWireToPower) };
-		powerWireNode->addInstruction(std::move(wireToPowerEdge), powerNode);
-
 		// Set output's wire to make connections from Power's Wire object.
 		outputs.emplace_back(powerWireNode, powerWireGraph, powerWire);
 
@@ -724,16 +668,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 
 		// Wire's value tree node as Ground's child.
 		lcsm::CGNode *groundWireNode = registeredFastNode(groundWire.ID(), groundWireGraph);
-
-		// Write value from Ground to Ground's Wire object as tree's edge.
-		lcsm::InstructionShared wvGroundToWire = lcsm::CreateWriteValue(groundGraph, groundWireGraph);
-		lcsm::CGEdge groundToWireEdge = { { groundGraph }, { groundWireGraph }, std::move(wvGroundToWire) };
-		groundNode->addInstruction(std::move(groundToWireEdge), groundWireNode);
-
-		// Write value from Ground's Wire object to Ground as tree's edge.
-		lcsm::InstructionShared wvWireToGround = lcsm::CreateWriteValue(groundWireGraph, groundGraph);
-		lcsm::CGEdge wireToGroundEdge = { { groundWireGraph }, { groundGraph }, std::move(wvWireToGround) };
-		groundWireNode->addInstruction(std::move(wireToGroundEdge), groundNode);
 
 		// Set output's wire to make connections from Ground's Wire object.
 		outputs.emplace_back(groundWireNode, groundWireGraph, groundWire);
@@ -785,54 +719,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// State's tree node.
 		lcsm::CGNode *transistorStateNode = registeredDynamicNode(transistor->ID(), transistorStateGraph);
 
-		// Write value from Base's Wire to Base's tree node.
-		lcsm::InstructionShared wvBaseWireToBase = lcsm::CreateWriteValue(transistorWireBaseGraph, transistorBaseGraph);
-		lcsm::CGEdge baseWireToBase = { { transistorWireBaseGraph }, { transistorBaseGraph }, std::move(wvBaseWireToBase) };
-		transistorWireBaseNode->addInstruction(std::move(baseWireToBase), transistorBaseNode);
-
-		// Write value from Base's to Base's Wire tree node.
-		lcsm::InstructionShared wvBaseToBaseWire = lcsm::CreateWriteValue(transistorBaseGraph, transistorWireBaseGraph);
-		lcsm::CGEdge baseToBaseWire = { { transistorBaseGraph }, { transistorWireBaseGraph }, std::move(wvBaseToBaseWire) };
-		transistorBaseNode->addInstruction(std::move(baseToBaseWire), transistorWireBaseNode);
-
-		/* Instruction: write value from SrcA's Wire to SrcA's tree node. */
-		lcsm::InstructionShared wvSrcWireToSrc = lcsm::CreateWriteValue(transistorWireSrcAGraph, transistorSrcAGraph);
-		lcsm::CGEdge srcWireToSrc = { { transistorWireSrcAGraph }, { transistorSrcAGraph }, std::move(wvSrcWireToSrc) };
-		transistorWireSrcANode->addInstruction(std::move(srcWireToSrc), transistorSrcANode);
-
-		/* Instruction: write value from SrcA's to SrcA's Wire tree node. */
-		lcsm::InstructionShared wvSrcToSrcWire = lcsm::CreateWriteValue(transistorSrcAGraph, transistorWireSrcAGraph);
-		lcsm::CGEdge srcToSrcWire = { { transistorSrcAGraph }, { transistorWireSrcAGraph }, std::move(wvSrcToSrcWire) };
-		transistorSrcANode->addInstruction(std::move(srcToSrcWire), transistorWireSrcANode);
-
-		/* Instruction: write value from SrcB's Wire to SrcB's tree node. */
-		wvSrcWireToSrc = lcsm::CreateWriteValue(transistorWireSrcBGraph, transistorSrcBGraph);
-		srcWireToSrc = { { transistorWireSrcBGraph }, { transistorSrcBGraph }, std::move(wvSrcWireToSrc) };
-		transistorWireSrcBNode->addInstruction(std::move(srcWireToSrc), transistorSrcBNode);
-
-		/* Instruction: write value from SrcB's to SrcB's Wire tree node. */
-		wvSrcToSrcWire = lcsm::CreateWriteValue(transistorSrcBGraph, transistorWireSrcBGraph);
-		srcToSrcWire = { { transistorSrcBGraph }, { transistorWireSrcBGraph }, std::move(wvSrcToSrcWire) };
-		transistorSrcBNode->addInstruction(std::move(srcToSrcWire), transistorWireSrcBNode);
-
-		/* Instruction: make request from Base's for updating state for
-		 * Transistor's State.*/
-		lcsm::InstructionShared updateState = lcsm::CreateUpdateState(transistorStateGraph);
-		lcsm::CGEdge baseToState = { { transistorBaseGraph }, { transistorStateGraph }, std::move(updateState) };
-		transistorBaseNode->addInstruction(std::move(baseToState), transistorStateNode);
-
-		/* Instruction: make request from SrcA's for updating state for
-		 * Transistor's State.*/
-		updateState = lcsm::CreateUpdateState(transistorStateGraph);
-		lcsm::CGEdge srcToState = { { transistorSrcAGraph }, { transistorStateGraph }, std::move(updateState) };
-		transistorSrcANode->addInstruction(std::move(srcToState), transistorStateNode);
-
-		/* Instruction: make request from SrcB's for updating state for
-		 * Transistor's State.*/
-		updateState = lcsm::CreateUpdateState(transistorStateGraph);
-		srcToState = { { transistorSrcBGraph }, { transistorStateGraph }, std::move(updateState) };
-		transistorSrcBNode->addInstruction(std::move(srcToState), transistorStateNode);
-
 		// Set output's wire to make connections from Transistor's Wires object.
 		outputs.emplace_back(transistorWireBaseNode, transistorWireBaseGraph, wireBase);
 		outputs.emplace_back(transistorWireSrcANode, transistorWireSrcAGraph, wireSrcA);
@@ -874,12 +760,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 				// Wire's adjacent wire tree node.
 				lcsm::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
 				lcsm::CGNode *adjacentWireNode = registeredFastNode(adjacentWire->ID(), adjacentWireGraph);
-
-				// Broadcast value from Pin's Wire to adjacent Wire object as
-				// tree's edge.
-				lcsm::InstructionShared wvWireToWire = lcsm::CreateBroadcastValue(outputWireGraph, adjacentWireGraph);
-				lcsm::CGEdge wireToWireEdge = { { outputWireGraph }, { adjacentWireGraph }, std::move(wvWireToWire) };
-				wireNode->addInstruction(std::move(wireToWireEdge), adjacentWireNode);
 
 				break;
 			}

@@ -8,9 +8,9 @@ lcsm::CGDynamicNode::CGDynamicNode(lcsm::CGObjectView &&object) : CGNode(std::mo
 
 lcsm::CGDynamicNode::CGDynamicNode(lcsm::CGObject *object) : CGNode(object) {}
 
-lcsm::NodeT lcsm::CGDynamicNode::T() const noexcept
+lcsm::CGNodeType lcsm::CGDynamicNode::nodeType() const noexcept
 {
-	return lcsm::NodeT::NODE_DYNAMIC;
+	return lcsm::CGNodeType::Dynamic;
 }
 
 lcsm::CGDynamicNode *lcsm::CGDynamicNode::asDynamic() noexcept

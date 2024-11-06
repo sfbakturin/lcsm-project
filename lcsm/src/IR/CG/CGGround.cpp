@@ -2,9 +2,9 @@
 #include <lcsm/IR/DataBits.h>
 #include <lcsm/Model/Width.h>
 
-lcsm::CGObjectT lcsm::CGGround::T() const noexcept
+lcsm::CGObjectType lcsm::CGGround::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_GROUND;
+	return lcsm::CGObjectType::Ground;
 }
 
 lcsm::CGGround *lcsm::CGGround::asGround() noexcept

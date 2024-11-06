@@ -7,47 +7,52 @@
 
 bool lcsm::CGObject::isWire() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_WIRE;
+	return objectType() == lcsm::CGObjectType::Wire;
 }
 
 bool lcsm::CGObject::isPinInput() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_PIN_INPUT;
+	return objectType() == lcsm::CGObjectType::PinInput;
 }
 
 bool lcsm::CGObject::isPinOutput() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_PIN_OUTPUT;
+	return objectType() == lcsm::CGObjectType::PinOutput;
 }
 
 bool lcsm::CGObject::isConstant() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_CONSTANT;
+	return objectType() == lcsm::CGObjectType::Constant;
 }
 
 bool lcsm::CGObject::isPower() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_POWER;
+	return objectType() == lcsm::CGObjectType::Power;
 }
 
 bool lcsm::CGObject::isGround() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_GROUND;
+	return objectType() == lcsm::CGObjectType::Ground;
+}
+
+bool lcsm::CGObject::isSplitter() const noexcept
+{
+	return objectType() == lcsm::CGObjectType::Splitter;
 }
 
 bool lcsm::CGObject::isTransistorBase() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_TRANSISTOR_BASE;
+	return objectType() == lcsm::CGObjectType::TransistorBase;
 }
 
 bool lcsm::CGObject::isTransistorInout() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_TRANSISTOR_INOUT;
+	return objectType() == lcsm::CGObjectType::TransistorInout;
 }
 
 bool lcsm::CGObject::isTransistorState() const noexcept
 {
-	return T() == lcsm::CGObjectT::OBJ_TRANSISTOR_STATE;
+	return objectType() == lcsm::CGObjectType::TransistorState;
 }
 
 lcsm::CGWire *lcsm::CGObject::asWire() noexcept
@@ -116,6 +121,16 @@ lcsm::CGTransistorBase *lcsm::CGObject::asTransistorBase() noexcept
 }
 
 const lcsm::CGTransistorBase *lcsm::CGObject::asTransistorBase() const noexcept
+{
+	return nullptr;
+}
+
+lcsm::CGSplitter *lcsm::CGObject::asSplitter() noexcept
+{
+	return nullptr;
+}
+
+const lcsm::CGSplitter *lcsm::CGObject::asSplitter() const noexcept
 {
 	return nullptr;
 }

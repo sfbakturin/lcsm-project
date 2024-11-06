@@ -34,9 +34,9 @@ bool lcsm::CGTransistorBase::checkWidth(const lcsm::DataBits &value) const
 	return m_value.width() == value.width();
 }
 
-lcsm::CGObjectT lcsm::CGTransistorBase::T() const noexcept
+lcsm::CGObjectType lcsm::CGTransistorBase::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_TRANSISTOR_BASE;
+	return lcsm::CGObjectType::TransistorBase;
 }
 
 lcsm::CGTransistorBase *lcsm::CGTransistorBase::asTransistorBase() noexcept
@@ -79,9 +79,9 @@ bool lcsm::CGTransistorInout::checkWidth(const lcsm::DataBits &value) const
 	return m_value.width() == value.width();
 }
 
-lcsm::CGObjectT lcsm::CGTransistorInout::T() const noexcept
+lcsm::CGObjectType lcsm::CGTransistorInout::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_TRANSISTOR_INOUT;
+	return lcsm::CGObjectType::TransistorInout;
 }
 
 lcsm::CGTransistorInout *lcsm::CGTransistorInout::asTransistorInout() noexcept
@@ -94,9 +94,9 @@ const lcsm::CGTransistorInout *lcsm::CGTransistorInout::asTransistorInout() cons
 	return this;
 }
 
-lcsm::CGObjectT lcsm::CGTransistorState::T() const noexcept
+lcsm::CGObjectType lcsm::CGTransistorState::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_TRANSISTOR_STATE;
+	return lcsm::CGObjectType::TransistorState;
 }
 
 lcsm::CGTransistorState *lcsm::CGTransistorState::asTransistorState() noexcept

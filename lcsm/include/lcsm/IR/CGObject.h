@@ -10,17 +10,20 @@
 
 namespace lcsm
 {
-	enum CGObjectT
+	enum CGObjectType
 	{
-		OBJ_PIN_INPUT,
-		OBJ_PIN_OUTPUT,
-		OBJ_WIRE,
-		OBJ_CONSTANT,
-		OBJ_POWER,
-		OBJ_GROUND,
-		OBJ_TRANSISTOR_BASE,
-		OBJ_TRANSISTOR_INOUT,
-		OBJ_TRANSISTOR_STATE
+		PinInput,
+		PinOutput,
+		Wire,
+		Constant,
+		Power,
+		Ground,
+		Splitter,
+		ClockInout,
+		ClockState,
+		TransistorBase,
+		TransistorInout,
+		TransistorState
 	};
 
 	class CGWire;
@@ -29,6 +32,9 @@ namespace lcsm
 	class CGConstant;
 	class CGPower;
 	class CGGround;
+	class CGSplitter;
+	class CGClockInout;
+	class CGClockState;
 	class CGTransistorBase;
 	class CGTransistorInout;
 	class CGTransistorState;
@@ -49,7 +55,7 @@ namespace lcsm
 		virtual model::Width width() const = 0;
 		virtual bool checkWidth(const DataBits &value) const = 0;
 
-		virtual CGObjectT T() const noexcept = 0;
+		virtual CGObjectType objectType() const noexcept = 0;
 
 		bool isWire() const noexcept;
 		bool isPinInput() const noexcept;
@@ -57,6 +63,7 @@ namespace lcsm
 		bool isConstant() const noexcept;
 		bool isPower() const noexcept;
 		bool isGround() const noexcept;
+		bool isSplitter() const noexcept;
 		bool isTransistorBase() const noexcept;
 		bool isTransistorInout() const noexcept;
 		bool isTransistorState() const noexcept;
@@ -73,6 +80,8 @@ namespace lcsm
 		virtual const CGPower *asPower() const noexcept;
 		virtual CGGround *asGround() noexcept;
 		virtual const CGGround *asGround() const noexcept;
+		virtual CGSplitter *asSplitter() noexcept;
+		virtual const CGSplitter *asSplitter() const noexcept;
 		virtual CGTransistorBase *asTransistorBase() noexcept;
 		virtual const CGTransistorBase *asTransistorBase() const noexcept;
 		virtual CGTransistorInout *asTransistorInout() noexcept;
@@ -117,7 +126,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		void externalWrite(const DataBits &value);
 		void externalWrite(DataBits &&value) noexcept;
@@ -135,7 +144,7 @@ namespace lcsm
 		virtual void write(const DataBits &value) override final;
 		virtual void write(DataBits &&value) override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		DataBits &externalRead() noexcept;
 		const DataBits &externalRead() const noexcept;
@@ -156,7 +165,7 @@ namespace lcsm
 		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGWire *asWire() noexcept override final;
 		virtual const CGWire *asWire() const noexcept override final;
@@ -179,7 +188,7 @@ namespace lcsm
 		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGConstant *asConstant() noexcept override final;
 		virtual const CGConstant *asConstant() const noexcept override final;
@@ -196,7 +205,7 @@ namespace lcsm
 	class CGPower : public CGConstant
 	{
 	  public:
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGPower *asPower() noexcept override final;
 		virtual const CGPower *asPower() const noexcept override final;
@@ -207,12 +216,34 @@ namespace lcsm
 	class CGGround : public CGConstant
 	{
 	  public:
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGGround *asGround() noexcept override final;
 		virtual const CGGround *asGround() const noexcept override final;
 
 		void setWidth(model::Width width);
+	};
+
+	class CGSplitter : public CGObject
+	{
+	  public:
+		CGSplitter() = default;
+
+		virtual DataBits &read() override final;
+		virtual const DataBits &read() const override final;
+
+		virtual void write(const DataBits &value) override final;
+		virtual void write(DataBits &&value) override final;
+
+		virtual model::Width width() const override final;
+		virtual bool checkWidth(const DataBits &value) const override final;
+
+		virtual CGObjectType objectType() const noexcept override;
+
+		virtual CGSplitter *asSplitter() noexcept override final;
+		virtual const CGSplitter *asSplitter() const noexcept override final;
+
+	  private:
 	};
 
 	class CGState : public CGObject
@@ -242,7 +273,7 @@ namespace lcsm
 		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGTransistorBase *asTransistorBase() noexcept override final;
 		virtual const CGTransistorBase *asTransistorBase() const noexcept override final;
@@ -265,7 +296,7 @@ namespace lcsm
 		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGTransistorInout *asTransistorInout() noexcept override final;
 		virtual const CGTransistorInout *asTransistorInout() const noexcept override final;
@@ -279,7 +310,7 @@ namespace lcsm
 	  public:
 		CGTransistorState() noexcept = default;
 
-		virtual CGObjectT T() const noexcept override;
+		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGTransistorState *asTransistorState() noexcept override final;
 		virtual const CGTransistorState *asTransistorState() const noexcept override final;

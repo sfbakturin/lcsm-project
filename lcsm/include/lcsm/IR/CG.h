@@ -5,57 +5,17 @@
 #include <lcsm/IR/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 
-#include <memory>
-#include <utility>
 #include <vector>
 
 namespace lcsm
 {
-	class CGEdge
+	enum CGNodeType : unsigned
 	{
-	  public:
-		CGEdge();
-		CGEdge(const CGObjectView &targetFrom, const CGObjectView &targetTo, const std::shared_ptr< Instruction > &run);
-		CGEdge(const CGObjectView &targetFrom, const CGObjectView &targetTo, std::shared_ptr< Instruction > &&run);
-
-		CGEdge(const CGEdge &other) = delete;
-		CGEdge(CGEdge &&other) noexcept;
-
-		CGEdge &operator=(const CGEdge &other) = delete;
-		CGEdge &operator=(CGEdge &&other) noexcept;
-
-		void swap(CGEdge &other) noexcept;
-
-		Instruction *instruction() noexcept;
-		const Instruction *instruction() const noexcept;
-		CGObject *targetFrom() noexcept;
-		const CGObject *targetFrom() const noexcept;
-		CGObject *targetTo() noexcept;
-		const CGObject *targetTo() const noexcept;
-
-		void setInstruction(const InstructionShared &run) noexcept;
-		void setInstruction(InstructionShared &&run) noexcept;
-		void setTargetFrom(const CGObjectView &targetFrom) noexcept;
-		void setTargetFrom(CGObjectView &&targetFrom) noexcept;
-		void setTargetTo(const CGObjectView &targetTo) noexcept;
-		void setTargetTo(CGObjectView &&targetTo) noexcept;
-
-	  private:
-		CGObjectView m_targetFrom;
-		CGObjectView m_targetTo;
-		InstructionShared m_run;
-		unsigned m_timer;
-	};
-
-	using CGEdgeView = support::PointerView< CGEdge >;
-
-	enum NodeT : unsigned
-	{
-		NODE_UNKNOWN,
-		NODE_STATIC,
-		NODE_FAST,
-		NODE_COMPOSITE,
-		NODE_DYNAMIC,
+		Unknown,
+		Static,
+		Fast,
+		Composite,
+		Dynamic,
 	};
 
 	class CGStaticNode;
@@ -66,14 +26,11 @@ namespace lcsm
 	class CGNode
 	{
 	  public:
-		using view_type = support::PointerView< CGNode >;
-
 		CGNode() = default;
 		virtual ~CGNode() noexcept = default;
 
-		CGNode(const CGObjectView &object);
-		CGNode(CGObjectView &&object);
-		CGNode(CGObject *object);
+		CGNode(const CGObjectView &target);
+		CGNode(CGObjectView &&target);
 
 		CGNode(const CGNode &other) = delete;
 		CGNode(CGNode &&other) noexcept;
@@ -83,7 +40,7 @@ namespace lcsm
 
 		void swap(CGNode &other) noexcept;
 
-		virtual NodeT T() const noexcept;
+		virtual CGNodeType nodeType() const noexcept;
 
 		bool isStatic() const noexcept;
 		bool isFast() const noexcept;
@@ -99,21 +56,19 @@ namespace lcsm
 		virtual CGDynamicNode *asDynamic() noexcept;
 		virtual const CGDynamicNode *asDynamic() const noexcept;
 
-		CGObjectView &object() noexcept;
-		const CGObjectView &object() const noexcept;
-		void setObject(const CGObjectView &object) noexcept;
-		void setObject(CGObjectView &&object) noexcept;
-		void setObject(CGObject *object) noexcept;
+		CGObjectView &target() noexcept;
+		const CGObjectView &target() const noexcept;
+		void setTarget(const CGObjectView &target) noexcept;
+		void setTarget(CGObjectView &&target) noexcept;
 
-		std::vector< std::pair< CGEdge, view_type > > &instructions() noexcept;
-		const std::vector< std::pair< CGEdge, view_type > > &instructions() const noexcept;
-		void addInstruction(CGEdge &&I, CGNode *N);
-		void addInstruction(CGEdge &&I, const view_type &N);
-		void addInstruction(CGEdge &&I, view_type &&N);
+		std::vector< support::PointerView< CGNode > > &children() noexcept;
+		const std::vector< support::PointerView< CGNode > > &children() const noexcept;
+		void pushBackChild(const support::PointerView< CGNode > &child);
+		void pushBackChild(support::PointerView< CGNode > &&child);
 
-	  private:
+	  protected:
 		CGObjectView m_target;
-		std::vector< std::pair< CGEdge, view_type > > m_instructions;
+		std::vector< support::PointerView< CGNode > > m_children;
 	};
 
 	class CGStaticNode : public CGNode
@@ -126,7 +81,7 @@ namespace lcsm
 		CGStaticNode(CGObjectView &&object);
 		CGStaticNode(CGObject *object);
 
-		virtual NodeT T() const noexcept override final;
+		virtual CGNodeType nodeType() const noexcept override final;
 
 		virtual CGStaticNode *asStatic() noexcept override final;
 		virtual const CGStaticNode *asStatic() const noexcept override final;
@@ -142,7 +97,7 @@ namespace lcsm
 		CGFastNode(CGObjectView &&object);
 		CGFastNode(CGObject *object);
 
-		virtual NodeT T() const noexcept override final;
+		virtual CGNodeType nodeType() const noexcept override final;
 
 		virtual CGFastNode *asFast() noexcept override final;
 		virtual const CGFastNode *asFast() const noexcept override final;
@@ -158,7 +113,7 @@ namespace lcsm
 		CGCompositeNode(CGObjectView &&object);
 		CGCompositeNode(CGObject *object);
 
-		virtual NodeT T() const noexcept override final;
+		virtual CGNodeType nodeType() const noexcept override final;
 
 		virtual CGCompositeNode *asComposite() noexcept override final;
 		virtual const CGCompositeNode *asComposite() const noexcept override final;
@@ -174,13 +129,13 @@ namespace lcsm
 		CGDynamicNode(CGObjectView &&object);
 		CGDynamicNode(CGObject *object);
 
-		virtual NodeT T() const noexcept override final;
+		virtual CGNodeType nodeType() const noexcept override final;
 
 		virtual CGDynamicNode *asDynamic() noexcept override;
 		virtual const CGDynamicNode *asDynamic() const noexcept override;
 	};
 
-	using CGNodeView = CGNode::view_type;
+	using CGNodeView = support::PointerView< CGNode >;
 
 	class CG
 	{

@@ -34,9 +34,9 @@ bool lcsm::CGWire::checkWidth(const lcsm::DataBits &value) const
 	return value.width() == width();
 }
 
-lcsm::CGObjectT lcsm::CGWire::T() const noexcept
+lcsm::CGObjectType lcsm::CGWire::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_WIRE;
+	return lcsm::CGObjectType::Wire;
 }
 
 lcsm::CGWire *lcsm::CGWire::asWire() noexcept

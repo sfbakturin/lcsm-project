@@ -8,9 +8,9 @@ lcsm::CGStaticNode::CGStaticNode(lcsm::CGObjectView &&object) : CGNode(std::move
 
 lcsm::CGStaticNode::CGStaticNode(lcsm::CGObject *object) : CGNode(object) {}
 
-lcsm::NodeT lcsm::CGStaticNode::T() const noexcept
+lcsm::CGNodeType lcsm::CGStaticNode::nodeType() const noexcept
 {
-	return lcsm::NodeT::NODE_STATIC;
+	return lcsm::CGNodeType::Static;
 }
 
 lcsm::CGStaticNode *lcsm::CGStaticNode::asStatic() noexcept

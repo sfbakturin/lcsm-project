@@ -28,9 +28,9 @@ void lcsm::CGPinInput::write(lcsm::DataBits &&value)
 	// std::logic_error("Can't write value to only input Pin.");
 }
 
-lcsm::CGObjectT lcsm::CGPinInput::T() const noexcept
+lcsm::CGObjectType lcsm::CGPinInput::objectType() const noexcept
 {
-	return lcsm::CGObjectT::OBJ_PIN_INPUT;
+	return lcsm::CGObjectType::PinInput;
 }
 
 void lcsm::CGPinInput::externalWrite(const lcsm::DataBits &value)

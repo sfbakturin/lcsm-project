@@ -9,9 +9,9 @@ lcsm::CGCompositeNode::CGCompositeNode(lcsm::CGObjectView &&object) : lcsm::CGNo
 
 lcsm::CGCompositeNode::CGCompositeNode(lcsm::CGObject *object) : lcsm::CGNode(object) {}
 
-lcsm::NodeT lcsm::CGCompositeNode::T() const noexcept
+lcsm::CGNodeType lcsm::CGCompositeNode::nodeType() const noexcept
 {
-	return lcsm::NodeT::NODE_COMPOSITE;
+	return lcsm::CGNodeType::Composite;
 }
 
 lcsm::CGCompositeNode *lcsm::CGCompositeNode::asComposite() noexcept

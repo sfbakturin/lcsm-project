@@ -37,10 +37,8 @@ lcsm::DataBits::DataBits(lcsm::model::Width width, lcsm::verilog::Strength stren
 {
 }
 
-lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
+static std::size_t CheckBitsSize(std::size_t width)
 {
-	const std::size_t width = bits.size();
-
 	/* Check compatible size via switch-case optimizations. */
 	switch (width)
 	{
@@ -56,12 +54,16 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
 	case lcsm::model::Width::ShortWord:
 	case lcsm::model::Width::DoubleWord:
 	case lcsm::model::Width::QuadWord:
-		break;
+		return width;
 	default:
 		throw std::logic_error("Incompatible size for DataBits");
 	}
+}
 
-	/* Fill. */
+lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
+{
+	const std::size_t width = CheckBitsSize(bits.size());
+
 	std::size_t i = 0;
 	for (lcsm::verilog::Bit b : bits)
 		m_bits[i++] = { b };
@@ -71,29 +73,8 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
 
 lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values)
 {
-	const std::size_t width = values.size();
+	const std::size_t width = CheckBitsSize(values.size());
 
-	/* Check compatible size via switch-case optimizations. */
-	switch (width)
-	{
-	case lcsm::model::Width::Bit1:
-	case lcsm::model::Width::Bit2:
-	case lcsm::model::Width::Bit3:
-	case lcsm::model::Width::Bit4:
-	case lcsm::model::Width::Bit5:
-	case lcsm::model::Width::Bit6:
-	case lcsm::model::Width::Bit7:
-	case lcsm::model::Width::Byte:
-	case lcsm::model::Width::Word:
-	case lcsm::model::Width::ShortWord:
-	case lcsm::model::Width::DoubleWord:
-	case lcsm::model::Width::QuadWord:
-		break;
-	default:
-		throw std::logic_error("Incompatible size for DataBits");
-	}
-
-	/* Fill. */
 	std::size_t i = 0;
 	for (const lcsm::verilog::Value &v : values)
 		m_bits[i++] = v;
