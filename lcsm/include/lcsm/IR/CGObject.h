@@ -259,7 +259,26 @@ namespace lcsm
 		virtual bool checkWidth(const DataBits &value) const override final;
 	};
 
-	class CGTransistorBase : public CGObject
+	class CGCollector : public CGObject
+	{
+	  public:
+		CGCollector() noexcept = default;
+		CGCollector(const support::PointerView< CGState > &state) noexcept;
+		CGCollector(support::PointerView< CGState > &&state) noexcept;
+
+		virtual ~CGCollector() noexcept = default;
+
+		support::PointerView< CGState > &state() noexcept;
+		const support::PointerView< CGState > &state() const noexcept;
+
+		void setState(const support::PointerView< CGState > &newState) noexcept;
+		void setState(support::PointerView< CGState > &&newState) noexcept;
+
+	  private:
+		support::PointerView< CGState > m_state;
+	};
+
+	class CGTransistorBase : public CGCollector
 	{
 	  public:
 		CGTransistorBase() noexcept = default;
@@ -282,7 +301,7 @@ namespace lcsm
 		DataBits m_value;
 	};
 
-	class CGTransistorInout : public CGObject
+	class CGTransistorInout : public CGCollector
 	{
 	  public:
 		CGTransistorInout() noexcept = default;

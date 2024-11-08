@@ -16,12 +16,14 @@ const lcsm::DataBits &lcsm::CGConstant::read() const
 
 void lcsm::CGConstant::write(const lcsm::DataBits &)
 {
-	throw std::logic_error("Not implemented");
+	// Scheduler must prevent attempts to write to the Constant.
+	throw std::logic_error("Attempt to write to the Constant element.");
 }
 
 void lcsm::CGConstant::write(lcsm::DataBits &&)
 {
-	throw std::logic_error("Not implemented");
+	// Scheduler must prevent attempts to write to the Constant.
+	throw std::logic_error("Attempt to write to the Constant element.");
 }
 
 lcsm::model::Width lcsm::CGConstant::width() const
@@ -49,16 +51,9 @@ const lcsm::CGConstant *lcsm::CGConstant::asConstant() const noexcept
 	return this;
 }
 
-void lcsm::CGConstant::emplaceDataBits(lcsm::model::Width width, std::uint64_t value)
+void lcsm::CGConstant::emplaceDataBits(lcsm::model::Width, std::uint64_t)
 {
-	// TODO: emplace value with width.
-	// m_value.setWidth(width);
-	// for (std::size_t i = 0; i < width; i++)
-	// {
-	// lcsm::LogisimBit bit = value & 1 ? lcsm::LogisimBit::LOGISIM_TRUE : lcsm::LogisimBit::LOGISIM_FALSE;
-	// m_value.setBit(i, bit);
-	// value >>= 1;
-	// }
+	// TODO: Do we really need this function?
 }
 
 void lcsm::CGConstant::setDataBits(const lcsm::DataBits &value)

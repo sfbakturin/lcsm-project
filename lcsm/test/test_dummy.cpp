@@ -17,4 +17,6 @@ int main()
 	builder.ConnectPin(in0, out0, 0);
 
 	engine.addCircuit(dummy);
+
+	int x;
 }

@@ -25,7 +25,6 @@
 #include <deque>
 #include <memory>
 #include <stdexcept>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -423,13 +422,17 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 		// tree's edges.
 		for (const lcsm::wire_t &adjacentWire : wire->wires())
 		{
+			const lcsm::Identifier id = adjacentWire->ID();
 			switch (adjacentWire->wiringComponentType())
 			{
 			case WIRING_COMP_WIRE:
 			{
 				// Wire's adjacent wire tree node.
-				lcsm::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
-				lcsm::CGNode *adjacentWireNode = registeredFastNode(adjacentWire->ID(), adjacentWireGraph);
+				lcsm::CGWire *adjacentWireGraph = registeredWire(id);
+				lcsm::CGNode *adjacentWireNode = registeredFastNode(id, adjacentWireGraph);
+
+				// Make connection.
+				wireNode->pushBackChild(adjacentWireNode);
 
 				break;
 			}
@@ -444,105 +447,6 @@ void lcsm::LCSMEngine::buildCircuitWiringComp(
 		// as tree's edge.
 		for (const lcsm::component_t &comp : wire->connections())
 		{
-			switch (comp->componentType())
-			{
-			case COMP_IO:
-				throw std::logic_error("Not implemented");
-			case COMP_WIRING:
-				throw std::logic_error("Impossible");
-			case COMP_CIRCUIT:
-			{
-				const lcsm::CircuitComponent *circComp = comp->asCircuit();
-				switch (circComp->circuitComponentType())
-				{
-				case CIRCUIT_COMP_PIN:
-				{
-					const lcsm::model::Pin *pin = circComp->asPin();
-					lcsm::CGPin *pinGraph = nullptr;
-
-					if (pin->isOutput())
-						pinGraph = registeredPinOutput(pin->ID());
-					else
-						pinGraph = registeredPinInput(pin->ID());
-
-					// Make connection between Pin's Wire to Pin object as tree
-					// node.
-					lcsm::CGNode *pinNode = registeredStaticNode(pin->ID(), pinGraph);
-
-					break;
-				}
-				case CIRCUIT_COMP_CONSTANT:
-				{
-					const lcsm::model::Constant *constant = circComp->asConstant();
-					lcsm::CGConstant *constantGraph = registerConstant(constant->ID());
-
-					// Make connection between Constant's Wire to Constant
-					// object as tree node.
-					lcsm::CGNode *constantNode = registeredStaticNode(constant->ID(), constantGraph);
-
-					break;
-				}
-				case CIRCUIT_COMP_POWER:
-				{
-					const lcsm::model::Power *power = circComp->asPower();
-					lcsm::CGPower *powerGraph = registeredPower(power->ID());
-
-					// Make connection between Power's Wire to Power
-					// object as tree node.
-					lcsm::CGNode *powerNode = registeredStaticNode(power->ID(), powerGraph);
-
-					break;
-				}
-				case CIRCUIT_COMP_GROUND:
-				{
-					const lcsm::model::Ground *ground = circComp->asGround();
-					lcsm::CGGround *groundGraph = registeredGround(ground->ID());
-
-					// Make connection between Ground's Wire to Ground
-					// object as tree node.
-					lcsm::CGNode *groundNode = registeredStaticNode(ground->ID(), groundGraph);
-
-					break;
-				}
-				case CIRCUIT_COMP_SPLITTER:
-					throw std::logic_error("Not implemented");
-				case CIRCUIT_COMP_CLOCK:
-					throw std::logic_error("Not implemented");
-				case CIRCUIT_COMP_TRANSISTOR:
-				{
-					const lcsm::model::Transistor *transistor = circComp->asTransistor();
-					lcsm::CGObject *transistorElementGraph = nullptr;
-					lcsm::Identifier elementId;
-
-					switch (transistor->testConnectivity(wire))
-					{
-					case lcsm::model::Transistor::CompositeIndex::BASE:
-						elementId = transistor->idBase();
-						transistorElementGraph = registeredTransistorBase(elementId);
-						break;
-					case lcsm::model::Transistor::CompositeIndex::INOUT_A:
-						elementId = transistor->idInoutA();
-						transistorElementGraph = registeredTransistorInout(elementId);
-						break;
-					case lcsm::model::Transistor::CompositeIndex::INOUT_B:
-						elementId = transistor->idInoutB();
-						transistorElementGraph = registeredTransistorInout(elementId);
-						break;
-					default:
-						throw std::logic_error("");
-					}
-
-					// Make connection between Transistor element's Wire to
-					// Transistor element object as tree node.
-					lcsm::CGNode *transistorElementNode = registeredCompositeNode(elementId, transistorElementGraph);
-
-					break;
-				}
-				case CIRCUIT_COMP_TRANSMISSION_GATE:
-					throw std::logic_error("Not implemented");
-				}
-			}
-			}
 			// Add to future BFS visiting.
 			bfsVisit.emplace_back(comp.cptr());
 		}
@@ -562,16 +466,6 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 	std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
 	const lcsm::CircuitComponent *circuitComp)
 {
-	static constexpr std::size_t IDX_NODE = 0;
-	static constexpr std::size_t IDX_GRAPH = 1;
-	static constexpr std::size_t IDX_OUTPUT = 2;
-
-	using node_t = lcsm::support::PointerView< lcsm::CGNode >;
-	using graph_t = lcsm::support::PointerView< lcsm::CGWire >;
-	using output_t = lcsm::support::PointerView< const lcsm::model::Wire >;
-
-	std::vector< std::tuple< node_t, graph_t, output_t > > outputs;
-
 	switch (circuitComp->circuitComponentType())
 	{
 	case lcsm::CircuitComponentType::CIRCUIT_COMP_PIN:
@@ -594,12 +488,15 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's tree node as Pin's child.
 		lcsm::CGNode *pinWireNode = registeredFastNode(pinWire.ID(), pinWireGraph);
 
-		// Set output's wire to make connections from Pin's Wire object.
-		outputs.emplace_back(pinWireNode, pinWireGraph, pinWire);
+		// Make them to know about each other.
+		pinNode->pushBackChild(lcsm::CGNodeView(pinWireNode));
+		pinWireNode->pushBackChild(lcsm::CGNodeView(pinNode));
+
+		// Add Pin's wire to queue.
+		bfsVisit.emplace_back(std::addressof(pinWire));
 
 		// Add as visited objects.
 		visited.insert(pin->ID());
-		visited.insert(pinWire.ID());
 
 		break;
 	}
@@ -619,12 +516,15 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's tree node as Constant's child.
 		lcsm::CGNode *constantWireNode = registeredFastNode(constantWire.ID(), constantWireGraph);
 
-		// Set output's wire to make connections from Constant's Wire object.
-		outputs.emplace_back(constantWireNode, constantWireGraph, constantWire);
+		// Make them to know about each other.
+		constantNode->pushBackChild(lcsm::CGNodeView(constantWireNode));
+		constantWireNode->pushBackChild(lcsm::CGNodeView(constantNode));
+
+		// Add Constant's wire to queue.
+		bfsVisit.emplace_back(std::addressof(constantWire));
 
 		// Add as visited objects.
 		visited.insert(constant->ID());
-		visited.insert(constantWire.ID());
 
 		break;
 	}
@@ -644,12 +544,15 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's value tree node as Power's child.
 		lcsm::CGNode *powerWireNode = registeredFastNode(powerWire.ID(), powerWireGraph);
 
-		// Set output's wire to make connections from Power's Wire object.
-		outputs.emplace_back(powerWireNode, powerWireGraph, powerWire);
+		// Make them to know about each other.
+		powerNode->pushBackChild(lcsm::CGNodeView(powerWireNode));
+		powerWireNode->pushBackChild(lcsm::CGNodeView(powerNode));
+
+		// Add Power's wire to queue.
+		bfsVisit.emplace_back(std::addressof(powerWire));
 
 		// Add as visited objects.
 		visited.insert(power->ID());
-		visited.insert(powerWire.ID());
 
 		break;
 	}
@@ -669,12 +572,15 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// Wire's value tree node as Ground's child.
 		lcsm::CGNode *groundWireNode = registeredFastNode(groundWire.ID(), groundWireGraph);
 
-		// Set output's wire to make connections from Ground's Wire object.
-		outputs.emplace_back(groundWireNode, groundWireGraph, groundWire);
+		// Make them to know about each other.
+		groundNode->pushBackChild(lcsm::CGNodeView(groundWireNode));
+		groundWireNode->pushBackChild(lcsm::CGNodeView(groundNode));
+
+		// Add Ground's wire to queue.
+		bfsVisit.emplace_back(std::addressof(groundWire));
 
 		// Add as visited objects.
 		visited.insert(ground->ID());
-		visited.insert(groundWire.ID());
 
 		break;
 	}
@@ -719,56 +625,43 @@ void lcsm::LCSMEngine::buildCircuitCircuitComp(
 		// State's tree node.
 		lcsm::CGNode *transistorStateNode = registeredDynamicNode(transistor->ID(), transistorStateGraph);
 
-		// Set output's wire to make connections from Transistor's Wires object.
-		outputs.emplace_back(transistorWireBaseNode, transistorWireBaseGraph, wireBase);
-		outputs.emplace_back(transistorWireSrcANode, transistorWireSrcAGraph, wireSrcA);
-		outputs.emplace_back(transistorWireSrcBNode, transistorWireSrcBGraph, wireSrcB);
+		// Make them to know about each other.
+		const lcsm::CGNodeView transistorBaseNodeView = transistorBaseNode;
+		const lcsm::CGNodeView transistorSrcANodeView = transistorSrcANode;
+		const lcsm::CGNodeView transistorSrcBNodeView = transistorSrcBNode;
+
+		transistorBaseNode->pushBackChild(lcsm::CGNodeView(transistorWireBaseNode));
+		transistorWireBaseNode->pushBackChild(transistorBaseNodeView);
+		transistorSrcANode->pushBackChild(lcsm::CGNodeView(transistorWireSrcANode));
+		transistorWireSrcANode->pushBackChild(transistorSrcANodeView);
+		transistorSrcBNode->pushBackChild(lcsm::CGNodeView(transistorWireSrcBNode));
+		transistorWireSrcBNode->pushBackChild(transistorSrcBNodeView);
+
+		transistorStateNode->pushBackChild(transistorBaseNodeView);
+		transistorStateNode->pushBackChild(transistorSrcANodeView);
+		transistorStateNode->pushBackChild(transistorSrcBNodeView);
+
+		// Make transistor's inouts and base to know about state object.
+		const lcsm::support::PointerView< lcsm::CGState > stateView = transistorStateGraph;
+		transistorBaseGraph->setState(stateView);
+		transistorSrcAGraph->setState(stateView);
+		transistorSrcBGraph->setState(stateView);
+
+		// Add all Transistor's wire to queue.
+		bfsVisit.emplace_back(std::addressof(wireBase));
+		bfsVisit.emplace_back(std::addressof(wireSrcA));
+		bfsVisit.emplace_back(std::addressof(wireSrcB));
 
 		// Add as visited objects.
 		visited.insert(transistor->ID());
 		visited.insert(transistor->idBase());
 		visited.insert(transistor->idInoutA());
 		visited.insert(transistor->idInoutB());
-		visited.insert(wireBase.ID());
-		visited.insert(wireSrcA.ID());
-		visited.insert(wireSrcB.ID());
 
 		break;
 	}
 	case lcsm::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE:
 		throw std::logic_error("Not implemented");
-	}
-
-	// Make connections from lcsmple Wire object to his adjacent wires as
-	// tree's edges.
-	for (auto o : outputs)
-	{
-		node_t &node = std::get< IDX_NODE >(o);
-		graph_t &graph = std::get< IDX_GRAPH >(o);
-		output_t &output = std::get< IDX_OUTPUT >(o);
-
-		node_t::pointer wireNode = node.ptr();
-		graph_t::pointer outputWireGraph = graph.ptr();
-		output_t::const_pointer outputWire = output.ptr();
-
-		for (const lcsm::wire_t &adjacentWire : outputWire->wires())
-		{
-			switch (adjacentWire->wiringComponentType())
-			{
-			case WIRING_COMP_WIRE:
-			{
-				// Wire's adjacent wire tree node.
-				lcsm::CGWire *adjacentWireGraph = registeredWire(adjacentWire->ID());
-				lcsm::CGNode *adjacentWireNode = registeredFastNode(adjacentWire->ID(), adjacentWireGraph);
-
-				break;
-			}
-			case WIRING_COMP_TUNNEL:
-				throw std::logic_error("Not implemented.");
-			}
-			// Add to future BFS visiting.
-			bfsVisit.emplace_back(adjacentWire.cptr());
-		}
 	}
 }
 

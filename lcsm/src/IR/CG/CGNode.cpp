@@ -35,22 +35,22 @@ lcsm::CGNodeType lcsm::CGNode::nodeType() const noexcept
 
 bool lcsm::CGNode::isStatic() const noexcept
 {
-	return false;
+	return nodeType() == lcsm::CGNodeType::Static;
 }
 
 bool lcsm::CGNode::isFast() const noexcept
 {
-	return false;
+	return nodeType() == lcsm::CGNodeType::Fast;
 }
 
 bool lcsm::CGNode::isComposite() const noexcept
 {
-	return false;
+	return nodeType() == lcsm::CGNodeType::Composite;
 }
 
 bool lcsm::CGNode::isDynamic() const noexcept
 {
-	return false;
+	return nodeType() == lcsm::CGNodeType::Dynamic;
 }
 
 lcsm::CGStaticNode *lcsm::CGNode::asStatic() noexcept

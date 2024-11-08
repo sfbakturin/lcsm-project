@@ -61,6 +61,7 @@ ADD_LIBRARY(${PROJECT_NAME}
     IR/CG/CGGround.cpp
     IR/CG/CGSplitter.cpp
     IR/CG/CGState.cpp
+    IR/CG/CGCollector.cpp
     IR/CG/CGTransistor.cpp
     IR/CG/CGWire.cpp
     IR/CG/CGNode.cpp
@@ -80,5 +81,5 @@ ADD_LIBRARY(${PROJECT_NAME}
 IF(MSVC)
     TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE /W4)
 ELSE()
-    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -ferror-limit=999)
+    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 ENDIF()

@@ -115,13 +115,13 @@ const T *lcsm::support::PointerView< T >::operator->() const noexcept
 template< typename T >
 T &lcsm::support::PointerView< T >::operator*() & noexcept
 {
-	return value();
+	return this->value();
 }
 
 template< typename T >
 const T &lcsm::support::PointerView< T >::operator*() const & noexcept
 {
-	return value();
+	return this->value();
 }
 
 template< typename T >

@@ -9,7 +9,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		template< typename Integer, std::enable_if_t< std::is_integral< Integer >::value || std::is_convertible< Integer, std::int32_t >::value, bool > = true >
+		template< typename Integer, typename = typename std::enable_if< std::is_integral< Integer >::value || std::is_convertible< Integer, std::int32_t >::value, bool >::type >
 		int compare(Integer L, Integer R) noexcept
 		{
 			if (L < R)

@@ -6,11 +6,13 @@
 
 lcsm::DataBits &lcsm::CGPinOutput::read()
 {
+	// TODO: Maybe, it should be as real inout element.
 	throw std::logic_error("Can't write value from only output Pin.");
 }
 
 const lcsm::DataBits &lcsm::CGPinOutput::read() const
 {
+	// TODO: Maybe, it should be as real inout element.
 	throw std::logic_error("Can't write value from only output Pin.");
 }
 

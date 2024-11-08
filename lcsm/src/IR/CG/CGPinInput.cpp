@@ -14,18 +14,16 @@ const lcsm::DataBits &lcsm::CGPinInput::read() const
 	return m_value;
 }
 
-void lcsm::CGPinInput::write(const lcsm::DataBits &value)
+void lcsm::CGPinInput::write(const lcsm::DataBits &)
 {
-	// FIXME: if bit of value is not equals m_value AND signal strength of value is more, then it's error.
-	// if (m_value != value)
-	// throw std::logic_error("Can't write value to only input Pin.");
+	// Scheduler must prevent attempts to write to the input Pin.
+	throw std::logic_error("Attempt to write to the input Pin element.");
 }
 
-void lcsm::CGPinInput::write(lcsm::DataBits &&value)
+void lcsm::CGPinInput::write(lcsm::DataBits &&)
 {
-	// FIXME: if bit of value is not equals m_value AND signal strength of value is more, then it's error.
-	// if (m_value != value)
-	// std::logic_error("Can't write value to only input Pin.");
+	// Scheduler must prevent attempts to write to the input Pin.
+	throw std::logic_error("Attempt to write to the input Pin element.");
 }
 
 lcsm::CGObjectType lcsm::CGPinInput::objectType() const noexcept
