@@ -19,12 +19,22 @@ void lcsm::CG::swap(lcsm::CG &other) noexcept
 	std::swap(m_roots, other.m_roots);
 }
 
-void lcsm::CG::addRoot(const lcsm::CGNodeView &node)
+void lcsm::CG::addRoot(const lcsm::support::PointerView< lcsm::CGNode > &node)
 {
 	m_roots.push_back(node);
 }
 
-void lcsm::CG::addRoot(lcsm::CGNodeView &&node)
+void lcsm::CG::addRoot(lcsm::support::PointerView< lcsm::CGNode > &&node)
 {
 	m_roots.push_back(std::move(node));
+}
+
+const std::vector< lcsm::support::PointerView< lcsm::CGNode > > &lcsm::CG::roots() const noexcept
+{
+	return m_roots;
+}
+
+std::vector< lcsm::support::PointerView< lcsm::CGNode > > &lcsm::CG::roots() noexcept
+{
+	return m_roots;
 }

@@ -5,7 +5,6 @@
 #include <lcsm/Component/IOComponent.h>
 #include <lcsm/Component/Identifier.h>
 #include <lcsm/Component/WiringComponent.h>
-#include <lcsm/LCSMContext.h>
 #include <lcsm/Model/Circuit/Clock.h>
 #include <lcsm/Model/Circuit/Constant.h>
 #include <lcsm/Model/Circuit/Ground.h>
@@ -23,6 +22,8 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 
+#include <memory>
+
 namespace lcsm
 {
 	class LCSMBuilder;
@@ -30,15 +31,17 @@ namespace lcsm
 	class LCSMCircuit
 	{
 	  public:
-		LCSMCircuit(LCSMContext &context);
+		LCSMCircuit() = default;
 
 		LCSMCircuit(const LCSMCircuit &other) = delete;
-		LCSMCircuit(LCSMCircuit &&other) noexcept = delete;
+		LCSMCircuit(LCSMCircuit &&other) noexcept;
 
 		LCSMCircuit &operator=(const LCSMCircuit &other) = delete;
-		LCSMCircuit &operator=(LCSMCircuit &&other) noexcept = delete;
+		LCSMCircuit &operator=(LCSMCircuit &&other) noexcept;
 
-		const std::unordered_map< Identifier, support::PointerView< Component > > &Pins() const noexcept;
+		void swap(LCSMCircuit &other) noexcept;
+
+		const std::unordered_map< Identifier, std::shared_ptr< Component > > &components() const noexcept;
 
 	  private:
 		friend class LCSMBuilder;
@@ -58,13 +61,9 @@ namespace lcsm
 		model::Wire *RegisterWire();
 		model::Tunnel *RegisterTunnel();
 
-		LCSMContext &m_context;
-
 		Identifier m_globalId;
 
-		std::unordered_map< Identifier, support::PointerView< Component > > m_pin;
-		std::unordered_map< Identifier, support::PointerView< Component > > m_io;
-		std::unordered_map< Identifier, support::PointerView< Component > > m_comp;
+		std::unordered_map< Identifier, std::shared_ptr< Component > > m_components;
 	};
 }	 // namespace lcsm
 

@@ -23,7 +23,10 @@ namespace lcsm
 		class Constant;
 		class Power;
 		class Ground;
+		class Splitter;
+		class Clock;
 		class Transistor;
+		class TransmissionGate;
 	}	 // namespace model
 
 	class CircuitComponent : public Component
@@ -56,8 +59,17 @@ namespace lcsm
 		virtual model::Ground *asGround() noexcept;
 		virtual const model::Ground *asGround() const noexcept;
 
+		virtual model::Splitter *asSplitter() noexcept;
+		virtual const model::Splitter *asSplitter() const noexcept;
+
+		virtual model::Clock *asClock() noexcept;
+		virtual const model::Clock *asClock() const noexcept;
+
 		virtual model::Transistor *asTransistor() noexcept;
 		virtual const model::Transistor *asTransistor() const noexcept;
+
+		virtual model::TransmissionGate *asTransmissionGate() noexcept;
+		virtual const model::TransmissionGate *asTransmissionGate() const noexcept;
 	};
 }	 // namespace lcsm
 

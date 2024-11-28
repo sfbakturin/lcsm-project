@@ -89,6 +89,16 @@ lcsm::CircuitComponentType lcsm::model::TransmissionGate::circuitComponentType()
 	return lcsm::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE;
 }
 
+lcsm::model::TransmissionGate *lcsm::model::TransmissionGate::asTransmissionGate() noexcept
+{
+	return this;
+}
+
+const lcsm::model::TransmissionGate *lcsm::model::TransmissionGate::asTransmissionGate() const noexcept
+{
+	return this;
+}
+
 void lcsm::model::TransmissionGate::connect(lcsm::wire_t &wire, std::size_t i)
 {
 	lcsm::model::Wire *selected = nullptr;

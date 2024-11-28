@@ -1,26 +1,4 @@
-﻿ADD_SUBDIRECTORY(Component)
-ADD_SUBDIRECTORY(IR)
-ADD_SUBDIRECTORY(Model)
-
-LIST(
-    APPEND
-
-    LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES
-
-    ${LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES_COMPONENT}
-    ${LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES_IR}
-    ${LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES_MODELS}
-
-    CMAKE_PATH(ABSOLUTE_PATH SimContext.cpp)
-    SimBuilder.cpp
-    SimCircuit.cpp
-    SimState.cpp
-    SimEngine.cpp
-)
-
-SET(LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES ${LCSM_DETAILS_LCSM_MAIN_LIBRARY_SOURCES} PARENT_SCOPE)
-
-ADD_LIBRARY(${PROJECT_NAME}
+﻿ADD_LIBRARY(LCSM
     Component/Identifier.cpp
     Component/Component.cpp
     Component/IOComponent.cpp
@@ -44,13 +22,12 @@ ADD_LIBRARY(${PROJECT_NAME}
     Model/IO/Probe.cpp
 
     Verilog/Value.cpp
+    Verilog/Strength.cpp
+    Verilog/Bit.cpp
 
     IR/DataBits.cpp
 
     IR/Instruction.cpp
-    IR/Instruction/WriteValueInstruction.cpp
-    IR/Instruction/BroadcastValueInstruction.cpp
-    IR/Instruction/UpdateStateInstruction.cpp
 
     IR/CG/CGObject.cpp
     IR/CG/CGPin.cpp
@@ -65,21 +42,20 @@ ADD_LIBRARY(${PROJECT_NAME}
     IR/CG/CGTransistor.cpp
     IR/CG/CGWire.cpp
     IR/CG/CGNode.cpp
-    IR/CG/CGStaticNode.cpp
-    IR/CG/CGFastNode.cpp
-    IR/CG/CGCompositeNode.cpp
-    IR/CG/CGDynamicNode.cpp
     IR/CG/CG.cpp
 
-    LCSMContext.cpp
+    IR/Event.cpp
+
     LCSMBuilder.cpp
     LCSMCircuit.cpp
     LCSMState.cpp
     LCSMEngine.cpp
 )
 
+TARGET_LINK_LIBRARIES(LCSM PRIVATE LCSMC)
+
 IF(MSVC)
-    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE /W4)
+    TARGET_COMPILE_OPTIONS(LCSM PRIVATE /W4)
 ELSE()
-    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    TARGET_COMPILE_OPTIONS(LCSM PRIVATE -Wall -Wextra -Wpedantic)
 ENDIF()

@@ -115,6 +115,16 @@ lcsm::CircuitComponentType lcsm::model::Splitter::circuitComponentType() const n
 	return lcsm::CircuitComponentType::CIRCUIT_COMP_SPLITTER;
 }
 
+lcsm::model::Splitter *lcsm::model::Splitter::asSplitter() noexcept
+{
+	return this;
+}
+
+const lcsm::model::Splitter *lcsm::model::Splitter::asSplitter() const noexcept
+{
+	return this;
+}
+
 static constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept
 {
 	return left < right ? left : right;

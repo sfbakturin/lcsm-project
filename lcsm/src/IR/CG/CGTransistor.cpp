@@ -108,3 +108,9 @@ const lcsm::CGTransistorState *lcsm::CGTransistorState::asTransistorState() cons
 {
 	return this;
 }
+
+std::vector< lcsm::Event > lcsm::CGTransistorState::invokeInstructions()
+{
+	// TODO: Implement invoking for this object.
+	return {};
+}

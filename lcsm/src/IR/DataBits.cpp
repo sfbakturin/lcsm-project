@@ -7,13 +7,14 @@
 
 #include <cstddef>
 #include <memory>
+#include <ostream>
 #include <stdexcept>
 #include <utility>
 
 lcsm::DataBits::DataBits() noexcept : lcsm::DataBits(lcsm::model::Width::Bit1) {}
 
 lcsm::DataBits::DataBits(lcsm::model::Width width) noexcept :
-	lcsm::DataBits(width, lcsm::verilog::Strength::StrongDrive, lcsm::verilog::Bit::False)
+	lcsm::DataBits(width, lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined)
 {
 }
 
@@ -102,6 +103,46 @@ lcsm::DataBits &lcsm::DataBits::operator=(lcsm::DataBits &&other) noexcept
 	return *this;
 }
 
+lcsm::DataBits lcsm::DataBits::operator|(const lcsm::DataBits &other)
+{
+	if (!checkWidth(other))
+		throw std::logic_error("Incompatible widths found");
+
+	const unsigned n = static_cast< unsigned >(m_width);
+	lcsm::DataBits result = *this;
+
+	for (unsigned i = 0; i < n; i++)
+		result[i] |= other[i];
+
+	return result;
+}
+
+lcsm::DataBits &lcsm::DataBits::operator|=(const lcsm::DataBits &other)
+{
+	if (this != std::addressof(other))
+		*this = *this | other;
+	return *this;
+}
+
+bool lcsm::DataBits::operator==(const lcsm::DataBits &other) const noexcept
+{
+	if (!checkWidth(other))
+		return false;
+
+	const unsigned n = static_cast< unsigned >(m_width);
+
+	for (unsigned i = 0; i < n; i++)
+		if (value(i) != other[i])
+			return false;
+
+	return true;
+}
+
+bool lcsm::DataBits::operator!=(const lcsm::DataBits &other) const noexcept
+{
+	return !(*this == other);
+}
+
 void lcsm::DataBits::swap(lcsm::DataBits &other) noexcept
 {
 	std::swap(m_width, other.m_width);
@@ -111,6 +152,11 @@ void lcsm::DataBits::swap(lcsm::DataBits &other) noexcept
 lcsm::model::Width lcsm::DataBits::width() const noexcept
 {
 	return m_width;
+}
+
+void lcsm::DataBits::setWidth(lcsm::model::Width newWidth) noexcept
+{
+	m_width = newWidth;
 }
 
 bool lcsm::DataBits::checkWidth(const lcsm::DataBits &other) const noexcept
@@ -156,4 +202,30 @@ void lcsm::DataBits::setValue(std::size_t index, const lcsm::verilog::Value &new
 void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value &&newValue)
 {
 	m_bits[index] = std::move(newValue);
+}
+
+void lcsm::DataBits::reset() noexcept
+{
+	const unsigned n = static_cast< unsigned >(width());
+
+	for (unsigned i = 0; i < n; i++)
+		m_bits[i] = { lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };
+}
+
+std::ostream &lcsm::operator<<(std::ostream &os, const lcsm::DataBits &db)
+{
+	os << '[';
+
+	const unsigned n = static_cast< unsigned >(db.m_width);
+	bool needsComma = false;
+
+	for (unsigned i = 0; i < n; i++)
+	{
+		if (needsComma)
+			os << ',';
+		os << db.m_bits[i];
+		needsComma = true;
+	}
+
+	return os << ']';
 }

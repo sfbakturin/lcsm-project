@@ -1,6 +1,7 @@
 #ifndef LCSM_SUPPORT_POINTERVIEW_HPP
 #define LCSM_SUPPORT_POINTERVIEW_HPP
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 
@@ -30,6 +31,9 @@ namespace lcsm
 			PointerView &operator=(const PointerView &other) noexcept;
 			PointerView &operator=(PointerView &&other) noexcept;
 
+			bool operator==(const PointerView &other) const noexcept;
+			bool operator!=(const PointerView &other) const noexcept;
+
 			pointer operator->() noexcept;
 			const_pointer operator->() const noexcept;
 
@@ -47,11 +51,22 @@ namespace lcsm
 			reference ref() noexcept;
 			const_reference cref() const noexcept;
 
+			std::size_t hashCode() const noexcept;
+
 		  private:
 			pointer m_ptr;
 		};
 	}	 // namespace support
 }	 // namespace lcsm
+
+namespace std
+{
+	template< typename T >
+	struct hash< lcsm::support::PointerView< T > >
+	{
+		std::size_t operator()(const lcsm::support::PointerView< T > &object) const { return object.hashCode(); }
+	};
+}	 // namespace std
 
 template< typename T >
 lcsm::support::PointerView< T >::PointerView() noexcept : m_ptr(nullptr)
@@ -98,6 +113,18 @@ lcsm::support::PointerView< T > &lcsm::support::PointerView< T >::operator=(lcsm
 	if (this != &other)
 		lcsm::support::PointerView< T >(std::move(other)).swap(*this);
 	return *this;
+}
+
+template< typename T >
+bool lcsm::support::PointerView< T >::operator==(const PointerView< T > &other) const noexcept
+{
+	return m_ptr == other.m_ptr;
+}
+
+template< typename T >
+bool lcsm::support::PointerView< T >::operator!=(const PointerView< T > &other) const noexcept
+{
+	return m_ptr != other.m_ptr;
 }
 
 template< typename T >
@@ -164,6 +191,13 @@ template< typename T >
 const T &lcsm::support::PointerView< T >::cref() const noexcept
 {
 	return *m_ptr;
+}
+
+template< typename T >
+std::size_t lcsm::support::PointerView< T >::hashCode() const noexcept
+{
+	std::uintptr_t i = reinterpret_cast< std::uintptr_t >(m_ptr);
+	return i;
 }
 
 template< typename T >

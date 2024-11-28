@@ -1,9 +1,14 @@
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
+#include <lcsm/IR/Event.h>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <deque>
+#include <stdexcept>
 #include <utility>
+#include <vector>
+
+lcsm::CGObject::CGObject(CGNodeType nodeType) : lcsm::CGNode(nodeType) {}
 
 bool lcsm::CGObject::isWire() const noexcept
 {
@@ -155,14 +160,17 @@ const lcsm::CGTransistorState *lcsm::CGObject::asTransistorState() const noexcep
 	return nullptr;
 }
 
-void lcsm::CGObject::addInstantInstr(const lcsm::support::PointerView< Instruction > &instruction)
+void lcsm::CGObject::pushBackInstruction(const Instruction &instruction)
 {
 	m_instants.push_back(instruction);
 }
 
-void lcsm::CGObject::addInstantInstr(lcsm::support::PointerView< Instruction > &&instruction)
+void lcsm::CGObject::pushBackInstruction(Instruction &&instruction)
 {
 	m_instants.push_back(std::move(instruction));
 }
 
-void lcsm::CGObject::invokeInstant() {}
+std::vector< lcsm::Event > lcsm::CGObject::invokeInstructions()
+{
+	throw std::logic_error("Can't invoke instants for unknown object.");
+}

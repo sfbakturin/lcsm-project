@@ -44,6 +44,9 @@ namespace lcsm
 
 			virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
+			virtual model::Clock *asClock() noexcept override final;
+			virtual const model::Clock *asClock() const noexcept override final;
+
 		  private:
 			Identifier m_id;
 

@@ -4,6 +4,10 @@
 
 #include <stdexcept>
 
+lcsm::CGState::CGState() : lcsm::CGObject(lcsm::CGNodeType::Dynamic) {}
+
+void lcsm::CGState::reset() noexcept {}
+
 lcsm::DataBits &lcsm::CGState::read()
 {
 	throw std::logic_error("State can't be read.");
@@ -32,4 +36,16 @@ lcsm::model::Width lcsm::CGState::width() const
 bool lcsm::CGState::checkWidth(const DataBits &) const
 {
 	throw std::logic_error("There is no certain width of State object.");
+}
+
+void lcsm::CGState::pushBackInstruction(const lcsm::Instruction &instruction)
+{
+	// TODO: Verify instruction for this object.
+	lcsm::CGObject::pushBackInstruction(instruction);
+}
+
+void lcsm::CGState::pushBackInstruction(lcsm::Instruction &&instruction)
+{
+	// TODO: Verify instruction for this object.
+	lcsm::CGObject::pushBackInstruction(std::move(instruction));
 }

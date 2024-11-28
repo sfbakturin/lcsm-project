@@ -48,6 +48,9 @@ namespace lcsm
 
 			virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
+			virtual model::TransmissionGate *asTransmissionGate() noexcept override final;
+			virtual const model::TransmissionGate *asTransmissionGate() const noexcept override final;
+
 		  private:
 			void connect(wire_t &wire, std::size_t i);
 

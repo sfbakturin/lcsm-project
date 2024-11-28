@@ -1,90 +1,52 @@
 #ifndef LCSM_IR_INSTRUCTION_H
 #define LCSM_IR_INSTRUCTION_H
 
-#include <lcsm/Support/PointerView.hpp>
-
-#include <memory>
-
 namespace lcsm
 {
 	class CGObject;
 
-	enum InstructionT : unsigned
+	enum InstructionType : unsigned
 	{
-		INSTR_WRITE_VALUE,
-		INSTR_BROADCAST_VALUE,
-		INSTR_UPDATE_ELEMENT_STATE
+		WriteValue,
+		BroadcastValue,
+		Request,
+		UpdateState
 	};
 
 	class Instruction
 	{
 	  public:
-		virtual ~Instruction() noexcept = default;
+		Instruction(InstructionType type, CGObject *caller, CGObject *target) noexcept;
 
-		virtual void invoke() = 0;
+		Instruction(const Instruction &other) noexcept;
+		Instruction(Instruction &&other) noexcept;
 
-		virtual InstructionT T() const noexcept = 0;
+		Instruction &operator=(const Instruction &other) noexcept;
+		Instruction &operator=(Instruction &&other) noexcept;
+
+		void swap(Instruction &other) noexcept;
 
 		bool isWrite() const noexcept;
 		bool isBroadcast() const noexcept;
-		bool isUpdateElementState() const noexcept;
+		bool isRequest() const noexcept;
+		bool isUpdateState() const noexcept;
 
-		virtual bool mayStabilized() const noexcept = 0;
-	};
+		const CGObject *caller() const noexcept;
+		CGObject *caller() noexcept;
 
-	using InstructionView = support::PointerView< Instruction >;
-	using InstructionShared = std::shared_ptr< Instruction >;
-
-	class WriteValue : public Instruction
-	{
-	  public:
-		WriteValue(CGObject *targetFrom, CGObject *targetTo) noexcept;
-
-		virtual void invoke() override;
-
-		virtual InstructionT T() const noexcept override;
-
-		virtual bool mayStabilized() const noexcept override;
+		const CGObject *target() const noexcept;
+		CGObject *target() noexcept;
 
 	  private:
-		CGObject *m_targetFrom;
-		CGObject *m_targetTo;
-	};
-
-	class BroadcastValue : public Instruction
-	{
-	  public:
-		BroadcastValue(CGObject *targetFrom, CGObject *targetTo) noexcept;
-
-		virtual void invoke() override;
-
-		virtual InstructionT T() const noexcept override;
-
-		virtual bool mayStabilized() const noexcept override;
-
-	  private:
-		CGObject *m_targetFrom;
-		CGObject *m_targetTo;
-	};
-
-	class UpdateState : public Instruction
-	{
-	  public:
-		UpdateState(CGObject *target) noexcept;
-
-		virtual void invoke() override;
-
-		virtual InstructionT T() const noexcept override;
-
-		virtual bool mayStabilized() const noexcept override;
-
-	  private:
+		InstructionType m_type;
+		CGObject *m_caller;
 		CGObject *m_target;
 	};
 
-	InstructionShared CreateWriteValue(CGObject *targetFrom, CGObject *targetTo);
-	InstructionShared CreateBroadcastValue(CGObject *targetFrom, CGObject *targetTo);
-	InstructionShared CreateUpdateState(CGObject *target);
+	Instruction CreateWriteValueInstruction(CGObject *caller, CGObject *target) noexcept;
+	Instruction CreateBroadcastValueInstruction(CGObject *caller, CGObject *target) noexcept;
+	Instruction CreateRequestInstruction(CGObject *caller, CGObject *target) noexcept;
+	Instruction CreateUpdateStateInstruction(CGObject *caller, CGObject *target) noexcept;
 }	 // namespace lcsm
 
 #endif /* LCSM_IR_INSTRUCTION_H */

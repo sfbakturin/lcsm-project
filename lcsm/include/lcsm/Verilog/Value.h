@@ -4,6 +4,8 @@
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
 
+#include <ostream>
+
 namespace lcsm
 {
 	namespace verilog
@@ -20,6 +22,12 @@ namespace lcsm
 
 			Value &operator=(const Value &other) noexcept;
 			Value &operator=(Value &&other) noexcept;
+
+			Value operator|(const Value &other) noexcept;
+			Value &operator|=(const Value &other) noexcept;
+
+			bool operator==(const Value &other) const noexcept;
+			bool operator!=(const Value &other) const noexcept;
 
 			static int compareInner(const Value &left, const Value &right) noexcept;
 			static int compareOuter(const Value &left, const Value &right) noexcept;
@@ -43,6 +51,8 @@ namespace lcsm
 			Bit bit() const noexcept;
 			void setBit(Bit newBit) noexcept;
 			void flip() noexcept;
+
+			friend std::ostream &operator<<(std::ostream &os, const Value &v);
 
 		  private:
 			Strength m_strength;

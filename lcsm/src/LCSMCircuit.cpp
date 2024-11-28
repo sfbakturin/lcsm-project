@@ -3,7 +3,6 @@
 #include <lcsm/Component/Identifier.h>
 #include <lcsm/Component/WiringComponent.h>
 #include <lcsm/LCSMCircuit.h>
-#include <lcsm/LCSMContext.h>
 #include <lcsm/Model/Circuit/Clock.h>
 #include <lcsm/Model/Circuit/Constant.h>
 #include <lcsm/Model/Circuit/Ground.h>
@@ -20,23 +19,41 @@
 #include <lcsm/Model/Wiring/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
-lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMContext &context) : m_context(context)
+#include <memory>
+#include <utility>
+
+lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMCircuit &&other) noexcept :
+	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components))
 {
-	m_context.AddCircuit(this);
 }
 
-const std::unordered_map< lcsm::Identifier, lcsm::support::PointerView< lcsm::Component > > &lcsm::LCSMCircuit::Pins() const noexcept
+lcsm::LCSMCircuit &lcsm::LCSMCircuit::operator=(lcsm::LCSMCircuit &&other) noexcept
 {
-	return m_pin;
+	if (this != std::addressof(other))
+		lcsm::LCSMCircuit(std::move(other)).swap(*this);
+	return *this;
+}
+
+void lcsm::LCSMCircuit::swap(lcsm::LCSMCircuit &other) noexcept
+{
+	std::swap(m_globalId, other.m_globalId);
+	std::swap(m_components, other.m_components);
+}
+
+const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::Component > > &lcsm::LCSMCircuit::components() const noexcept
+{
+	return m_components;
 }
 
 lcsm::model::Constant *lcsm::LCSMCircuit::RegisterConstant(lcsm::model::Width width, std::uint64_t value)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Constant *constant = m_context.AllocaConstant(width, value);
 
-	m_globalId = constant->identify(m_globalId);
-	m_comp[prev] = { constant };
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Constant >(width, value);
+	lcsm::model::Constant *constant = allocated->asCircuit()->asConstant();
+
+	m_globalId = constant->identify(prev);
+	m_components[prev] = std::move(allocated);
 
 	return constant;
 }
@@ -44,10 +61,12 @@ lcsm::model::Constant *lcsm::LCSMCircuit::RegisterConstant(lcsm::model::Width wi
 lcsm::model::Ground *lcsm::LCSMCircuit::RegisterGround(lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Ground *ground = m_context.AllocaGround(width);
 
-	m_globalId = ground->identify(m_globalId);
-	m_comp[prev] = { ground };
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Ground >(width);
+	lcsm::model::Ground *ground = allocated->asCircuit()->asGround();
+
+	m_globalId = ground->identify(prev);
+	m_components[prev] = std::move(allocated);
 
 	return ground;
 }
@@ -55,10 +74,12 @@ lcsm::model::Ground *lcsm::LCSMCircuit::RegisterGround(lcsm::model::Width width)
 lcsm::model::Power *lcsm::LCSMCircuit::RegisterPower(lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Power *power = m_context.AllocaPower(width);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Power >(width);
+	lcsm::model::Power *power = allocated->asCircuit()->asPower();
 
 	m_globalId = power->identify(prev);
-	m_comp[prev] = { power };
+	m_components[prev] = std::move(allocated);
 
 	return power;
 }
@@ -66,10 +87,12 @@ lcsm::model::Power *lcsm::LCSMCircuit::RegisterPower(lcsm::model::Width width)
 lcsm::model::Pin *lcsm::LCSMCircuit::RegisterPin(bool output, lcsm::model::Width width)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Pin *pin = m_context.AllocaPin(output, width);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Pin >(output, width);
+	lcsm::model::Pin *pin = allocated->asCircuit()->asPin();
 
 	m_globalId = pin->identify(prev);
-	m_pin[prev] = lcsm::support::PointerView< lcsm::Component >(pin);
+	m_components[prev] = std::move(allocated);
 
 	return pin;
 }
@@ -77,10 +100,12 @@ lcsm::model::Pin *lcsm::LCSMCircuit::RegisterPin(bool output, lcsm::model::Width
 lcsm::model::Splitter *lcsm::LCSMCircuit::RegisterSplitter(lcsm::model::Width widthIn, std::size_t widthOut)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Splitter *splitter = m_context.AllocaSplitter(widthIn, widthOut);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Splitter >(widthIn, widthOut);
+	lcsm::model::Splitter *splitter = allocated->asCircuit()->asSplitter();
 
 	m_globalId = splitter->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(splitter);
+	m_components[prev] = std::move(allocated);
 
 	return splitter;
 }
@@ -88,10 +113,12 @@ lcsm::model::Splitter *lcsm::LCSMCircuit::RegisterSplitter(lcsm::model::Width wi
 lcsm::model::Transistor *lcsm::LCSMCircuit::RegisterTransistor(lcsm::model::TransistorType type)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Transistor *transistor = m_context.AllocaTransistor(type);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Transistor >(type);
+	lcsm::model::Transistor *transistor = allocated->asCircuit()->asTransistor();
 
 	m_globalId = transistor->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(transistor);
+	m_components[prev] = std::move(allocated);
 
 	return transistor;
 }
@@ -99,10 +126,12 @@ lcsm::model::Transistor *lcsm::LCSMCircuit::RegisterTransistor(lcsm::model::Tran
 lcsm::model::TransmissionGate *lcsm::LCSMCircuit::RegisterTransmissionGate()
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::TransmissionGate *transmissionGate = m_context.AllocaTransmissionGate();
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::TransmissionGate >();
+	lcsm::model::TransmissionGate *transmissionGate = allocated->asCircuit()->asTransmissionGate();
 
 	m_globalId = transmissionGate->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(transmissionGate);
+	m_components[prev] = std::move(allocated);
 
 	return transmissionGate;
 }
@@ -110,10 +139,12 @@ lcsm::model::TransmissionGate *lcsm::LCSMCircuit::RegisterTransmissionGate()
 lcsm::model::Clock *lcsm::LCSMCircuit::RegisterClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Clock *clock = m_context.AllocaClock(highDuration, lowDuration, phaseOffset);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Clock >(highDuration, lowDuration, phaseOffset);
+	lcsm::model::Clock *clock = allocated->asCircuit()->asClock();
 
 	m_globalId = clock->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(clock);
+	m_components[prev] = std::move(allocated);
 
 	return clock;
 }
@@ -121,10 +152,12 @@ lcsm::model::Clock *lcsm::LCSMCircuit::RegisterClock(unsigned highDuration, unsi
 lcsm::model::Button *lcsm::LCSMCircuit::RegisterButton(bool activeOnPress)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Button *button = m_context.AllocaButton(activeOnPress);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Button >(activeOnPress);
+	lcsm::model::Button *button = allocated->asIO()->asButton();
 
 	m_globalId = button->identify(prev);
-	m_io[prev] = lcsm::support::PointerView< lcsm::Component >(button);
+	m_components[prev] = std::move(allocated);
 
 	return button;
 }
@@ -132,10 +165,12 @@ lcsm::model::Button *lcsm::LCSMCircuit::RegisterButton(bool activeOnPress)
 lcsm::model::Digit *lcsm::LCSMCircuit::RegisterDigit(bool hasDecimalPoint)
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Digit *digit = m_context.AllocaDigit(hasDecimalPoint);
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Digit >(hasDecimalPoint);
+	lcsm::model::Digit *digit = allocated->asIO()->asDigit();
 
 	m_globalId = digit->identify(prev);
-	m_io[prev] = lcsm::support::PointerView< lcsm::Component >(digit);
+	m_components[prev] = std::move(allocated);
 
 	return digit;
 }
@@ -143,10 +178,12 @@ lcsm::model::Digit *lcsm::LCSMCircuit::RegisterDigit(bool hasDecimalPoint)
 lcsm::model::Probe *lcsm::LCSMCircuit::RegisterProbe()
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Probe *probe = m_context.AllocaProbe();
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Probe >();
+	lcsm::model::Probe *probe = allocated->asIO()->asProbe();
 
 	m_globalId = probe->identify(prev);
-	m_io[prev] = lcsm::support::PointerView< lcsm::Component >(probe);
+	m_components[prev] = std::move(allocated);
 
 	return probe;
 }
@@ -154,10 +191,12 @@ lcsm::model::Probe *lcsm::LCSMCircuit::RegisterProbe()
 lcsm::model::Wire *lcsm::LCSMCircuit::RegisterWire()
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Wire *wire = m_context.AllocaWire();
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Wire >();
+	lcsm::model::Wire *wire = allocated->asWiring()->asWire();
 
 	m_globalId = wire->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(wire);
+	m_components[prev] = std::move(allocated);
 
 	return wire;
 }
@@ -165,10 +204,12 @@ lcsm::model::Wire *lcsm::LCSMCircuit::RegisterWire()
 lcsm::model::Tunnel *lcsm::LCSMCircuit::RegisterTunnel()
 {
 	const lcsm::Identifier prev = m_globalId;
-	lcsm::model::Tunnel *tunnel = m_context.AllocaTunnel();
+
+	std::shared_ptr< lcsm::Component > allocated = std::make_shared< lcsm::model::Tunnel >();
+	lcsm::model::Tunnel *tunnel = allocated->asWiring()->asTunnel();
 
 	m_globalId = tunnel->identify(prev);
-	m_comp[prev] = lcsm::support::PointerView< lcsm::Component >(tunnel);
+	m_components[prev] = std::move(allocated);
 
 	return tunnel;
 }

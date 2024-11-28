@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <ostream>
 #include <utility>
 
 lcsm::Identifier::Identifier() noexcept : m_id(0) {}
@@ -67,6 +68,11 @@ bool lcsm::Identifier::operator<=(const lcsm::Identifier &other) const noexcept
 bool lcsm::Identifier::operator>=(const lcsm::Identifier &other) const noexcept
 {
 	return m_id >= other.m_id;
+}
+
+std::ostream &lcsm::operator<<(std::ostream &os, const lcsm::Identifier &id)
+{
+	return os << id.m_id;
 }
 
 lcsm::Identifier::Identifier(lcsm::Identifier::value_type id) noexcept : m_id(id) {}

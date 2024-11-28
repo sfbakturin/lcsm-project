@@ -105,3 +105,13 @@ lcsm::CircuitComponentType lcsm::model::Clock::circuitComponentType() const noex
 {
 	return lcsm::CircuitComponentType::CIRCUIT_COMP_CLOCK;
 }
+
+lcsm::model::Clock *lcsm::model::Clock::asClock() noexcept
+{
+	return this;
+}
+
+const lcsm::model::Clock *lcsm::model::Clock::asClock() const noexcept
+{
+	return this;
+}

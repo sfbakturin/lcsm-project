@@ -1,13 +1,14 @@
 #ifndef LCSM_COMPONENT_IDENTIFIER_H
 #define LCSM_COMPONENT_IDENTIFIER_H
 
+#include <lcsm/LCSMC.h>
+
 #include <cstddef>
 #include <functional>
+#include <ostream>
 
 namespace lcsm
 {
-	using id_t = unsigned;
-
 	class Identifier
 	{
 	  public:
@@ -31,6 +32,8 @@ namespace lcsm
 		bool operator!=(const Identifier &other) const noexcept;
 		bool operator<=(const Identifier &other) const noexcept;
 		bool operator>=(const Identifier &other) const noexcept;
+
+		friend std::ostream &operator<<(std::ostream &os, const Identifier &id);
 
 	  private:
 		Identifier(value_type id) noexcept;

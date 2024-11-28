@@ -1,12 +1,15 @@
+#include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
 #include <lcsm/IR/DataBits.h>
 #include <lcsm/Model/Width.h>
 
 #include <utility>
 
-lcsm::CGPin::CGPin(const lcsm::DataBits &value) : m_value(value) {}
+lcsm::CGPin::CGPin() : lcsm::CGObject(lcsm::CGNodeType::Static) {}
 
-lcsm::CGPin::CGPin(lcsm::DataBits &&value) noexcept : m_value(std::move(value)) {}
+lcsm::CGPin::CGPin(const lcsm::DataBits &value) : lcsm::CGObject(lcsm::CGNodeType::Static), m_value(value) {}
+
+lcsm::CGPin::CGPin(lcsm::DataBits &&value) : lcsm::CGObject(lcsm::CGNodeType::Static), m_value(std::move(value)) {}
 
 lcsm::model::Width lcsm::CGPin::width() const
 {

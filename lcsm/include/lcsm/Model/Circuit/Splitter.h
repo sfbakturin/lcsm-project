@@ -46,6 +46,9 @@ namespace lcsm
 
 			virtual CircuitComponentType circuitComponentType() const noexcept override final;
 
+			virtual Splitter *asSplitter() noexcept override final;
+			virtual const Splitter *asSplitter() const noexcept override final;
+
 		  private:
 			static constexpr std::size_t CONNECTORS_SIZE = Width::MaxWidth;
 			static constexpr std::size_t NO_CONNECT = std::numeric_limits< std::size_t >::max();

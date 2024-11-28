@@ -9,6 +9,7 @@
 #include <lcsm/Verilog/Value.h>
 
 #include <cstddef>
+#include <ostream>
 
 namespace lcsm
 {
@@ -32,9 +33,16 @@ namespace lcsm
 		DataBits &operator=(const DataBits &other) noexcept;
 		DataBits &operator=(DataBits &&other) noexcept;
 
+		DataBits operator|(const DataBits &other);
+		DataBits &operator|=(const DataBits &other);
+
+		bool operator==(const DataBits &other) const noexcept;
+		bool operator!=(const DataBits &other) const noexcept;
+
 		void swap(DataBits &other) noexcept;
 
 		model::Width width() const noexcept;
+		void setWidth(model::Width newWidth) noexcept;
 		bool checkWidth(const DataBits &other) const noexcept;
 
 		verilog::Bit bit(std::size_t index) const;
@@ -49,6 +57,10 @@ namespace lcsm
 
 		void setValue(std::size_t index, const verilog::Value &newValue);
 		void setValue(std::size_t index, verilog::Value &&newValue);
+
+		void reset() noexcept;
+
+		friend std::ostream &operator<<(std::ostream &os, const DataBits &db);
 
 		static constexpr std::size_t MaxWidth = model::Width::MaxWidth;
 

@@ -56,12 +56,42 @@ const lcsm::model::Ground *lcsm::CircuitComponent::asGround() const noexcept
 	return nullptr;
 }
 
+lcsm::model::Splitter *lcsm::CircuitComponent::asSplitter() noexcept
+{
+	return nullptr;
+}
+
+const lcsm::model::Splitter *lcsm::CircuitComponent::asSplitter() const noexcept
+{
+	return nullptr;
+}
+
+lcsm::model::Clock *lcsm::CircuitComponent::asClock() noexcept
+{
+	return nullptr;
+}
+
+const lcsm::model::Clock *lcsm::CircuitComponent::asClock() const noexcept
+{
+	return nullptr;
+}
+
 lcsm::model::Transistor *lcsm::CircuitComponent::asTransistor() noexcept
 {
 	return nullptr;
 }
 
 const lcsm::model::Transistor *lcsm::CircuitComponent::asTransistor() const noexcept
+{
+	return nullptr;
+}
+
+lcsm::model::TransmissionGate *lcsm::CircuitComponent::asTransmissionGate() noexcept
+{
+	return nullptr;
+}
+
+const lcsm::model::TransmissionGate *lcsm::CircuitComponent::asTransmissionGate() const noexcept
 {
 	return nullptr;
 }

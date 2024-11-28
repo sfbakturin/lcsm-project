@@ -4,38 +4,100 @@
 #include <memory>
 #include <utility>
 
+lcsm::Instruction::Instruction(lcsm::InstructionType type, lcsm::CGObject *caller, lcsm::CGObject *target) noexcept :
+	m_type(type), m_caller(caller), m_target(target)
+{
+}
+
+lcsm::Instruction::Instruction(const Instruction &other) noexcept :
+	m_type(other.m_type), m_caller(other.m_caller), m_target(other.m_target)
+{
+}
+
+lcsm::Instruction::Instruction(Instruction &&other) noexcept :
+	m_type(other.m_type), m_caller(other.m_caller), m_target(other.m_target)
+{
+	other.m_caller = nullptr;
+	other.m_target = nullptr;
+}
+
+lcsm::Instruction &lcsm::Instruction::operator=(const lcsm::Instruction &other) noexcept
+{
+	if (this != std::addressof(other))
+		lcsm::Instruction(other).swap(*this);
+	return *this;
+}
+
+lcsm::Instruction &lcsm::Instruction::operator=(lcsm::Instruction &&other) noexcept
+{
+	if (this != std::addressof(other))
+		lcsm::Instruction(other).swap(*this);
+	return *this;
+}
+
+void lcsm::Instruction::swap(lcsm::Instruction &other) noexcept
+{
+	std::swap(m_type, other.m_type);
+	std::swap(m_caller, other.m_caller);
+	std::swap(m_target, other.m_target);
+}
+
+const lcsm::CGObject *lcsm::Instruction::caller() const noexcept
+{
+	return m_caller;
+}
+
+lcsm::CGObject *lcsm::Instruction::caller() noexcept
+{
+	return m_caller;
+}
+
+const lcsm::CGObject *lcsm::Instruction::target() const noexcept
+{
+	return m_target;
+}
+
+lcsm::CGObject *lcsm::Instruction::target() noexcept
+{
+	return m_target;
+}
+
 bool lcsm::Instruction::isWrite() const noexcept
 {
-	return T() == lcsm::InstructionT::INSTR_WRITE_VALUE;
+	return m_type == lcsm::InstructionType::WriteValue;
 }
 
 bool lcsm::Instruction::isBroadcast() const noexcept
 {
-	return T() == lcsm::InstructionT::INSTR_BROADCAST_VALUE;
+	return m_type == lcsm::InstructionType::BroadcastValue;
 }
 
-bool lcsm::Instruction::isUpdateElementState() const noexcept
+bool lcsm::Instruction::isRequest() const noexcept
 {
-	return T() == lcsm::InstructionT::INSTR_UPDATE_ELEMENT_STATE;
+	return m_type == lcsm::InstructionType::Request;
 }
 
-template< typename I, typename... Args >
-static std::shared_ptr< lcsm::Instruction > CreateInstruction(Args &&...args)
+bool lcsm::Instruction::isUpdateState() const noexcept
 {
-	return std::make_shared< I >(std::forward< Args >(args)...);
+	return m_type == lcsm::InstructionType::UpdateState;
 }
 
-std::shared_ptr< lcsm::Instruction > lcsm::CreateWriteValue(lcsm::CGObject *targetFrom, lcsm::CGObject *targetTo)
+lcsm::Instruction lcsm::CreateWriteValueInstruction(lcsm::CGObject *caller, lcsm::CGObject *target) noexcept
 {
-	return CreateInstruction< lcsm::WriteValue >(targetFrom, targetTo);
+	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target);
 }
 
-std::shared_ptr< lcsm::Instruction > lcsm::CreateBroadcastValue(lcsm::CGObject *targetFrom, lcsm::CGObject *targetTo)
+lcsm::Instruction lcsm::CreateBroadcastValueInstruction(lcsm::CGObject *caller, lcsm::CGObject *target) noexcept
 {
-	return CreateInstruction< lcsm::BroadcastValue >(targetFrom, targetTo);
+	return lcsm::Instruction(lcsm::InstructionType::BroadcastValue, caller, target);
 }
 
-std::shared_ptr< lcsm::Instruction > lcsm::CreateUpdateState(lcsm::CGObject *target)
+lcsm::Instruction lcsm::CreateRequestInstruction(lcsm::CGObject *caller, lcsm::CGObject *target) noexcept
 {
-	return CreateInstruction< lcsm::UpdateState >(target);
+	return lcsm::Instruction(lcsm::InstructionType::Request, caller, target);
+}
+
+lcsm::Instruction lcsm::CreateUpdateStateInstruction(lcsm::CGObject *caller, lcsm::CGObject *target) noexcept
+{
+	return lcsm::Instruction(lcsm::InstructionType::UpdateState, caller, target);
 }

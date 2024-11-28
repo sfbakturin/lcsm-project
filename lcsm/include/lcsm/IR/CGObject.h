@@ -1,7 +1,10 @@
 #ifndef LCSM_IR_CGOBJECT_H
 #define LCSM_IR_CGOBJECT_H
 
+#include <lcsm/IR/CG.h>
 #include <lcsm/IR/DataBits.h>
+#include <lcsm/IR/Event.h>
+#include <lcsm/IR/Instruction.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Support/PointerView.hpp>
 
@@ -10,7 +13,7 @@
 
 namespace lcsm
 {
-	enum CGObjectType
+	enum CGObjectType : unsigned
 	{
 		PinInput,
 		PinOutput,
@@ -41,10 +44,13 @@ namespace lcsm
 
 	class Instruction;
 
-	class CGObject
+	class CGObject : public CGNode
 	{
 	  public:
+		CGObject(CGNodeType nodeType);
 		virtual ~CGObject() noexcept = default;
+
+		virtual void reset() noexcept = 0;
 
 		virtual DataBits &read() = 0;
 		virtual const DataBits &read() const = 0;
@@ -89,13 +95,12 @@ namespace lcsm
 		virtual CGTransistorState *asTransistorState() noexcept;
 		virtual const CGTransistorState *asTransistorState() const noexcept;
 
-		void addInstantInstr(support::PointerView< Instruction > &&instruction);
-		void addInstantInstr(const support::PointerView< Instruction > &instruction);
-
-		void invokeInstant();
+		virtual void pushBackInstruction(const Instruction &instruction);
+		virtual void pushBackInstruction(Instruction &&instruction);
+		virtual std::vector< Event > invokeInstructions();
 
 	  protected:
-		std::deque< support::PointerView< Instruction > > m_instants;
+		std::deque< Instruction > m_instants;
 	};
 
 	using CGObjectView = support::PointerView< CGObject >;
@@ -103,12 +108,12 @@ namespace lcsm
 	class CGPin : public CGObject
 	{
 	  public:
-		CGPin() noexcept = default;
+		CGPin();
 
 		virtual ~CGPin() noexcept = default;
 
 		CGPin(const DataBits &value);
-		CGPin(DataBits &&value) noexcept;
+		CGPin(DataBits &&value);
 
 		virtual model::Width width() const override;
 		virtual bool checkWidth(const DataBits &value) const override;
@@ -120,6 +125,10 @@ namespace lcsm
 	class CGPinInput : public CGPin
 	{
 	  public:
+		CGPinInput();
+
+		virtual void reset() noexcept override final;
+
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
 
@@ -133,11 +142,17 @@ namespace lcsm
 
 		virtual CGPinInput *asPinInput() noexcept override final;
 		virtual const CGPinInput *asPinInput() const noexcept override final;
+
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
 	};
 
 	class CGPinOutput : public CGPin
 	{
 	  public:
+		virtual void reset() noexcept override final;
+
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
 
@@ -151,11 +166,19 @@ namespace lcsm
 
 		virtual CGPinOutput *asPinOutput() noexcept override final;
 		virtual const CGPinOutput *asPinOutput() const noexcept override final;
+
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
 	};
 
 	class CGWire : public CGObject
 	{
 	  public:
+		CGWire();
+
+		virtual void reset() noexcept override final;
+
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
 
@@ -170,6 +193,10 @@ namespace lcsm
 		virtual CGWire *asWire() noexcept override final;
 		virtual const CGWire *asWire() const noexcept override final;
 
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
+
 	  private:
 		DataBits m_value;
 	};
@@ -177,7 +204,9 @@ namespace lcsm
 	class CGConstant : public CGObject
 	{
 	  public:
-		CGConstant() noexcept = default;
+		CGConstant();
+
+		virtual void reset() noexcept override final;
 
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
@@ -194,6 +223,10 @@ namespace lcsm
 		virtual const CGConstant *asConstant() const noexcept override final;
 
 		void emplaceDataBits(model::Width width, std::uint64_t value);
+
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
 
 	  protected:
 		void setDataBits(const DataBits &value);
@@ -227,7 +260,9 @@ namespace lcsm
 	class CGSplitter : public CGObject
 	{
 	  public:
-		CGSplitter() = default;
+		CGSplitter();
+
+		virtual void reset() noexcept override final;
 
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
@@ -243,12 +278,18 @@ namespace lcsm
 		virtual CGSplitter *asSplitter() noexcept override final;
 		virtual const CGSplitter *asSplitter() const noexcept override final;
 
-	  private:
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
 	};
 
 	class CGState : public CGObject
 	{
 	  public:
+		CGState();
+
+		virtual void reset() noexcept override final;
+
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
 
@@ -257,22 +298,31 @@ namespace lcsm
 
 		virtual model::Width width() const override final;
 		virtual bool checkWidth(const DataBits &value) const override final;
+
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
 	};
 
 	class CGCollector : public CGObject
 	{
 	  public:
-		CGCollector() noexcept = default;
-		CGCollector(const support::PointerView< CGState > &state) noexcept;
-		CGCollector(support::PointerView< CGState > &&state) noexcept;
+		CGCollector();
+		CGCollector(const support::PointerView< CGState > &state);
+		CGCollector(support::PointerView< CGState > &&state);
 
 		virtual ~CGCollector() noexcept = default;
+
+		virtual void reset() noexcept override final;
 
 		support::PointerView< CGState > &state() noexcept;
 		const support::PointerView< CGState > &state() const noexcept;
 
 		void setState(const support::PointerView< CGState > &newState) noexcept;
 		void setState(support::PointerView< CGState > &&newState) noexcept;
+
+		virtual void pushBackInstruction(const Instruction &instruction) override final;
+		virtual void pushBackInstruction(Instruction &&instruction) override final;
+		virtual std::vector< Event > invokeInstructions() override final;
 
 	  private:
 		support::PointerView< CGState > m_state;
@@ -281,7 +331,7 @@ namespace lcsm
 	class CGTransistorBase : public CGCollector
 	{
 	  public:
-		CGTransistorBase() noexcept = default;
+		CGTransistorBase() = default;
 
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
@@ -304,7 +354,7 @@ namespace lcsm
 	class CGTransistorInout : public CGCollector
 	{
 	  public:
-		CGTransistorInout() noexcept = default;
+		CGTransistorInout() = default;
 
 		virtual DataBits &read() override final;
 		virtual const DataBits &read() const override final;
@@ -327,12 +377,14 @@ namespace lcsm
 	class CGTransistorState : public CGState
 	{
 	  public:
-		CGTransistorState() noexcept = default;
+		CGTransistorState() = default;
 
 		virtual CGObjectType objectType() const noexcept override;
 
 		virtual CGTransistorState *asTransistorState() noexcept override final;
 		virtual const CGTransistorState *asTransistorState() const noexcept override final;
+
+		virtual std::vector< Event > invokeInstructions() override final;
 	};
 }	 // namespace lcsm
 

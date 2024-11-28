@@ -1,43 +1,38 @@
 #ifndef LCSM_LCSMENGINE_H
 #define LCSM_LCSMENGINE_H
 
-#include <initializer_list>
 #include <lcsm/Component/Component.h>
 #include <lcsm/Component/Identifier.h>
 #include <lcsm/IR/CG.h>
 #include <lcsm/IR/CGObject.h>
 #include <lcsm/IR/DataBits.h>
 #include <lcsm/IR/Instruction.h>
-#include <lcsm/LCSMContext.h>
+#include <lcsm/LCSMCircuit.h>
+#include <lcsm/LCSMState.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
 #include <deque>
 #include <memory>
-#include <vector>
 
 namespace lcsm
 {
 	class LCSMEngine
 	{
 	  public:
-		LCSMEngine();
+		static LCSMEngine fromCircuit(const LCSMCircuit &circuit);
+		LCSMState fork();
 
-		void addCircuit(LCSMCircuit &circuit);
+		const DataBits &valueOf(Identifier identifier) const;
 
-		std::vector< DataBits > invokeFull(std::initializer_list< DataBits > I);
+		void putValue(Identifier identifier, const DataBits &value);
+		void putValue(Identifier identifier, DataBits &&value);
+
+		void resetValues() noexcept;
 
 	  private:
-		CGWire *registerWire(Identifier ID);
-		CGPinInput *registerPinInput(Identifier ID);
-		CGPinOutput *registerPinOutput(Identifier ID);
-		CGConstant *registerConstant(Identifier ID);
-		CGPower *registerPower(Identifier ID);
-		CGGround *registerGround(Identifier ID);
-		CGTransistorBase *registerTransistorBase(Identifier ID);
-		CGTransistorInout *registerTransistorInout(Identifier ID);
-		CGTransistorState *registerTransistorState(Identifier ID);
+		LCSMEngine() = default;
 
 		CGWire *registeredWire(Identifier ID);
 		CGPinInput *registeredPinInput(Identifier ID);
@@ -48,11 +43,6 @@ namespace lcsm
 		CGTransistorBase *registeredTransistorBase(Identifier ID);
 		CGTransistorInout *registeredTransistorInout(Identifier ID);
 		CGTransistorState *registeredTransistorState(Identifier ID);
-
-		CGStaticNode *registeredStaticNode(Identifier ID, CGObject *object);
-		CGFastNode *registeredFastNode(Identifier ID, CGObject *object);
-		CGCompositeNode *registeredCompositeNode(Identifier ID, CGObject *object);
-		CGDynamicNode *registeredDynamicNode(Identifier ID, CGObject *object);
 
 		void buildCircuitIOComp(std::unordered_set< lcsm::Identifier > &visited,
 								std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
@@ -68,10 +58,8 @@ namespace lcsm
 
 		void buildCircuit(std::deque< support::PointerView< const lcsm::Component > > &bfsVisit);
 
-		unsigned m_circuits;
 		CG m_inputs;
 		std::unordered_map< Identifier, std::shared_ptr< CGObject > > m_objects;
-		std::unordered_map< Identifier, std::shared_ptr< CGNode > > m_nodes;
 	};
 }	 // namespace lcsm
 
