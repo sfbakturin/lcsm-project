@@ -1,7 +1,7 @@
 ﻿INCLUDE(CTest)
 
 ADD_EXECUTABLE(test_dummy test_dummy.cpp)
-TARGET_LINK_LIBRARIES(test_dummy PRIVATE LCSM LCSMC)
+TARGET_LINK_LIBRARIES(test_dummy PRIVATE LCSM)
 
 ADD_EXECUTABLE(test_pin_to_pin test_pin_to_pin.cpp)
 TARGET_LINK_LIBRARIES(test_pin_to_pin PRIVATE LCSM LCSMC)

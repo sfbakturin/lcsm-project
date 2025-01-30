@@ -1,0 +1,4 @@
+#ifndef LCSM_PHYSICAL_STD_PIN_H
+#define LCSM_PHYSICAL_STD_PIN_H
+
+#endif /* LCSM_PHYSICAL_STD_PIN_H */

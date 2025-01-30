@@ -1,13 +1,14 @@
 #ifndef LCSM_VERILOG_BIT_H
 #define LCSM_VERILOG_BIT_H
 
+#include <cstdint>
 #include <ostream>
 
 namespace lcsm
 {
 	namespace verilog
 	{
-		enum Bit : signed
+		enum Bit : std::int8_t
 		{
 			Undefined = -1,
 			False = 0,

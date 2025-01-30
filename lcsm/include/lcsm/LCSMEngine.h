@@ -1,14 +1,12 @@
 #ifndef LCSM_LCSMENGINE_H
 #define LCSM_LCSMENGINE_H
 
-#include <lcsm/Component/Component.h>
-#include <lcsm/Component/Identifier.h>
-#include <lcsm/IR/CG.h>
-#include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/DataBits.h>
-#include <lcsm/IR/Instruction.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMState.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Physical/DataBits.h>
+#include <lcsm/Physical/Evaluator.h>
+#include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 #include <unordered_set>
@@ -24,42 +22,20 @@ namespace lcsm
 		static LCSMEngine fromCircuit(const LCSMCircuit &circuit);
 		LCSMState fork();
 
-		const DataBits &valueOf(Identifier identifier) const;
-
-		void putValue(Identifier identifier, const DataBits &value);
-		void putValue(Identifier identifier, DataBits &&value);
-
-		void resetValues() noexcept;
-
 	  private:
 		LCSMEngine() = default;
 
-		CGWire *registeredWire(Identifier ID);
-		CGPinInput *registeredPinInput(Identifier ID);
-		CGPinOutput *registeredPinOutput(Identifier ID);
-		CGConstant *registeredConstant(Identifier ID);
-		CGPower *registeredPower(Identifier ID);
-		CGGround *registeredGround(Identifier ID);
-		CGTransistorBase *registeredTransistorBase(Identifier ID);
-		CGTransistorInout *registeredTransistorInout(Identifier ID);
-		CGTransistorState *registeredTransistorState(Identifier ID);
+		Evaluator m_evaluator;
+		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_objects;
 
-		void buildCircuitIOComp(std::unordered_set< lcsm::Identifier > &visited,
-								std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-								const lcsm::IOComponent *ioComp);
-		void buildCircuitWiringComp(
-			std::unordered_set< lcsm::Identifier > &visited,
-			std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-			const lcsm::WiringComponent *wiringComp);
-		void buildCircuitCircuitComp(
-			std::unordered_set< lcsm::Identifier > &visited,
-			std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-			const lcsm::CircuitComponent *circuitComp);
+	  private:
+		support::PointerView< EvaluatorNode > registered(Identifier id) const noexcept;
+		support::PointerView< EvaluatorNode > registeredWire(Identifier id);
 
-		void buildCircuit(std::deque< support::PointerView< const lcsm::Component > > &bfsVisit);
-
-		CG m_inputs;
-		std::unordered_map< Identifier, std::shared_ptr< CGObject > > m_objects;
+		void buildCircuit(std::deque< support::PointerView< const Circuit > > &bfsVisit);
+		void buildCircuit(const support::PointerView< const Circuit > &circuit,
+						  std::deque< support::PointerView< const Circuit > > &bfsVisit,
+						  std::unordered_set< Identifier > &visited);
 	};
 }	 // namespace lcsm
 

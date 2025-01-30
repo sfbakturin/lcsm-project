@@ -1,58 +1,47 @@
 ﻿ADD_LIBRARY(LCSM
-    Component/Identifier.cpp
-    Component/Component.cpp
-    Component/IOComponent.cpp
-    Component/WiringComponent.cpp
-    Component/CircuitComponent.cpp
+    Model/Identifier.cpp
+    Model/Wire.cpp
 
-    Model/Circuit/Constant.cpp
-    Model/Circuit/Ground.cpp
-    Model/Circuit/Power.cpp
-    Model/Circuit/Pin.cpp
-    Model/Circuit/Splitter.cpp
-    Model/Circuit/Transistor.cpp
-    Model/Circuit/TransmissionGate.cpp
-    Model/Circuit/Clock.cpp
-
-    Model/Wiring/Wire.cpp
-    Model/Wiring/Tunnel.cpp
-
-    Model/IO/Button.cpp
-    Model/IO/Digit.cpp
-    Model/IO/Probe.cpp
+    Model/std/Constant.cpp
+    Model/std/Ground.cpp
+    Model/std/Power.cpp
+    Model/std/Pin.cpp
+    Model/std/Transistor.cpp
+    Model/std/TransmissionGate.cpp
+    Model/std/Clock.cpp
+    Model/std/Tunnel.cpp
+    Model/std/Button.cpp
+    Model/std/Digit.cpp
+    Model/std/Probe.cpp
 
     Verilog/Value.cpp
     Verilog/Strength.cpp
     Verilog/Bit.cpp
 
-    IR/DataBits.cpp
+    Physical/DataBits.cpp
+    Physical/Event.cpp
+    Physical/Instruction.cpp
+    Physical/Timestamp.cpp
+    Physical/Context.cpp
+    Physical/Evaluator.cpp
+    Physical/EvaluatorNode.cpp
 
-    IR/Instruction.cpp
-
-    IR/CG/CGObject.cpp
-    IR/CG/CGPin.cpp
-    IR/CG/CGPinInput.cpp
-    IR/CG/CGPinOutput.cpp
-    IR/CG/CGConstant.cpp
-    IR/CG/CGPower.cpp
-    IR/CG/CGGround.cpp
-    IR/CG/CGSplitter.cpp
-    IR/CG/CGState.cpp
-    IR/CG/CGCollector.cpp
-    IR/CG/CGTransistor.cpp
-    IR/CG/CGWire.cpp
-    IR/CG/CGNode.cpp
-    IR/CG/CG.cpp
-
-    IR/Event.cpp
+    Physical/std/PinInput.cpp
+    Physical/std/PinOutput.cpp
+    Physical/std/Constant.cpp
+    Physical/std/Power.cpp
+    Physical/std/Ground.cpp
+    Physical/std/Splitter.cpp
+    Physical/std/TransistorBase.cpp
+    Physical/std/TransistorInout.cpp
+    Physical/std/TransistorState.cpp
+    Physical/std/Wire.cpp
 
     LCSMBuilder.cpp
     LCSMCircuit.cpp
     LCSMState.cpp
     LCSMEngine.cpp
 )
-
-TARGET_LINK_LIBRARIES(LCSM PRIVATE LCSMC)
 
 IF(MSVC)
     TARGET_COMPILE_OPTIONS(LCSM PRIVATE /W4)

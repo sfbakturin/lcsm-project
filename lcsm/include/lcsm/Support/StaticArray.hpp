@@ -3,6 +3,7 @@
 
 #include <type_traits>
 
+#include <array>
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
@@ -36,8 +37,11 @@ namespace lcsm
 			StaticArray(const T &initial) noexcept(NOTHROW_COPY_ASSIGNABLE);
 			StaticArray(T &&initial) noexcept(NOTHROW_COPY_ASSIGNABLE && NOTHROW_MOVE_ASSIGNABLE);
 
-			StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE);
-			StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE);
+			StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE);
+			StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE);
+
+			StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE);
+			StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE);
 
 			StaticArray &operator=(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE);
 			StaticArray &operator=(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE);
@@ -59,11 +63,19 @@ lcsm::support::StaticArray< T, S >::StaticArray() noexcept(NOTHROW_DEFAULT_CONST
 }
 
 template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE)
+lcsm::support::StaticArray< T, S >::StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE)
 {
 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
 	for (size_type i = 0; i < S; i++)
 		m_data[i] = other[i];
+}
+
+template< typename T, std::size_t S >
+lcsm::support::StaticArray< T, S >::StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+{
+	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+	for (size_type i = 0; i < S; i++)
+		m_data[i] = std::move(other[i]);
 }
 
 template< typename T, std::size_t S >
@@ -84,11 +96,19 @@ lcsm::support::StaticArray< T, S >::StaticArray(T &&initial) noexcept(NOTHROW_CO
 }
 
 template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE)
+lcsm::support::StaticArray< T, S >::StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE)
 {
 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
 	for (size_type i = 0; i < S; i++)
-		m_data[i] = std::move(other[i]);
+		m_data[i] = array[i];
+}
+
+template< typename T, std::size_t S >
+lcsm::support::StaticArray< T, S >::StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+{
+	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+	for (size_type i = 0; i < S; i++)
+		m_data[i] = std::move(array[i]);
 }
 
 template< typename T, std::size_t S >

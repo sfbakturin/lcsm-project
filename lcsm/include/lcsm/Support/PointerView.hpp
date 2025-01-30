@@ -51,7 +51,14 @@ namespace lcsm
 			reference ref() noexcept;
 			const_reference cref() const noexcept;
 
+			void reset() noexcept;
+
 			std::size_t hashCode() const noexcept;
+
+			static PointerView< T > fromSharedPtr(const std::shared_ptr< T > &ptr) noexcept;
+
+			template< typename R >
+			PointerView< R > staticCast() const noexcept;
 
 		  private:
 			pointer m_ptr;
@@ -194,10 +201,29 @@ const T &lcsm::support::PointerView< T >::cref() const noexcept
 }
 
 template< typename T >
+void lcsm::support::PointerView< T >::reset() noexcept
+{
+	m_ptr = nullptr;
+}
+
+template< typename T >
 std::size_t lcsm::support::PointerView< T >::hashCode() const noexcept
 {
 	std::uintptr_t i = reinterpret_cast< std::uintptr_t >(m_ptr);
 	return i;
+}
+
+template< typename T >
+lcsm::support::PointerView< T > lcsm::support::PointerView< T >::fromSharedPtr(const std::shared_ptr< T > &ptr) noexcept
+{
+	return { ptr.get() };
+}
+
+template< typename T >
+template< typename R >
+lcsm::support::PointerView< R > lcsm::support::PointerView< T >::staticCast() const noexcept
+{
+	return { static_cast< R * >(m_ptr) };
 }
 
 template< typename T >

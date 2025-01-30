@@ -1,15 +1,18 @@
 #ifndef LCSM_LCSMSTATE_H
 #define LCSM_LCSMSTATE_H
 
-#include <lcsm/Component/Identifier.h>
-#include <lcsm/IR/CG.h>
-#include <lcsm/IR/CGObject.h>
-#include <lcsm/IR/Event.h>
-#include <lcsm/LCSMC.h>
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Physical/Context.h>
+#include <lcsm/Physical/DataBits.h>
+#include <lcsm/Physical/Evaluator.h>
+#include <lcsm/Physical/Event.h>
+#include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 
 #include <deque>
+#include <map>
 #include <vector>
 
 namespace lcsm
@@ -19,18 +22,18 @@ namespace lcsm
 	class LCSMState
 	{
 	  public:
-		LCSMState(const LCSMState &other) = delete;
+		LCSMState(const LCSMState &other);
 		LCSMState(LCSMState &&other) noexcept;
 
-		LCSMState &operator=(const LCSMState &other) = delete;
+		LCSMState &operator=(const LCSMState &other);
 		LCSMState &operator=(LCSMState &&other) noexcept;
-
-		~LCSMState() noexcept;
 
 		void swap(LCSMState &other) noexcept;
 
-		void schedulePutValue(Identifier identifier, const DataBits &value);
-		void schedulePutValue(Identifier identifier, DataBits &&value);
+		const DataBits &valueOf(Identifier identifier) const;
+
+		void putValue(Identifier identifier, const DataBits &databits);
+		void putValue(Identifier identifier, DataBits &&databits);
 
 		void step(unsigned n);
 		void stepOnce();
@@ -38,20 +41,20 @@ namespace lcsm
 	  private:
 		friend class LCSMEngine;
 
-		timer_t m_globalTimer;
-		support::PointerView< std::vector< support::PointerView< CGNode > > > m_nodesView;
-		support::PointerView< LCSMEngine > m_engineView;
-		std::unordered_map< timer_t, std::deque< Event > > m_scheduled;
+		Timestamp m_globalTimer;
+		std::map< Timestamp, std::deque< Event > > m_scheduled;
+		std::unordered_map< Identifier, Context > m_values;
+		std::vector< support::PointerView< EvaluatorNode > > m_roots;
 
-		LCSMState(std::vector< support::PointerView< CGNode > > &nodes, LCSMEngine &engine);
+		LCSMState(std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > &objects);
 
-		void schedule(support::PointerView< CGNode > &node);
-		void scheduleAt(support::PointerView< CGNode > &node, timer_t timer);
+		void schedule(support::PointerView< EvaluatorNode > &node);
+		void scheduleAt(support::PointerView< EvaluatorNode > &node, Timestamp timer);
 
 		void scheduleEvent(const Event &event, bool isFast = false);
-		void scheduleEvent(const Event &event, bool isFast, timer_t timer);
+		void scheduleEvent(const Event &event, bool isFast, Timestamp timer);
 
-		void mainLoop(std::vector< support::PointerView< CGNode > > &nodes, bool isFast = false);
+		void mainLoop(std::vector< support::PointerView< EvaluatorNode > > &nodes, bool isFast = false);
 	};
 }	 // namespace lcsm
 

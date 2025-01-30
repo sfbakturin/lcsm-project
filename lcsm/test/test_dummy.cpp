@@ -1,9 +1,11 @@
-#include <lcsm/IR/DataBits.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit/Pin.h>
+#include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
+#include <lcsm/Model/std/Pin.h>
+#include <lcsm/Physical/DataBits.h>
 #include <lcsm/Verilog/Bit.h>
 
 #include <iostream>
@@ -19,32 +21,32 @@ int main()
 	lcsm::model::Pin *out0 = builder.CreatePin(true);
 
 	/* Connect pins. */
-	builder.ConnectPin(in0, out0, 0);
+	builder.ConnectInternally(in0, lcsm::model::Pin::Port::Internal, out0, lcsm::model::Pin::Port::Internal);
 
 	const std::vector< lcsm::DataBits > values = {
-		{ lcsm::model::Width::Bit1, lcsm::verilog::Bit::False },
-		{ lcsm::model::Width::Bit1, lcsm::verilog::Bit::True }
+		{ lcsm::Width::Bit1, lcsm::verilog::Bit::False },
+		{ lcsm::Width::Bit1, lcsm::verilog::Bit::True }
 	};
 
 	/* Build runtime calculation graph from circuit. */
 	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);
 
+	/* Fork this state. */
+	lcsm::LCSMState state = engine.fork();
+
 	for (const lcsm::DataBits &value : values)
 	{
-		/* Fork this state. */
-		lcsm::LCSMState state = engine.fork();
-
 		/* Put value to in0 (input pin). */
-		engine.putValue(in0->ID(), value);
+		state.putValue(in0->id(), value);
 
 		/* Step once. */
 		state.stepOnce();
 
 		/* Extract value from out0 (output pin). */
-		const lcsm::DataBits &out = engine.valueOf(out0->ID());
+		const lcsm::DataBits &out = state.valueOf(out0->id());
 
 		/* Print. */
-		std::cout << "in" << in0->ID() << " = " << value << ", "
-				  << "out" << out0->ID() << " = " << out << '\n';
+		std::cout << "in" << in0->id() << " = " << value << ", "
+				  << "out" << out0->id() << " = " << out << '\n';
 	}
 }

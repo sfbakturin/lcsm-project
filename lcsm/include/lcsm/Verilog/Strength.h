@@ -1,13 +1,14 @@
 #ifndef LCSM_VERILOG_STRENGTH_H
 #define LCSM_VERILOG_STRENGTH_H
 
+#include <cstdint>
 #include <ostream>
 
 namespace lcsm
 {
 	namespace verilog
 	{
-		enum Strength : unsigned
+		enum Strength : std::uint8_t
 		{
 			HighImpedance = 0,
 			WeakDrive = 3,

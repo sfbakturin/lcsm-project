@@ -1,0 +1,64 @@
+﻿#ifndef LCSM_MODEL_STD_PIN_H
+#define LCSM_MODEL_STD_PIN_H
+
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+#include <lcsm/Support/PointerView.hpp>
+
+namespace lcsm
+{
+	namespace model
+	{
+		class Pin : public Circuit
+		{
+		  public:
+			enum Port : portid_t
+			{
+				Internal,
+				External
+			};
+
+		  public:
+			Pin(bool output, Width width);
+
+			Pin(const Pin &other);
+			Pin(Pin &&other) noexcept;
+
+			Pin &operator=(const Pin &other);
+			Pin &operator=(Pin &&other) noexcept;
+
+			void swap(Pin &other) noexcept;
+
+			bool output() const noexcept;
+			void setOutput(bool newOutput) noexcept;
+
+			Width width() const noexcept;
+			void setWidth(Width newWidth) noexcept;
+
+			const Wire &internal() const noexcept;
+			const Wire &external() const noexcept;
+
+			virtual Identifier id() const noexcept override final;
+			virtual Identifier identify(Identifier id) noexcept override final;
+
+			virtual ObjectType objectType() const noexcept override final;
+			virtual CircuitType circuitType() const noexcept override final;
+
+			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
+			void connectInternal(const support::PointerView< Circuit > &circuit);
+			void connectExternal(const support::PointerView< Circuit > &circuit);
+
+		  private:
+			Identifier m_id;
+			bool m_output;
+			Width m_width;
+			Wire m_internal;
+			Wire m_external;
+		};
+	}	 // namespace model
+}	 // namespace lcsm
+
+#endif /* LCSM_MODEL_STD_PIN_H */

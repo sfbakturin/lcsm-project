@@ -1,27 +1,28 @@
 #ifndef LCSM_MODEL_WIDTH_H
 #define LCSM_MODEL_WIDTH_H
 
+#include <lcsm/LCSM.h>
+
 namespace lcsm
 {
-	namespace model
+	using width_t = std::uint32_t;
+
+	enum Width : width_t
 	{
-		enum Width : unsigned
-		{
-			Bit1 = 1,
-			Bit2 = 2,
-			Bit3 = 3,
-			Bit4 = 4,
-			Bit5 = 5,
-			Bit6 = 6,
-			Bit7 = 7,
-			Byte = 8,
-			Word = 16,
-			ShortWord = 24,
-			DoubleWord = 32,
-			QuadWord = 64,
-			MaxWidth = QuadWord
-		};
-	}	 // namespace model
+		Bit1 = 1,
+		Bit2 = 2,
+		Bit3 = 3,
+		Bit4 = 4,
+		Bit5 = 5,
+		Bit6 = 6,
+		Bit7 = 7,
+		Byte = 8,
+		Word = 16,
+		ShortWord = 24,
+		DoubleWord = 32,
+		QuadWord = 64,
+		LastWidth = QuadWord
+	};
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */
