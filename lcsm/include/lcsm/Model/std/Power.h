@@ -42,6 +42,8 @@ namespace lcsm
 			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
 			void connect(const support::PointerView< Circuit > &circuit);
 
+			virtual Circuit *byPort(portid_t portId) override final;
+
 			const Wire &wire() const noexcept;
 
 		  private:

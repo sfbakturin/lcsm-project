@@ -2,6 +2,7 @@
 #define LCSM_PHYSICAL_INSTRUCTION_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Physical/DataBits.h>
 
 namespace lcsm
 {
@@ -28,10 +29,14 @@ namespace lcsm
 		const EvaluatorNode *target() const noexcept;
 		EvaluatorNode *target() noexcept;
 
+		const DataBits &value() const noexcept;
+		void setValue(const DataBits &value) noexcept;
+
 	  private:
 		InstructionType m_type;
 		EvaluatorNode *m_caller;
 		EvaluatorNode *m_target;
+		DataBits m_value;
 	};
 
 	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;

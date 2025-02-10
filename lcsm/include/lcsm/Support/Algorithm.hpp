@@ -12,7 +12,8 @@ namespace lcsm
 	namespace support
 	{
 		template< typename Class >
-		inline Class &CopyAssign(Class *that, const Class &other) noexcept(IsNothrowCopyAssign< Class >())
+		inline Class &
+			CopyAssign(Class *that, const Class &other) noexcept(IsNothrowCopyAssign< Class >() && IsSwappable< Class >())
 		{
 			if (that != std::addressof(other))
 				Class(other).swap(*that);

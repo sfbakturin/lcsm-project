@@ -34,7 +34,12 @@ lcsm::NodeType lcsm::physical::PinInput::nodeType() const noexcept
 	return lcsm::NodeType::Dynamic;
 }
 
-void lcsm::physical::PinInput::setContext(lcsm::support::PointerView< lcsm::Context > &context) noexcept
+std::size_t lcsm::physical::PinInput::contextSize() const noexcept
+{
+	return 1;
+}
+
+void lcsm::physical::PinInput::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	m_context = context;
 }
@@ -78,7 +83,26 @@ void lcsm::physical::PinInput::addInstant(lcsm::Instruction &&instruction)
 
 std::vector< lcsm::Event > lcsm::physical::PinInput::invokeInstants(const lcsm::Timestamp &now)
 {
-	// TODO: Invoke instructions from instants.
+	/* Invoke instants from external connect. */
+	lcsm::DataBits value = m_context->getValue();
+	const lcsm::Timestamp then = m_context->lastUpdate();
+	const bool takeFirst = now > then;
+
+	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	if (takeFirst && !m_instants.empty())
+	{
+		const lcsm::Instruction instant = m_instants.front();
+		m_instants.pop_front();
+		value = instant.caller()->read();
+	}
+
+	/* Traverse value on instants from external connection. */
+	for (const lcsm::Instruction &instant : m_instants)
+		value |= instant.value();
+	m_instants.clear();
+
+	/* Update context value. */
+	m_context->updateValues(now, { value });
 
 	/* Resulting events for future mini-steps. */
 	std::vector< lcsm::Event > events;

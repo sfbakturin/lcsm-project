@@ -50,6 +50,8 @@ namespace lcsm
 			void connectInoutB(const support::PointerView< Circuit > &circuit);
 			void connectInoutC(const support::PointerView< Circuit > &circuit);
 
+			virtual Circuit *byPort(portid_t portId) override final;
+
 		  private:
 			Identifier m_id;
 

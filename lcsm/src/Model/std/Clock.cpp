@@ -5,6 +5,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -82,4 +83,17 @@ void lcsm::model::Clock::connect(const lcsm::support::PointerView< lcsm::Circuit
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Clock::Port::Wiring);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Clock::Port p = static_cast< lcsm::model::Clock::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Clock::Port::Wiring:
+	{
+		return std::addressof(m_wire);
+	}
+	}
+	return nullptr;
 }

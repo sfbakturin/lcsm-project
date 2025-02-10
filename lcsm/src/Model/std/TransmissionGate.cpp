@@ -138,3 +138,20 @@ void lcsm::model::TransmissionGate::connectInoutC(const lcsm::support::PointerVi
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::TransmissionGate::Port::InoutC);
 	connect(portId, circuit);
 }
+
+lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::TransmissionGate::Port p = static_cast< lcsm::model::TransmissionGate::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::TransmissionGate::Port::Base:
+		return std::addressof(m_base);
+	case lcsm::model::TransmissionGate::Port::InoutA:
+		return std::addressof(m_inoutA);
+	case lcsm::model::TransmissionGate::Port::InoutB:
+		return std::addressof(m_inoutB);
+	case lcsm::model::TransmissionGate::Port::InoutC:
+		return std::addressof(m_inoutC);
+	}
+	return nullptr;
+}

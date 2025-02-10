@@ -1,15 +1,18 @@
 #ifndef LCSM_PHYSICAL_TIMESTAMP_H
 #define LCSM_PHYSICAL_TIMESTAMP_H
 
-#include <lcsm/LCSM.h>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
 
 namespace lcsm
 {
+	using timescale_t = std::uint64_t;
+
 	class Timestamp
 	{
 	  public:
 		Timestamp() noexcept;
-		Timestamp(timer_t tickFast, timer_t tickStatic, timer_t tickComposite, timer_t tickDynamic, timer_t tickUser) noexcept;
 
 		Timestamp(const Timestamp &other) noexcept;
 		Timestamp(Timestamp &&other) noexcept;
@@ -19,17 +22,8 @@ namespace lcsm
 
 		void swap(Timestamp &other) noexcept;
 
+		Timestamp next() const noexcept;
 		bool isReset() const noexcept;
-
-		Timestamp tickFast() const noexcept;
-		Timestamp tickStatic() const noexcept;
-		Timestamp tickComposite() const noexcept;
-		Timestamp tickDynamic() const noexcept;
-		Timestamp tickUser() const noexcept;
-
-		Timestamp normalizeToDynamic() const noexcept;
-		Timestamp normalizeToComposite() const noexcept;
-		Timestamp normalizeToStatic() const noexcept;
 
 		bool operator<(const Timestamp &other) const noexcept;
 		bool operator<=(const Timestamp &other) const noexcept;
@@ -39,22 +33,26 @@ namespace lcsm
 		bool operator>=(const Timestamp &other) const noexcept;
 
 		Timestamp operator+(const Timestamp &other) const noexcept;
-		Timestamp operator-(const Timestamp &other) const noexcept;
 
 		Timestamp &operator+=(const Timestamp &other) noexcept;
-		Timestamp &operator-=(const Timestamp &other) noexcept;
 
-		static const Timestamp RESET;
+		Timestamp &operator++() noexcept;
+		Timestamp operator++(int) noexcept;
+
+		std::size_t hashCode() const noexcept;
 
 	  private:
-		timer_t m_tickFast;
-		timer_t m_tickStatic;
-		timer_t m_tickComposite;
-		timer_t m_tickDynamic;
-		timer_t m_tickUser;
-
-		static constexpr timer_t TICK = static_cast< timer_t >(1);
+		timescale_t m_tick;
 	};
 }	 // namespace lcsm
+
+namespace std
+{
+	template<>
+	struct hash< lcsm::Timestamp >
+	{
+		std::size_t operator()(const lcsm::Timestamp &object) const { return object.hashCode(); }
+	};
+}	 // namespace std
 
 #endif /* LCSM_PHYSICAL_TIMESTAMP_H */

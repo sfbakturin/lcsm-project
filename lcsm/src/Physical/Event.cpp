@@ -7,21 +7,19 @@
 #include <memory>
 #include <utility>
 
+lcsm::Event::Event(const lcsm::Instruction &instruction,
+				   const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
+				   const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo) noexcept :
+	m_instruction(instruction), m_targetFrom(targetFrom), m_targetTo(targetTo)
+{
+}
+
 lcsm::Event::Event(
 	const lcsm::Instruction &instruction,
 	const lcsm::support::PointerView< EvaluatorNode > &targetFrom,
 	const lcsm::support::PointerView< EvaluatorNode > &targetTo,
 	const lcsm::Timestamp &diff) noexcept :
 	m_instruction(instruction), m_targetFrom(targetFrom), m_targetTo(targetTo), m_diff(diff)
-{
-}
-
-lcsm::Event::Event(
-	lcsm::Instruction &&instruction,
-	const lcsm::support::PointerView< EvaluatorNode > &targetFrom,
-	const lcsm::support::PointerView< EvaluatorNode > &targetTo,
-	const lcsm::Timestamp &diff) noexcept :
-	m_instruction(std::move(instruction)), m_targetFrom(targetFrom), m_targetTo(targetTo), m_diff(diff)
 {
 }
 
@@ -123,15 +121,7 @@ lcsm::Event lcsm::CreateInstantEvent(
 	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
 	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo) noexcept
 {
-	return lcsm::CreateFutureEvent(instruction, targetFrom, targetTo, lcsm::Timestamp::RESET);
-}
-
-lcsm::Event lcsm::CreateInstantEvent(
-	lcsm::Instruction &&instruction,
-	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
-	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo) noexcept
-{
-	return lcsm::CreateFutureEvent(std::move(instruction), targetFrom, targetTo, lcsm::Timestamp::RESET);
+	return { instruction, targetFrom, targetTo };
 }
 
 lcsm::Event lcsm::CreateFutureEvent(
@@ -140,14 +130,5 @@ lcsm::Event lcsm::CreateFutureEvent(
 	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo,
 	const lcsm::Timestamp &diff) noexcept
 {
-	return lcsm::Event(instruction, targetFrom, targetTo, diff);
-}
-
-lcsm::Event lcsm::CreateFutureEvent(
-	lcsm::Instruction &&instruction,
-	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
-	const lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo,
-	const lcsm::Timestamp &diff) noexcept
-{
-	return lcsm::Event(std::move(instruction), targetFrom, targetTo, diff);
+	return { instruction, targetFrom, targetTo, diff };
 }

@@ -4,6 +4,7 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -21,7 +22,7 @@ lcsm::Identifier lcsm::model::Wire::identify(lcsm::Identifier id) noexcept
 
 lcsm::ObjectType lcsm::model::Wire::objectType() const noexcept
 {
-	return lcsm::ObjectType::PureInt;
+	return lcsm::ObjectType::Wiring;
 }
 
 lcsm::CircuitType lcsm::model::Wire::circuitType() const noexcept
@@ -34,11 +35,13 @@ void lcsm::model::Wire::connect(lcsm::portid_t portId, const lcsm::support::Poin
 	const lcsm::model::Wire::Port pw = static_cast< lcsm::model::Wire::Port >(portId);
 
 	/* If port is Wiring, then connect as wire, otherwise as connector. */
-	// TODO: There is should be somewhat implemented error handling, when on Wiring somebody tries connect not-wire. */
 	switch (pw)
 	{
 	case lcsm::model::Wire::Port::Wiring:
 	{
+		/* To Port::Wiring there is must be only Wire object. */
+		if (circuit->objectType() != objectType())
+			throw std::logic_error("Can't connect non-wiring object to wiring Wire's port.");
 		m_wires.push_back(circuit);
 		break;
 	}
@@ -60,6 +63,11 @@ void lcsm::model::Wire::connectToWire(const lcsm::support::PointerView< lcsm::Ci
 void lcsm::model::Wire::connectConnect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
 {
 	connect(lcsm::model::Wire::Port::Connect, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Wire::byPort(portid_t)
+{
+	return nullptr;
 }
 
 const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &lcsm::model::Wire::wires() const noexcept

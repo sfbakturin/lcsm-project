@@ -37,7 +37,7 @@ namespace lcsm
 		model::TransmissionGate *CreateTransmissionGate();
 		model::Clock *CreateClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
 
-		model::Wire *ConnectInternally(Circuit *comp1, portid_t port1, Circuit *comp2, portid_t port2);
+		model::Wire *Connect(Circuit *comp1, portid_t port1, Circuit *comp2, portid_t port2);
 
 	  private:
 		LCSMCircuit &m_circuit;

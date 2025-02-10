@@ -24,6 +24,7 @@ namespace lcsm
 		virtual CircuitType circuitType() const noexcept = 0;
 
 		virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) = 0;
+		virtual Circuit *byPort(portid_t portId) = 0;
 	};
 }	 // namespace lcsm
 

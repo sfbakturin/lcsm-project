@@ -2,6 +2,7 @@
 #define LCSM_PHYSICAL_EVALUATOR_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Identifier.h>
 #include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Event.h>
@@ -9,6 +10,7 @@
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <vector>
 
 namespace lcsm
@@ -24,16 +26,19 @@ namespace lcsm
 
 		virtual NodeType nodeType() const noexcept = 0;
 
+		virtual std::size_t contextSize() const noexcept = 0;
+
 		virtual const DataBits &read() const = 0;
 
 		virtual Width width() const = 0;
 		virtual bool checkWidth(const DataBits &value) const = 0;
 
-		virtual void setContext(support::PointerView< Context > &context) noexcept = 0;
+		virtual void setContext(const support::PointerView< Context > &context) = 0;
 		virtual void resetContext() noexcept = 0;
 
 		virtual void addInstant(const Instruction &instruction) = 0;
 		virtual void addInstant(Instruction &&instruction) = 0;
+
 		virtual std::vector< Event > invokeInstants(const Timestamp &now) = 0;
 
 	  private:

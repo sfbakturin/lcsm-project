@@ -6,6 +6,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -129,4 +130,17 @@ void lcsm::model::Pin::connectExternal(const lcsm::support::PointerView< lcsm::C
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Pin::Port::External);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Pin::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Pin::Port p = static_cast< lcsm::model::Pin::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Pin::Port::Internal:
+		return std::addressof(m_internal);
+	case lcsm::model::Pin::Port::External:
+		return std::addressof(m_external);
+	}
+	return nullptr;
 }

@@ -29,6 +29,7 @@ namespace lcsm
 		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_objects;
 
 	  private:
+		friend class LCSMState;
 		support::PointerView< EvaluatorNode > registered(Identifier id) const noexcept;
 		support::PointerView< EvaluatorNode > registeredWire(Identifier id);
 

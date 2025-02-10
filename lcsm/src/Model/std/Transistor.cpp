@@ -137,3 +137,18 @@ void lcsm::model::Transistor::connectInoutB(const lcsm::support::PointerView< lc
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Transistor::Port::InoutB);
 	connect(portId, circuit);
 }
+
+lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Transistor::Port p = static_cast< lcsm::model::Transistor::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Transistor::Port::Base:
+		return std::addressof(m_base);
+	case lcsm::model::Transistor::Port::InoutA:
+		return std::addressof(m_inoutA);
+	case lcsm::model::Transistor::Port::InoutB:
+		return std::addressof(m_inoutB);
+	}
+	return nullptr;
+}

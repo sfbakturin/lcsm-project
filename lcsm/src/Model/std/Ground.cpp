@@ -5,6 +5,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <utility>
 
 lcsm::model::Ground::Ground(lcsm::Width width) : m_width(width)
@@ -90,6 +91,19 @@ void lcsm::model::Ground::connect(const lcsm::support::PointerView< lcsm::Circui
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Ground::Port::Wiring);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Ground::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Ground::Port p = static_cast< lcsm::model::Ground::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Ground::Port::Wiring:
+	{
+		return std::addressof(m_wire);
+	}
+	}
+	return nullptr;
 }
 
 const lcsm::model::Wire &lcsm::model::Ground::wire() const noexcept

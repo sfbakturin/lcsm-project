@@ -13,4 +13,5 @@ std::ostream &lcsm::verilog::operator<<(std::ostream &os, const lcsm::verilog::B
 	case True:
 		return os << '1';
 	}
+	return os;
 }

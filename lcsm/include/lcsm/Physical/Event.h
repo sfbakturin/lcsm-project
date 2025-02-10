@@ -14,9 +14,8 @@ namespace lcsm
 	  public:
 		Event(const Instruction &instruction,
 			  const support::PointerView< EvaluatorNode > &targetFrom,
-			  const support::PointerView< EvaluatorNode > &targetTo,
-			  const Timestamp &diff) noexcept;
-		Event(Instruction &&instruction,
+			  const support::PointerView< EvaluatorNode > &targetTo) noexcept;
+		Event(const Instruction &instruction,
 			  const support::PointerView< EvaluatorNode > &targetFrom,
 			  const support::PointerView< EvaluatorNode > &targetTo,
 			  const Timestamp &diff) noexcept;
@@ -57,17 +56,9 @@ namespace lcsm
 	Event CreateInstantEvent(const Instruction &instruction,
 							 const support::PointerView< EvaluatorNode > &targetFrom,
 							 const support::PointerView< EvaluatorNode > &targetTo) noexcept;
-	Event CreateInstantEvent(Instruction &&instruction,
-							 const support::PointerView< EvaluatorNode > &targetFrom,
-							 const support::PointerView< EvaluatorNode > &targetTo) noexcept;
 
 	Event CreateFutureEvent(
 		const Instruction &instruction,
-		const support::PointerView< EvaluatorNode > &targetFrom,
-		const support::PointerView< EvaluatorNode > &targetTo,
-		const Timestamp &diff) noexcept;
-	Event CreateFutureEvent(
-		Instruction &&instruction,
 		const support::PointerView< EvaluatorNode > &targetFrom,
 		const support::PointerView< EvaluatorNode > &targetTo,
 		const Timestamp &diff) noexcept;

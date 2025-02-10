@@ -5,6 +5,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -91,6 +92,17 @@ void lcsm::model::Power::connect(const lcsm::support::PointerView< lcsm::Circuit
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Power::Port::Wiring);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Power::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Power::Port p = static_cast< lcsm::model::Power::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Power::Port::Wiring:
+		return std::addressof(m_wire);
+	}
+	return nullptr;
 }
 
 const lcsm::model::Wire &lcsm::model::Power::wire() const noexcept

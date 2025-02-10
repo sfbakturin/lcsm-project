@@ -8,8 +8,7 @@ namespace lcsm
 	using value_t = std::uint64_t;
 	using id_t = std::uint64_t;
 	using timestamp_t = std::uint16_t;
-	using timer_t = std::uint32_t;
-	using target_t = unsigned;
+	using target_t = std::int8_t;
 
 	enum CircuitType : target_t
 	{
@@ -36,12 +35,15 @@ namespace lcsm
 		Static,
 		Dynamic,
 
+		FirstNodeType = Fast,
 		LastNodeType = Dynamic + 1
 	};
 
 	enum ObjectType : target_t
 	{
 		UnknownObjectType,
+
+		Wiring,
 
 		PureInt,
 

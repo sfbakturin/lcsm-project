@@ -19,6 +19,11 @@ lcsm::NodeType lcsm::physical::Constant::nodeType() const noexcept
 	return lcsm::NodeType::Static;
 }
 
+std::size_t lcsm::physical::Constant::contextSize() const noexcept
+{
+	return 1;
+}
+
 const lcsm::DataBits &lcsm::physical::Constant::read() const
 {
 	return m_databits;
@@ -34,7 +39,7 @@ bool lcsm::physical::Constant::checkWidth(const lcsm::DataBits &value) const
 	return width() == value.width();
 }
 
-void lcsm::physical::Constant::setContext(lcsm::support::PointerView< lcsm::Context > &context) noexcept
+void lcsm::physical::Constant::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	m_context = context;
 }
@@ -46,7 +51,7 @@ void lcsm::physical::Constant::resetContext() noexcept
 
 void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
 {
-	/* No instructions can be provided to Constant. */
+	// No instructions can be provided to Constant.
 	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
 		return;
 	throw std::logic_error("Attempt to instant instruction for Constant");
@@ -54,7 +59,7 @@ void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
 
 void lcsm::physical::Constant::addInstant(lcsm::Instruction &&instruction)
 {
-	/* No instructions can be provided to Constant. */
+	// No instructions can be provided to Constant.
 	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
 		return;
 	throw std::logic_error("Attempt to instant instruction for Constant");
@@ -62,18 +67,18 @@ void lcsm::physical::Constant::addInstant(lcsm::Instruction &&instruction)
 
 std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::Timestamp &now)
 {
-	/* Update context ONLY ONCE to be like a real constant element. */
+	// Update context ONLY ONCE to be like a real constant element.
 	if (m_context->neverUpdate())
-		m_context->updateValue(now, m_databits);
+		m_context->updateValues(now, { m_databits });
 
-	/* Resulting events for future mini-steps. */
+	// Resulting events for future mini-steps.
 	std::vector< lcsm::Event > events;
 
-	/* Target from this object. */
+	// Target from this object.
 	const lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
 	lcsm::EvaluatorNode *c = static_cast< lcsm::EvaluatorNode * >(m_connect.ptr());
 
-	/* Write value to Wire. */
+	// Write value to Wire.
 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, c);
 	lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, m_connect);
 	events.push_back(std::move(e));

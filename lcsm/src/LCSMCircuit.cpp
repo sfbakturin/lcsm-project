@@ -10,7 +10,8 @@
 
 lcsm::LCSMCircuit::LCSMCircuit(const lcsm::LCSMCircuit &other) : m_globalId(other.m_globalId)
 {
-	// TODO: Implement DFS copy algorithm.
+	/* Rebuilt circuit elements via DFS. */
+	// TODO: Implement me.
 }
 
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMCircuit &&other) noexcept :

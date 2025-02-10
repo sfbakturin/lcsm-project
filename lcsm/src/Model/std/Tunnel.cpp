@@ -6,6 +6,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -87,4 +88,17 @@ void lcsm::model::Tunnel::connectTunnel(const lcsm::support::PointerView< lcsm::
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Tunnel::Port::Tunneling);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Tunnel::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Tunnel::Port p = static_cast< lcsm::model::Tunnel::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Tunnel::Port::Wiring:
+		return std::addressof(m_wire);
+	case lcsm::model::Tunnel::Port::Tunneling:
+		return m_tunnel.ptr();
+	}
+	return nullptr;
 }

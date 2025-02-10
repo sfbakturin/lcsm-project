@@ -28,7 +28,6 @@
 #include <deque>
 #include <memory>
 #include <stdexcept>
-#include <utility>
 #include <vector>
 
 lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
@@ -64,452 +63,9 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 
 lcsm::LCSMState lcsm::LCSMEngine::fork()
 {
-	lcsm::LCSMState state = m_objects;
+	lcsm::LCSMState state = this;
 	return state;
 }
-
-/*
-lcsm::CGWire *lcsm::LCSMEngine::registeredWire(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		CGObject *I = found->second.get();
-		if (I && I->isWire())
-			return I->asWire();
-		else
-			throw std::logic_error("RegisteredPinOutput");
-	}
-
-	std::shared_ptr< lcsm::CGObject > W = std::make_shared< lcsm::CGWire >();
-	m_objects[ID] = W;
-
-	return static_cast< lcsm::CGWire * >(W.get());
-}
-
-lcsm::CGPinInput *lcsm::LCSMEngine::registeredPinInput(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *I = found->second.get();
-		if (I && I->isPinInput())
-			return I->asPinInput();
-		else
-			throw std::logic_error("RegisteredPinInput");
-	}
-
-	std::shared_ptr< lcsm::CGObject > I = std::make_shared< lcsm::CGPinInput >();
-	m_objects[ID] = I;
-
-	return static_cast< lcsm::CGPinInput * >(I.get());
-}
-
-lcsm::CGPinOutput *lcsm::LCSMEngine::registeredPinOutput(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		CGObject *I = found->second.get();
-		if (I && I->isPinOutput())
-			return I->asPinOutput();
-		else
-			throw std::logic_error("RegisteredPinOutput");
-	}
-
-	std::shared_ptr< lcsm::CGObject > O = std::make_shared< lcsm::CGPinOutput >();
-	m_objects[ID] = O;
-
-	return static_cast< lcsm::CGPinOutput * >(O.get());
-}
-
-lcsm::CGConstant *lcsm::LCSMEngine::registeredConstant(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *I = found->second.get();
-		if (I && I->isConstant())
-			return I->asConstant();
-		else
-			throw std::logic_error("RegisteredConstant");
-	}
-
-	std::shared_ptr< lcsm::CGObject > C = std::make_shared< lcsm::CGConstant >();
-	m_objects[ID] = C;
-
-	return static_cast< lcsm::CGConstant * >(C.get());
-}
-
-lcsm::CGPower *lcsm::LCSMEngine::registeredPower(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *I = found->second.get();
-		if (I && I->isPower())
-			return I->asPower();
-		else
-			throw std::logic_error("RegisteredPower");
-	}
-
-	std::shared_ptr< lcsm::CGObject > P = std::make_shared< lcsm::CGPower >();
-	m_objects[ID] = P;
-
-	return static_cast< lcsm::CGPower * >(P.get());
-}
-
-lcsm::CGGround *lcsm::LCSMEngine::registeredGround(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *I = found->second.get();
-		if (I && I->isGround())
-			return I->asGround();
-		else
-			throw std::logic_error("RegisteredPower");
-	}
-
-	std::shared_ptr< lcsm::CGObject > G = std::make_shared< lcsm::CGGround >();
-	m_objects[ID] = G;
-
-	return static_cast< lcsm::CGGround * >(G.get());
-}
-
-lcsm::CGTransistorBase *lcsm::LCSMEngine::registeredTransistorBase(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *T = found->second.get();
-		if (T && T->isTransistorBase())
-			return T->asTransistorBase();
-		else
-			throw std::logic_error("RegisteredTransistorBase");
-	}
-
-	std::shared_ptr< lcsm::CGObject > T = std::make_shared< lcsm::CGTransistorBase >();
-	m_objects[ID] = T;
-
-	return static_cast< lcsm::CGTransistorBase * >(T.get());
-}
-
-lcsm::CGTransistorInout *lcsm::LCSMEngine::registeredTransistorInout(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *T = found->second.get();
-		if (T && T->isTransistorInout())
-			return T->asTransistorInout();
-		else
-			throw std::logic_error("RegisteredTransistorInout");
-	}
-
-	std::shared_ptr< lcsm::CGObject > T = std::make_shared< lcsm::CGTransistorInout >();
-	m_objects[ID] = T;
-
-	return static_cast< lcsm::CGTransistorInout * >(T.get());
-}
-
-lcsm::CGTransistorState *lcsm::LCSMEngine::registeredTransistorState(lcsm::Identifier ID)
-{
-	const auto found = m_objects.find(ID);
-
-	if (found != m_objects.cend())
-	{
-		lcsm::CGObject *T = found->second.get();
-		if (T && T->isTransistorState())
-			return T->asTransistorState();
-		else
-			throw std::logic_error("RegisteredTransistorState");
-	}
-
-	std::shared_ptr< lcsm::CGObject > T = std::make_shared< lcsm::CGTransistorState >();
-	m_objects[ID] = T;
-
-	return static_cast< lcsm::CGTransistorState * >(T.get());
-}
-*/
-
-/*
-void lcsm::LCSMEngine::buildCircuitIOComp(
-	std::unordered_set< lcsm::Identifier > &,
-	std::deque< lcsm::support::PointerView< const lcsm::Component > > &,
-	const lcsm::IOComponent *)
-{
-	throw std::logic_error("Not implemented");
-}
-
-void lcsm::LCSMEngine::buildCircuitWiringComp(
-	std::unordered_set< lcsm::Identifier > &visited,
-	std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-	const lcsm::WiringComponent *wiringComp)
-{
-	switch (wiringComp->wiringComponentType())
-	{
-	case WIRING_COMP_WIRE:
-	{
-		const lcsm::model::Wire *wire = wiringComp->asWire();
-		lcsm::CGWire *wireGraph = registeredWire(wire->ID());
-
-		// Wire's tree node.
-		lcsm::EvaluatorNode *wireNode = static_cast< lcsm::EvaluatorNode * >(wireGraph);
-
-		// Make connections from Wire object to his adjacent wires as
-		// tree's edges.
-		for (const lcsm::wire_t &adjacentWire : wire->wires())
-		{
-			const lcsm::Identifier id = adjacentWire->ID();
-			switch (adjacentWire->wiringComponentType())
-			{
-			case WIRING_COMP_WIRE:
-			{
-				// Wire's adjacent wire tree node.
-				lcsm::CGWire *adjacentWireGraph = registeredWire(id);
-				lcsm::EvaluatorNode *adjacentWireNode = static_cast< lcsm::EvaluatorNode * >(adjacentWireGraph);
-
-				// Make connection.
-				wireNode->pushBackChild(adjacentWireNode);
-
-				break;
-			}
-			case WIRING_COMP_TUNNEL:
-				throw std::logic_error("Not implemented.");
-			}
-			// Add to future BFS visiting.
-			bfsVisit.emplace_back(adjacentWire.cptr());
-		}
-
-		// This wire might be some object's wire, so we should make connection
-		// as tree's edge.
-		for (const lcsm::component_t &comp : wire->connections())
-		{
-			// Add to future BFS visiting.
-			bfsVisit.emplace_back(comp.cptr());
-		}
-
-		// Add as visited objects.
-		visited.insert(wire->ID());
-
-		break;
-	}
-	case WIRING_COMP_TUNNEL:
-		throw std::logic_error("Not implemented.");
-	}
-}
-
-void lcsm::LCSMEngine::buildCircuitCircuitComp(
-	std::unordered_set< lcsm::Identifier > &visited,
-	std::deque< lcsm::support::PointerView< const lcsm::Component > > &bfsVisit,
-	const lcsm::CircuitComponent *circuitComp)
-{
-	switch (circuitComp->circuitComponentType())
-	{
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_PIN:
-	{
-		const lcsm::model::Pin *pin = circuitComp->asPin();
-		const lcsm::model::Wire &pinWire = pin->wire();
-
-		lcsm::CGPin *pinGraph = nullptr;
-
-		if (pin->output())
-			pinGraph = registeredPinOutput(pin->ID());
-		else
-			pinGraph = registeredPinInput(pin->ID());
-
-		lcsm::CGWire *pinWireGraph = registeredWire(pinWire.ID());
-
-		// Pin's tree node.
-		lcsm::EvaluatorNode *pinNode = static_cast< lcsm::EvaluatorNode * >(pinGraph);
-
-		// Wire's tree node as Pin's child.
-		lcsm::EvaluatorNode *pinWireNode = static_cast< lcsm::EvaluatorNode * >(pinWireGraph);
-
-		// Make them to know about each other.
-		pinNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(pinWireNode));
-		pinWireNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(pinNode));
-
-		// Add Pin's wire to queue.
-		bfsVisit.emplace_back(std::addressof(pinWire));
-
-		// Add as visited objects.
-		visited.insert(pin->ID());
-
-		break;
-	}
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_CONSTANT:
-	{
-		const lcsm::model::Constant *constant = circuitComp->asConstant();
-		const lcsm::model::Wire &constantWire = constant->wire();
-		const lcsm::Identifier id = constant->ID();
-
-		lcsm::CGConstant *constantGraph = registeredConstant(id);
-		lcsm::CGWire *constantWireGraph = registeredWire(constantWire.ID());
-
-		// Save constants.
-		m_contants[id] = lcsm::DataBits::fromModel(constant->width(), constant->value());
-
-		// Constant's tree node.
-		lcsm::EvaluatorNode *constantNode = static_cast< lcsm::EvaluatorNode * >(constantGraph);
-
-		// Wire's tree node as Constant's child.
-		lcsm::EvaluatorNode *constantWireNode = static_cast< lcsm::EvaluatorNode * >(constantWireGraph);
-
-		// Make them to know about each other.
-		constantNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(constantWireNode));
-		constantWireNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(constantNode));
-
-		// Add Constant's wire to queue.
-		bfsVisit.emplace_back(std::addressof(constantWire));
-
-		// Add as visited objects.
-		visited.insert(constant->ID());
-
-		break;
-	}
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_POWER:
-	{
-		const lcsm::model::Power *power = circuitComp->asPower();
-		const lcsm::model::Wire &powerWire = power->wire();
-
-		lcsm::CGPower *powerGraph = registeredPower(power->ID());
-		lcsm::CGWire *powerWireGraph = registeredWire(powerWire.ID());
-
-		// Power's tree node.
-		lcsm::EvaluatorNode *powerNode = static_cast< lcsm::EvaluatorNode * >(powerGraph);
-
-		// Wire's value tree node as Power's child.
-		lcsm::EvaluatorNode *powerWireNode = static_cast< lcsm::EvaluatorNode * >(powerWireGraph);
-
-		// Make them to know about each other.
-		powerNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(powerWireNode));
-		powerWireNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(powerNode));
-
-		// Add Power's wire to queue.
-		bfsVisit.emplace_back(std::addressof(powerWire));
-
-		// Add as visited objects.
-		visited.insert(power->ID());
-
-		break;
-	}
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_GROUND:
-	{
-		const lcsm::model::Ground *ground = circuitComp->asGround();
-		const lcsm::model::Wire &groundWire = ground->wire();
-
-		lcsm::CGGround *groundGraph = registeredGround(ground->ID());
-		lcsm::CGWire *groundWireGraph = registeredWire(groundWire.ID());
-
-		// Ground's tree node.
-		lcsm::EvaluatorNode *groundNode = static_cast< lcsm::EvaluatorNode * >(groundGraph);
-
-		// Wire's value tree node as Ground's child.
-		lcsm::EvaluatorNode *groundWireNode = static_cast< lcsm::EvaluatorNode * >(groundWireGraph);
-
-		// Make them to know about each other.
-		groundNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(groundWireNode));
-		groundWireNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(groundNode));
-
-		// Add Ground's wire to queue.
-		bfsVisit.emplace_back(std::addressof(groundWire));
-
-		// Add as visited objects.
-		visited.insert(ground->ID());
-
-		break;
-	}
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_SPLITTER:
-		throw std::logic_error("Not implemented");
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_CLOCK:
-		throw std::logic_error("Not implemented");
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_TRANSISTOR:
-	{
-		const lcsm::model::Transistor *transistor = circuitComp->asTransistor();
-		const lcsm::model::Wire &wireBase = transistor->wireBase();
-		const lcsm::model::Wire &wireSrcA = transistor->wireInoutA();
-		const lcsm::model::Wire &wireSrcB = transistor->wireInoutB();
-
-		lcsm::CGWire *transistorWireBaseGraph = registeredWire(wireBase.ID());
-		lcsm::CGWire *transistorWireSrcAGraph = registeredWire(wireSrcA.ID());
-		lcsm::CGWire *transistorWireSrcBGraph = registeredWire(wireSrcB.ID());
-
-		lcsm::CGTransistorBase *transistorBaseGraph = registeredTransistorBase(transistor->idBase());
-		lcsm::CGTransistorInout *transistorSrcAGraph = registeredTransistorInout(transistor->idInoutA());
-		lcsm::CGTransistorInout *transistorSrcBGraph = registeredTransistorInout(transistor->idInoutB());
-		lcsm::CGTransistorState *transistorStateGraph = registeredTransistorState(transistor->ID());
-
-		// Base's Wire tree node.
-		lcsm::EvaluatorNode *transistorWireBaseNode = static_cast< lcsm::EvaluatorNode * >(transistorWireBaseGraph);
-
-		// SrcA's Wire tree node.
-		lcsm::EvaluatorNode *transistorWireSrcANode = static_cast< lcsm::EvaluatorNode * >(transistorWireSrcAGraph);
-
-		// SrcB's Wire tree node.
-		lcsm::EvaluatorNode *transistorWireSrcBNode = static_cast< lcsm::EvaluatorNode * >(transistorWireSrcBGraph);
-
-		// Base's tree node.
-		lcsm::EvaluatorNode *transistorBaseNode = static_cast< lcsm::EvaluatorNode * >(transistorBaseGraph);
-
-		// SrcA's tree node.
-		lcsm::EvaluatorNode *transistorSrcANode = static_cast< lcsm::EvaluatorNode * >(transistorSrcAGraph);
-
-		// SrcB's tree node.
-		lcsm::EvaluatorNode *transistorSrcBNode = static_cast< lcsm::EvaluatorNode * >(transistorWireSrcBGraph);
-
-		// State's tree node.
-		lcsm::EvaluatorNode *transistorStateNode = static_cast< lcsm::EvaluatorNode * >(transistorStateGraph);
-
-		// Make them to know about each other.
-		const lcsm::support::PointerView< lcsm::EvaluatorNode > transistorBaseNodeView = transistorBaseNode;
-		const lcsm::support::PointerView< lcsm::EvaluatorNode > transistorSrcANodeView = transistorSrcANode;
-		const lcsm::support::PointerView< lcsm::EvaluatorNode > transistorSrcBNodeView = transistorSrcBNode;
-
-		transistorBaseNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(transistorWireBaseNode));
-		transistorWireBaseNode->pushBackChild(transistorBaseNodeView);
-		transistorSrcANode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(transistorWireSrcANode));
-		transistorWireSrcANode->pushBackChild(transistorSrcANodeView);
-		transistorSrcBNode->pushBackChild(lcsm::support::PointerView< lcsm::EvaluatorNode >(transistorWireSrcBNode));
-		transistorWireSrcBNode->pushBackChild(transistorSrcBNodeView);
-
-		transistorStateNode->pushBackChild(transistorBaseNodeView);
-		transistorStateNode->pushBackChild(transistorSrcANodeView);
-		transistorStateNode->pushBackChild(transistorSrcBNodeView);
-
-		// Make transistor's inouts and base to know about state object.
-		const lcsm::support::PointerView< lcsm::CGState > stateView = transistorStateGraph;
-		transistorBaseGraph->setState(stateView);
-		transistorSrcAGraph->setState(stateView);
-		transistorSrcBGraph->setState(stateView);
-
-		// Add all Transistor's wire to queue.
-		bfsVisit.emplace_back(std::addressof(wireBase));
-		bfsVisit.emplace_back(std::addressof(wireSrcA));
-		bfsVisit.emplace_back(std::addressof(wireSrcB));
-
-		// Add as visited objects.
-		visited.insert(transistor->ID());
-		visited.insert(transistor->idBase());
-		visited.insert(transistor->idInoutA());
-		visited.insert(transistor->idInoutB());
-
-		break;
-	}
-	case lcsm::CircuitComponentType::CIRCUIT_COMP_TRANSMISSION_GATE:
-		throw std::logic_error("Not implemented");
-	}
-}
-*/
 
 lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registered(lcsm::Identifier id) const noexcept
 {
@@ -597,6 +153,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			lcsm::support::PointerView< lcsm::EvaluatorNode > wireChildEvaluatorNode = registeredWire(wireChildId);
 			wireChildEvaluatorNode->setObjectType(wireChildObjectType);
 			wireNode->connect(wireChildEvaluatorNode);
+			bfsVisit.emplace_back(wireChild.cptr());
 		}
 
 		// This wire might be some object's wire, so we should make connection
@@ -634,13 +191,17 @@ void lcsm::LCSMEngine::buildCircuit(
 
 			// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
 			lcsm::support::PointerView< lcsm::EvaluatorNode > internal = registeredWire(idWireInternal);
+			lcsm::support::PointerView< lcsm::physical::Wire > internalWire = internal.staticCast< lcsm::physical::Wire >();
 			internal->setObjectType(wireInternalObjectType);
 			lcsm::support::PointerView< lcsm::EvaluatorNode > external = registeredWire(idWireExternal);
+			lcsm::support::PointerView< lcsm::physical::Wire > externalWire = external.staticCast< lcsm::physical::Wire >();
 			internal->setObjectType(wireExternalObjectType);
 
 			// Connect wires to pin.
 			pinOutput->connectInternal(internal);
+			internalWire->connect(m_objects[idPin]);
 			pinOutput->connectExternal(external);
+			externalWire->connect(m_objects[idPin]);
 		}
 		else
 		{
@@ -651,18 +212,22 @@ void lcsm::LCSMEngine::buildCircuit(
 
 			// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
 			lcsm::support::PointerView< lcsm::EvaluatorNode > internal = registeredWire(idWireInternal);
+			lcsm::support::PointerView< lcsm::physical::Wire > internalWire = internal.staticCast< lcsm::physical::Wire >();
 			internal->setObjectType(wireInternalObjectType);
 			lcsm::support::PointerView< lcsm::EvaluatorNode > external = registeredWire(idWireExternal);
+			lcsm::support::PointerView< lcsm::physical::Wire > externalWire = external.staticCast< lcsm::physical::Wire >();
 			internal->setObjectType(wireExternalObjectType);
 
 			// Connect wires to pin.
 			pinInput->connectInternal(internal);
+			internalWire->connect(m_objects[idPin]);
 			pinInput->connectExternal(external);
+			externalWire->connect(m_objects[idPin]);
 		}
 
 		// Add Pin's wire to queue.
-		bfsVisit.emplace_back(std::addressof(wireExternal));
 		bfsVisit.emplace_back(std::addressof(wireInternal));
+		bfsVisit.emplace_back(std::addressof(wireExternal));
 
 		// Add as visited objects.
 		visited.insert(pin->id());

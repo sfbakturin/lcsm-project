@@ -20,6 +20,11 @@ lcsm::NodeType lcsm::physical::Wire::nodeType() const noexcept
 	return lcsm::NodeType::Fast;
 }
 
+std::size_t lcsm::physical::Wire::contextSize() const noexcept
+{
+	return 1;
+}
+
 const lcsm::DataBits &lcsm::physical::Wire::read() const
 {
 	return m_context->getValue();
@@ -35,7 +40,7 @@ bool lcsm::physical::Wire::checkWidth(const DataBits &value) const
 	return width() == value.width();
 }
 
-void lcsm::physical::Wire::setContext(support::PointerView< Context > &context) noexcept
+void lcsm::physical::Wire::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	m_context = context;
 }
@@ -63,59 +68,19 @@ void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
 		throw std::logic_error("Attempt to instant non BroadcastValue for wire");
 }
 
-// static void WireNeighbourInstructions(
-// 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
-// 	lcsm::support::PointerView< lcsm::EvaluatorNode > &child,
-// 	std::vector< lcsm::Event > &events)
-// {
-// 	lcsm::EvaluatorNode *target = static_cast< lcsm::EvaluatorNode * >(child.ptr());
-// 	lcsm::EvaluatorNode *caller = static_cast< lcsm::EvaluatorNode * >(targetFrom.ptr());
-
-// 	/* Make a new instruction for each neighbour. */
-// 	switch (target->objectType())
-// 	{
-// 	case lcsm::CGObjectType::PinInput:
-// 	{
-// 		/* No instructions for input pin. */
-// 		break;
-// 	}
-// 	case lcsm::CGObjectType::PinOutput:
-// 	{
-// 		/* Write value to output pin. */
-// 		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(caller, target);
-// 		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, child);
-// 		events.push_back(std::move(e));
-// 		break;
-// 	}
-// 	case lcsm::CGObjectType::Wire:
-// 	{
-// 		/* Broadcast value from wire to wire. */
-// 		lcsm::Instruction i = lcsm::CreateBroadcastValueInstruction(caller, target);
-// 		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, child);
-// 		events.push_back(std::move(e));
-// 		break;
-// 	}
-// 	case lcsm::CGObjectType::Constant:
-// 	case lcsm::CGObjectType::Power:
-// 	case lcsm::CGObjectType::Ground:
-// 	{
-// 		/* No instructions for Constant/Power/Ground element. */
-// 		break;
-// 	}
-// 	case lcsm::CGObjectType::Splitter:
-// 		throw std::logic_error("Not implemented");
-// 	case lcsm::CGObjectType::ClockInout:
-// 		throw std::logic_error("Not implemented");
-// 	case lcsm::CGObjectType::ClockState:
-// 		throw std::logic_error("Not implemented");
-// 	case lcsm::CGObjectType::TransistorBase:
-// 		throw std::logic_error("Not implemented");
-// 	case lcsm::CGObjectType::TransistorInout:
-// 		throw std::logic_error("Not implemented");
-// 	case lcsm::CGObjectType::TransistorState:
-// 		throw std::logic_error("Not implemented");
-// 	}
-// }
+static inline void WireNeighbourInstructions(
+	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
+	lcsm::support::PointerView< lcsm::EvaluatorNode > &child,
+	std::vector< lcsm::Event > &events)
+{
+	/* Extract target and caller. */
+	lcsm::EvaluatorNode *target = static_cast< lcsm::EvaluatorNode * >(child.ptr());
+	lcsm::EvaluatorNode *caller = static_cast< lcsm::EvaluatorNode * >(targetFrom.ptr());
+	/* Write wire's value to target. */
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(caller, target);
+	lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, child);
+	events.push_back(std::move(e));
+}
 
 std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Timestamp &now)
 {
@@ -135,16 +100,28 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
 
 	/* Invoke all instructions. */
-	lcsm::DataBits result = read();
+	lcsm::DataBits value = m_context->getValue();
+	const lcsm::Timestamp then = m_context->lastUpdate();
+	const bool takeFirst = now > then;
+
+	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	if (takeFirst && !m_instants.empty())
+	{
+		lcsm::Instruction instant = m_instants.front();
+		lcsm::EvaluatorNode *caller = instant.caller();
+		m_instants.pop_front();
+		value = caller->read();
+		calling.insert({ caller });
+	}
 
 	for (lcsm::Instruction &instant : m_instants)
 	{
 		lcsm::EvaluatorNode *caller = instant.caller();
-		result |= caller->read();
+		value |= caller->read();
 		calling.insert({ caller });
 	}
 
-	/* FIXME: As C++ standard requires non-non-const iterators for std::*set, so we're forced to add all callings to
+	/* As C++ standard requires non-non-const iterators for std::*set, so we're forced to add all callings to
 	 * vector for future traversal. */
 	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > nonConstCalling;
 
@@ -163,8 +140,7 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 		}
 
 		/* Make a new instruction for each neighbour. */
-		// TODO: Implement.
-		// WireNeighbourInstructions(targetFrom, child, events);
+		WireNeighbourInstructions(targetFrom, child, events);
 	}
 
 	/* Go through all "calling" objects-neighbour and create a new events, where result != read. */
@@ -172,15 +148,14 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	{
 		lcsm::support::PointerView< lcsm::EvaluatorNode > child = static_cast< lcsm::EvaluatorNode * >(childObject.ptr());
 		const lcsm::DataBits &neighbourDataBits = childObject->read();
-		if (neighbourDataBits == result)
+		if (neighbourDataBits == value)
 			continue;
 		/* Make a new instruction for each neighbour. */
-		// TODO: Implement.
-		// WireNeighbourInstructions(targetFrom, child, events);
+		WireNeighbourInstructions(targetFrom, child, events);
 	}
 
 	/* Save last value. */
-	m_context->updateValue(now, result);
+	m_context->updateValues(now, { value });
 
 	/* Clear instants. */
 	m_instants.clear();

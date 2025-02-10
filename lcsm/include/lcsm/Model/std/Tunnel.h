@@ -41,6 +41,8 @@ namespace lcsm
 			void connectToWire(const support::PointerView< Circuit > &circuit);
 			void connectTunnel(const support::PointerView< Circuit > &circuit);
 
+			virtual Circuit *byPort(portid_t portId) override final;
+
 			const Wire &wire() const noexcept;
 			const support::PointerView< Circuit > &tunnel() const noexcept;
 

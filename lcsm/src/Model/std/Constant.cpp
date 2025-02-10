@@ -6,6 +6,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -103,6 +104,19 @@ void lcsm::model::Constant::connect(const lcsm::support::PointerView< lcsm::Circ
 {
 	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Constant::Port::Wiring);
 	connect(portId, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Constant::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Constant::Port p = static_cast< lcsm::model::Constant::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Constant::Port::Wiring:
+	{
+		return std::addressof(m_wire);
+	}
+	}
+	return nullptr;
 }
 
 const lcsm::model::Wire &lcsm::model::Constant::wire() const noexcept

@@ -34,7 +34,12 @@ lcsm::NodeType lcsm::physical::PinOutput::nodeType() const noexcept
 	return lcsm::NodeType::Dynamic;
 }
 
-void lcsm::physical::PinOutput::setContext(support::PointerView< Context > &context) noexcept
+std::size_t lcsm::physical::PinOutput::contextSize() const noexcept
+{
+	return 1;
+}
+
+void lcsm::physical::PinOutput::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	m_context = context;
 }
@@ -78,28 +83,44 @@ void lcsm::physical::PinOutput::addInstant(lcsm::Instruction &&instruction)
 
 std::vector< lcsm::Event > lcsm::physical::PinOutput::invokeInstants(const lcsm::Timestamp &now)
 {
-	/* Invoke all write values into output Pin. */
-	lcsm::DataBits result = read();
+	/* Invoke instants from external connect. */
+	lcsm::DataBits value = m_context->getValue();
+	const lcsm::Timestamp then = m_context->lastUpdate();
+	const bool takeFirst = now > then;
 
-	for (lcsm::Instruction &instant : m_instants)
+	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	if (takeFirst && !m_instants.empty())
 	{
-		/* All instructions must be WriteValue instance. */
-		/* FIXME: Not only WriteValue is optional. */
-		// if (!instant.type() == lcsm::)
-		// throw std::logic_error("Only WriteValue is available on output Pin to instant");
-		result |= instant.caller()->read();
+		const lcsm::Instruction instant = m_instants.front();
+		m_instants.pop_front();
+		value = instant.caller()->read();
 	}
 
+	/* Invoke all instructions. */
+	for (lcsm::Instruction &instant : m_instants)
+		value |= instant.caller()->read();
+
 	/* Save last value. */
-	m_context->updateValue(now, result);
+	m_context->updateValues(now, { value });
 
 	/* Clear instants. */
 	m_instants.clear();
 
-	// TODO: Make events for external connects, if needed.
+	/* If external connect exists, then, we should create events for writing to output. */
+	std::vector< lcsm::Event > events;
+	if (m_externalConnect)
+	{
+		/* Extract target and caller. */
+		lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
+		lcsm::EvaluatorNode *target = static_cast< lcsm::EvaluatorNode * >(m_externalConnect.ptr());
+		lcsm::EvaluatorNode *caller = static_cast< lcsm::EvaluatorNode * >(targetFrom.ptr());
+		/* Write wire's value to target. */
+		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(caller, target);
+		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, m_externalConnect);
+		events.push_back(std::move(e));
+	}
 
-	/* Output Pin never produces any events. */
-	return {};
+	return events;
 }
 
 void lcsm::physical::PinOutput::connectInternal(const lcsm::support::PointerView< lcsm::EvaluatorNode > &internal)

@@ -4,10 +4,10 @@ ADD_EXECUTABLE(test_dummy test_dummy.cpp)
 TARGET_LINK_LIBRARIES(test_dummy PRIVATE LCSM)
 
 ADD_EXECUTABLE(test_pin_to_pin test_pin_to_pin.cpp)
-TARGET_LINK_LIBRARIES(test_pin_to_pin PRIVATE LCSM LCSMC)
+TARGET_LINK_LIBRARIES(test_pin_to_pin PRIVATE LCSM)
 
 ADD_EXECUTABLE(test_logical_not test_logical_not.cpp)
-TARGET_LINK_LIBRARIES(test_logical_not PRIVATE LCSM LCSMC)
+TARGET_LINK_LIBRARIES(test_logical_not PRIVATE LCSM)
 
 ENABLE_TESTING()
 

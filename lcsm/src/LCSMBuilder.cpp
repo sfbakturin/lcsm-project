@@ -57,12 +57,15 @@ lcsm::model::Clock *lcsm::LCSMBuilder::CreateClock(unsigned highDuration, unsign
 		m_circuit.registerElement(std::make_shared< lcsm::model::Clock >(highDuration, lowDuration, phaseOffset)));
 }
 
-lcsm::model::Wire *
-	lcsm::LCSMBuilder::ConnectInternally(lcsm::Circuit *comp1, lcsm::portid_t port1, lcsm::Circuit *comp2, lcsm::portid_t port2)
+lcsm::model::Wire *lcsm::LCSMBuilder::Connect(lcsm::Circuit *comp1, lcsm::portid_t port1, lcsm::Circuit *comp2, lcsm::portid_t port2)
 {
 	lcsm::model::Wire *w = static_cast< lcsm::model::Wire * >(m_circuit.registerElement(std::make_shared< lcsm::model::Wire >()));
 	const lcsm::support::PointerView< lcsm::Circuit > circuit = w;
 	comp1->connect(port1, circuit);
 	comp2->connect(port2, circuit);
+	const lcsm::support::PointerView< lcsm::Circuit > wireComp1 = comp1->byPort(port1);
+	const lcsm::support::PointerView< lcsm::Circuit > wireComp2 = comp2->byPort(port2);
+	w->connectToWire(wireComp1);
+	w->connectToWire(wireComp2);
 	return w;
 }

@@ -51,6 +51,8 @@ namespace lcsm
 			void connectInternal(const support::PointerView< Circuit > &circuit);
 			void connectExternal(const support::PointerView< Circuit > &circuit);
 
+			virtual Circuit *byPort(portid_t portId) override final;
+
 		  private:
 			Identifier m_id;
 			bool m_output;

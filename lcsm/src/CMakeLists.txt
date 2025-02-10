@@ -31,10 +31,6 @@
     Physical/std/Constant.cpp
     Physical/std/Power.cpp
     Physical/std/Ground.cpp
-    Physical/std/Splitter.cpp
-    Physical/std/TransistorBase.cpp
-    Physical/std/TransistorInout.cpp
-    Physical/std/TransistorState.cpp
     Physical/std/Wire.cpp
 
     LCSMBuilder.cpp
@@ -47,4 +43,6 @@ IF(MSVC)
     TARGET_COMPILE_OPTIONS(LCSM PRIVATE /W4)
 ELSE()
     TARGET_COMPILE_OPTIONS(LCSM PRIVATE -Wall -Wextra -Wpedantic)
+    # TARGET_COMPILE_OPTIONS(LCSM PUBLIC -Wall -Wextra -Wpedantic -fsanitize=address,undefined,leak)
+    # target_link_options(LCSM PUBLIC -Wall -Wextra -Wpedantic -fsanitize=address,undefined,leak)
 ENDIF()

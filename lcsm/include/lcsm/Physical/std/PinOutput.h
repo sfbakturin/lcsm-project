@@ -6,6 +6,7 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <deque>
 
 namespace lcsm
@@ -16,7 +17,6 @@ namespace lcsm
 		{
 		  public:
 			PinOutput() = default;
-			virtual ~PinOutput() = default;
 
 			virtual const DataBits &read() const override final;
 
@@ -25,7 +25,9 @@ namespace lcsm
 
 			virtual NodeType nodeType() const noexcept override final;
 
-			virtual void setContext(support::PointerView< Context > &context) noexcept override final;
+			virtual std::size_t contextSize() const noexcept override final;
+
+			virtual void setContext(const support::PointerView< Context > &context) override final;
 			virtual void resetContext() noexcept override final;
 
 			virtual void addInstant(const Instruction &instruction) override final;

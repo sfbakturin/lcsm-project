@@ -1,6 +1,7 @@
 #ifndef LCSM_LCSMSTATE_H
 #define LCSM_LCSMSTATE_H
 
+#include <initializer_list>
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Physical/Context.h>
@@ -12,7 +13,6 @@
 #include <unordered_map>
 
 #include <deque>
-#include <map>
 #include <vector>
 
 namespace lcsm
@@ -30,31 +30,29 @@ namespace lcsm
 
 		void swap(LCSMState &other) noexcept;
 
-		const DataBits &valueOf(Identifier identifier) const;
+		std::size_t valueSize(Identifier id) const;
+		const DataBits &valueOf(Identifier id, std::size_t i = 0) const;
 
-		void putValue(Identifier identifier, const DataBits &databits);
-		void putValue(Identifier identifier, DataBits &&databits);
+		void putValue(Identifier id, const DataBits &databits, std::size_t i = 0);
+		void putValue(Identifier id, std::initializer_list< DataBits > databits);
 
-		void step(unsigned n);
-		void stepOnce();
+		void ticks(unsigned n);
+		void tick();
 
 	  private:
 		friend class LCSMEngine;
 
 		Timestamp m_globalTimer;
-		std::map< Timestamp, std::deque< Event > > m_scheduled;
-		std::unordered_map< Identifier, Context > m_values;
+		std::unordered_map< Timestamp, std::deque< Event > > m_globalQueue;
+		std::unordered_map< Identifier, Context > m_contexts;
 		std::vector< support::PointerView< EvaluatorNode > > m_roots;
+		support::PointerView< LCSMEngine > m_enginePtr;
 
-		LCSMState(std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > &objects);
+	  private:
+		LCSMState(LCSMEngine *engine);
 
-		void schedule(support::PointerView< EvaluatorNode > &node);
-		void scheduleAt(support::PointerView< EvaluatorNode > &node, Timestamp timer);
-
-		void scheduleEvent(const Event &event, bool isFast = false);
-		void scheduleEvent(const Event &event, bool isFast, Timestamp timer);
-
-		void mainLoop(std::vector< support::PointerView< EvaluatorNode > > &nodes, bool isFast = false);
+		void scheduleEvent(const Event &event);
+		void scheduleEvent(const Event &event, Timestamp timestamp);
 	};
 }	 // namespace lcsm
 

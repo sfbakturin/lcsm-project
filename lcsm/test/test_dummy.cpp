@@ -21,7 +21,7 @@ int main()
 	lcsm::model::Pin *out0 = builder.CreatePin(true);
 
 	/* Connect pins. */
-	builder.ConnectInternally(in0, lcsm::model::Pin::Port::Internal, out0, lcsm::model::Pin::Port::Internal);
+	builder.Connect(in0, lcsm::model::Pin::Port::Internal, out0, lcsm::model::Pin::Port::Internal);
 
 	const std::vector< lcsm::DataBits > values = {
 		{ lcsm::Width::Bit1, lcsm::verilog::Bit::False },
@@ -40,7 +40,7 @@ int main()
 		state.putValue(in0->id(), value);
 
 		/* Step once. */
-		state.stepOnce();
+		state.tick();
 
 		/* Extract value from out0 (output pin). */
 		const lcsm::DataBits &out = state.valueOf(out0->id());
