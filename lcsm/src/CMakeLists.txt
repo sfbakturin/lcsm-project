@@ -26,8 +26,8 @@
     Physical/Evaluator.cpp
     Physical/EvaluatorNode.cpp
 
-    Physical/std/PinInput.cpp
-    Physical/std/PinOutput.cpp
+    Physical/std/Transistor.cpp
+    Physical/std/Pin.cpp
     Physical/std/Constant.cpp
     Physical/std/Power.cpp
     Physical/std/Ground.cpp
@@ -43,6 +43,4 @@ IF(MSVC)
     TARGET_COMPILE_OPTIONS(LCSM PRIVATE /W4)
 ELSE()
     TARGET_COMPILE_OPTIONS(LCSM PRIVATE -Wall -Wextra -Wpedantic)
-    # TARGET_COMPILE_OPTIONS(LCSM PUBLIC -Wall -Wextra -Wpedantic -fsanitize=address,undefined,leak)
-    # target_link_options(LCSM PUBLIC -Wall -Wextra -Wpedantic -fsanitize=address,undefined,leak)
 ENDIF()

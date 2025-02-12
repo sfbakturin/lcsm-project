@@ -16,8 +16,7 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/std/Constant.h>
 #include <lcsm/Physical/std/Ground.h>
-#include <lcsm/Physical/std/PinInput.h>
-#include <lcsm/Physical/std/PinOutput.h>
+#include <lcsm/Physical/std/Pin.h>
 #include <lcsm/Physical/std/Power.h>
 #include <lcsm/Physical/std/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -182,48 +181,24 @@ void lcsm::LCSMEngine::buildCircuit(
 		const lcsm::ObjectType wireExternalObjectType = wireExternal.objectType();
 
 		// Build physical Pin.
-		if (pin->output())
-		{
-			// By the algorithm, we have never created PinOutput before this moment.
-			m_objects[idPin] = std::make_shared< lcsm::physical::PinOutput >();
-			lcsm::physical::PinOutput *pinOutput = static_cast< lcsm::physical::PinOutput * >(m_objects[idPin].get());
-			pinOutput->setObjectType(pinObjectType);
+		// By the algorithm, we have never created PinOutput before this moment.
+		m_objects[idPin] = std::make_shared< lcsm::physical::Pin >(pin->output());
+		lcsm::physical::Pin *pinPhysical = static_cast< lcsm::physical::Pin * >(m_objects[idPin].get());
+		pinPhysical->setObjectType(pinObjectType);
 
-			// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
-			lcsm::support::PointerView< lcsm::EvaluatorNode > internal = registeredWire(idWireInternal);
-			lcsm::support::PointerView< lcsm::physical::Wire > internalWire = internal.staticCast< lcsm::physical::Wire >();
-			internal->setObjectType(wireInternalObjectType);
-			lcsm::support::PointerView< lcsm::EvaluatorNode > external = registeredWire(idWireExternal);
-			lcsm::support::PointerView< lcsm::physical::Wire > externalWire = external.staticCast< lcsm::physical::Wire >();
-			internal->setObjectType(wireExternalObjectType);
+		// 	// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > internal = registeredWire(idWireInternal);
+		lcsm::support::PointerView< lcsm::physical::Wire > internalWire = internal.staticCast< lcsm::physical::Wire >();
+		internal->setObjectType(wireInternalObjectType);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > external = registeredWire(idWireExternal);
+		lcsm::support::PointerView< lcsm::physical::Wire > externalWire = external.staticCast< lcsm::physical::Wire >();
+		internal->setObjectType(wireExternalObjectType);
 
-			// Connect wires to pin.
-			pinOutput->connectInternal(internal);
-			internalWire->connect(m_objects[idPin]);
-			pinOutput->connectExternal(external);
-			externalWire->connect(m_objects[idPin]);
-		}
-		else
-		{
-			// By the algorithm, we have never created PinInput before this moment.
-			m_objects[idPin] = std::make_shared< lcsm::physical::PinInput >();
-			lcsm::physical::PinInput *pinInput = static_cast< lcsm::physical::PinInput * >(m_objects[idPin].get());
-			pinInput->setObjectType(pinObjectType);
-
-			// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
-			lcsm::support::PointerView< lcsm::EvaluatorNode > internal = registeredWire(idWireInternal);
-			lcsm::support::PointerView< lcsm::physical::Wire > internalWire = internal.staticCast< lcsm::physical::Wire >();
-			internal->setObjectType(wireInternalObjectType);
-			lcsm::support::PointerView< lcsm::EvaluatorNode > external = registeredWire(idWireExternal);
-			lcsm::support::PointerView< lcsm::physical::Wire > externalWire = external.staticCast< lcsm::physical::Wire >();
-			internal->setObjectType(wireExternalObjectType);
-
-			// Connect wires to pin.
-			pinInput->connectInternal(internal);
-			internalWire->connect(m_objects[idPin]);
-			pinInput->connectExternal(external);
-			externalWire->connect(m_objects[idPin]);
-		}
+		// Connect wires to pin.
+		pinPhysical->connectInternal(internal);
+		internalWire->connect(m_objects[idPin]);
+		pinPhysical->connectExternal(external);
+		externalWire->connect(m_objects[idPin]);
 
 		// Add Pin's wire to queue.
 		bfsVisit.emplace_back(std::addressof(wireInternal));

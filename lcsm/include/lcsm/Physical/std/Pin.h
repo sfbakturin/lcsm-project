@@ -1,5 +1,5 @@
-#ifndef LCSM_PHYSICAL_STD_PININPUT_H
-#define LCSM_PHYSICAL_STD_PININPUT_H
+#ifndef LCSM_PHYSICAL_STD_PIN_H
+#define LCSM_PHYSICAL_STD_PIN_H
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Physical/Evaluator.h>
@@ -12,10 +12,10 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class PinInput : public EvaluatorNode
+		class Pin : public EvaluatorNode
 		{
 		  public:
-			PinInput() = default;
+			Pin(bool output);
 
 			virtual const DataBits &read() const override final;
 
@@ -37,6 +37,7 @@ namespace lcsm
 			void connectExternal(const support::PointerView< EvaluatorNode > &external);
 
 		  private:
+			bool m_output;
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_internalConnect;
@@ -45,4 +46,4 @@ namespace lcsm
 	}	 // namespace physical
 }	 // namespace lcsm
 
-#endif /* LCSM_PHYSICAL_STD_PININPUT_H */
+#endif /* LCSM_PHYSICAL_STD_PIN_H */

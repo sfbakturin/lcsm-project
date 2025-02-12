@@ -17,8 +17,8 @@ namespace lcsm
 		  public:
 			enum Port : portid_t
 			{
-				Wiring = 0,
-				Connect = 1
+				Wiring,
+				Connect
 			};
 
 		  public:

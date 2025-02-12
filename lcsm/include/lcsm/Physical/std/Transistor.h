@@ -1,22 +1,25 @@
-#ifndef LCSM_PHYSICAL_STD_PINOUTPUT_H
-#define LCSM_PHYSICAL_STD_PINOUTPUT_H
+#ifndef LCSM_PHYSICAL_STD_TRANSISTOR_H
+#define LCSM_PHYSICAL_STD_TRANSISTOR_H
 
+#include "lcsm/Model/Width.h"
+#include "lcsm/Model/std/Transistor.h"
+#include "lcsm/Physical/Context.h"
+#include "lcsm/Physical/DataBits.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 
-#include <cstddef>
 #include <deque>
 
 namespace lcsm
 {
 	namespace physical
 	{
-		class PinOutput : public EvaluatorNode
+		class Transistor : public EvaluatorNode
 		{
 		  public:
-			PinOutput() = default;
+			Transistor(model::Transistor::Type type);
 
 			virtual const DataBits &read() const override final;
 
@@ -34,16 +37,21 @@ namespace lcsm
 			virtual void addInstant(Instruction &&instruction) override final;
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
-			void connectInternal(const support::PointerView< EvaluatorNode > &internal);
-			void connectExternal(const support::PointerView< EvaluatorNode > &external);
+			void connectBase(const support::PointerView< EvaluatorNode > &node);
+			void connectSrcA(const support::PointerView< EvaluatorNode > &node);
+			void connectSrcB(const support::PointerView< EvaluatorNode > &node);
 
 		  private:
-			std::deque< Instruction > m_instants;
+			model::Transistor::Type m_type;
+			std::deque< Instruction > m_instantsBase;
+			std::deque< Instruction > m_instantsSrcA;
+			std::deque< Instruction > m_instantsSrcB;
 			support::PointerView< Context > m_context;
-			support::PointerView< EvaluatorNode > m_internalConnect;
-			support::PointerView< EvaluatorNode > m_externalConnect;
+			support::PointerView< EvaluatorNode > m_base;
+			support::PointerView< EvaluatorNode > m_srca;
+			support::PointerView< EvaluatorNode > m_srcb;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm
 
-#endif /* LCSM_PHYSICAL_STD_PINOUTPUT_H */
+#endif /* LCSM_PHYSICAL_STD_TRANSISTOR_H */

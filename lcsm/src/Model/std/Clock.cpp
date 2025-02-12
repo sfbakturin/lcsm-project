@@ -91,9 +91,7 @@ lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId)
 	switch (p)
 	{
 	case lcsm::model::Clock::Port::Wiring:
-	{
 		return std::addressof(m_wire);
-	}
 	}
 	return nullptr;
 }

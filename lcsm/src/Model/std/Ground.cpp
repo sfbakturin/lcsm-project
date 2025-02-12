@@ -99,9 +99,7 @@ lcsm::Circuit *lcsm::model::Ground::byPort(lcsm::portid_t portId)
 	switch (p)
 	{
 	case lcsm::model::Ground::Port::Wiring:
-	{
 		return std::addressof(m_wire);
-	}
 	}
 	return nullptr;
 }

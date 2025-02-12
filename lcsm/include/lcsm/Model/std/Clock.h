@@ -14,7 +14,7 @@ namespace lcsm
 		class Clock : public Circuit
 		{
 		  public:
-			enum class Port : portid_t
+			enum Port : portid_t
 			{
 				Wiring
 			};

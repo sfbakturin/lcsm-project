@@ -1,4 +1,5 @@
 #include <lcsm/Physical/Evaluator.h>
+#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <utility>
@@ -8,9 +9,7 @@ lcsm::Evaluator::Evaluator(lcsm::Evaluator &&other) noexcept : m_roots(std::move
 
 lcsm::Evaluator &lcsm::Evaluator::operator=(lcsm::Evaluator &&other) noexcept
 {
-	if (this != &other)
-		lcsm::Evaluator(std::move(other)).swap(*this);
-	return *this;
+	return lcsm::support::MoveAssign< lcsm::Evaluator >(this, std::move(other));
 }
 
 void lcsm::Evaluator::swap(lcsm::Evaluator &other) noexcept

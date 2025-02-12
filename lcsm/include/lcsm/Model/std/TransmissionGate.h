@@ -16,10 +16,10 @@ namespace lcsm
 		  public:
 			enum Port : portid_t
 			{
-				Base = 0,
-				InoutA = 1,
-				InoutB = 2,
-				InoutC = 3
+				Base,
+				InoutA,
+				InoutB,
+				InoutC
 			};
 
 		  public:

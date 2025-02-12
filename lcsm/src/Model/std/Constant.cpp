@@ -112,9 +112,7 @@ lcsm::Circuit *lcsm::model::Constant::byPort(lcsm::portid_t portId)
 	switch (p)
 	{
 	case lcsm::model::Constant::Port::Wiring:
-	{
 		return std::addressof(m_wire);
-	}
 	}
 	return nullptr;
 }
