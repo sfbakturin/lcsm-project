@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_PHYSICAL_DATABITS_H
+#ifndef LCSM_PHYSICAL_DATABITS_H
 #define LCSM_PHYSICAL_DATABITS_H
 
 #include <initializer_list>
@@ -10,8 +10,6 @@
 #include <lcsm/Verilog/Value.h>
 
 #include <cstddef>
-#include <cstdint>
-#include <limits>
 #include <ostream>
 
 namespace lcsm

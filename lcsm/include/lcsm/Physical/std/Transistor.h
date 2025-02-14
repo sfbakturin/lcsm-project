@@ -1,11 +1,11 @@
 #ifndef LCSM_PHYSICAL_STD_TRANSISTOR_H
 #define LCSM_PHYSICAL_STD_TRANSISTOR_H
 
-#include "lcsm/Model/Width.h"
-#include "lcsm/Model/std/Transistor.h"
-#include "lcsm/Physical/Context.h"
-#include "lcsm/Physical/DataBits.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/std/Transistor.h>
+#include <lcsm/Physical/Context.h>
+#include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -19,7 +19,7 @@ namespace lcsm
 		class Transistor : public EvaluatorNode
 		{
 		  public:
-			Transistor(model::Transistor::Type type);
+			Transistor(ObjectType objectType, model::Transistor::Type type);
 
 			virtual const DataBits &read() const override final;
 
@@ -35,6 +35,7 @@ namespace lcsm
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;
+
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
 			void connectBase(const support::PointerView< EvaluatorNode > &node);

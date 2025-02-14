@@ -15,15 +15,7 @@
 #include <utility>
 #include <vector>
 
-lcsm::NodeType lcsm::physical::Wire::nodeType() const noexcept
-{
-	return lcsm::NodeType::Fast;
-}
-
-std::size_t lcsm::physical::Wire::contextSize() const noexcept
-{
-	return 1;
-}
+lcsm::physical::Wire::Wire(lcsm::ObjectType objectType) : lcsm::EvaluatorNode(objectType) {}
 
 const lcsm::DataBits &lcsm::physical::Wire::read() const
 {
@@ -38,6 +30,16 @@ lcsm::Width lcsm::physical::Wire::width() const
 bool lcsm::physical::Wire::checkWidth(const DataBits &value) const
 {
 	return width() == value.width();
+}
+
+lcsm::NodeType lcsm::physical::Wire::nodeType() const noexcept
+{
+	return lcsm::NodeType::Fast;
+}
+
+std::size_t lcsm::physical::Wire::contextSize() const noexcept
+{
+	return 1;
 }
 
 void lcsm::physical::Wire::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
@@ -70,16 +72,12 @@ void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
 
 static inline void WireNeighbourInstructions(
 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
-	lcsm::support::PointerView< lcsm::EvaluatorNode > &child,
+	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo,
 	std::vector< lcsm::Event > &events)
 {
-	/* Extract target and caller. */
-	lcsm::EvaluatorNode *target = static_cast< lcsm::EvaluatorNode * >(child.ptr());
-	lcsm::EvaluatorNode *caller = static_cast< lcsm::EvaluatorNode * >(targetFrom.ptr());
 	/* Write wire's value to target. */
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(caller, target);
-	lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, child);
-	events.push_back(std::move(e));
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(targetFrom.ptr(), targetTo.ptr());
+	events.emplace_back(std::move(i));
 }
 
 std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Timestamp &now)

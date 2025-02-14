@@ -10,9 +10,15 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::physical::Constant::Constant(const lcsm::DataBits &databits) : m_databits(databits) {}
+lcsm::physical::Constant::Constant(lcsm::ObjectType objectType, const lcsm::DataBits &databits) :
+	lcsm::EvaluatorNode(objectType), m_databits(databits)
+{
+}
 
-lcsm::physical::Constant::Constant(lcsm::DataBits &&databits) : m_databits(std::move(databits)) {}
+lcsm::physical::Constant::Constant(lcsm::ObjectType objectType, lcsm::DataBits &&databits) :
+	lcsm::EvaluatorNode(objectType), m_databits(std::move(databits))
+{
+}
 
 lcsm::NodeType lcsm::physical::Constant::nodeType() const noexcept
 {
@@ -74,14 +80,9 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 	// Resulting events for future mini-steps.
 	std::vector< lcsm::Event > events;
 
-	// Target from this object.
-	const lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
-	lcsm::EvaluatorNode *c = static_cast< lcsm::EvaluatorNode * >(m_connect.ptr());
-
 	// Write value to Wire.
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, c);
-	lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, m_connect);
-	events.push_back(std::move(e));
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.ptr());
+	events.emplace_back(std::move(i));
 
 	return events;
 }

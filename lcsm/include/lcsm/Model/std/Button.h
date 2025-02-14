@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_BUTTON_H
+#ifndef LCSM_MODEL_STD_BUTTON_H
 #define LCSM_MODEL_STD_BUTTON_H
 
 #include <lcsm/LCSM.h>

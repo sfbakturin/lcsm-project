@@ -46,7 +46,7 @@ lcsm::ObjectType lcsm::model::Ground::objectType() const noexcept
 
 lcsm::CircuitType lcsm::model::Ground::circuitType() const noexcept
 {
-	return lcsm::CircuitType::Power;
+	return lcsm::CircuitType::Ground;
 }
 
 void lcsm::model::Ground::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)

@@ -25,7 +25,6 @@ namespace lcsm
 	  private:
 		LCSMEngine() = default;
 
-		Evaluator m_evaluator;
 		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_objects;
 
 	  private:

@@ -16,7 +16,10 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Transistor::Transistor(lcsm::model::Transistor::Type type) : m_type(type) {}
+lcsm::physical::Transistor::Transistor(lcsm::ObjectType objectType, lcsm::model::Transistor::Type type) :
+	lcsm::EvaluatorNode(objectType), m_type(type)
+{
+}
 
 const lcsm::DataBits &lcsm::physical::Transistor::read() const
 {
@@ -191,15 +194,13 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 	if (m_srca && valueSrcA != newValueSrcA)
 	{
 		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srca.ptr());
-		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), { this }, m_srca);
-		events.push_back(std::move(e));
+		events.emplace_back(std::move(i));
 	}
 
 	if (m_srcb && valueSrcA != newValueSrcB)
 	{
 		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srcb.ptr());
-		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), { this }, m_srcb);
-		events.push_back(std::move(e));
+		events.emplace_back(std::move(i));
 	}
 
 	return events;

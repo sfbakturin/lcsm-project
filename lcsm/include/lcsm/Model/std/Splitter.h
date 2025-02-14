@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_SPLITTER_H
+#ifndef LCSM_MODEL_STD_SPLITTER_H
 #define LCSM_MODEL_STD_SPLITTER_H
 
 #include <lcsm/LCSM.h>

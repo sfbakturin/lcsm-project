@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_WIRE_H
+#ifndef LCSM_MODEL_WIRE_H
 #define LCSM_MODEL_WIRE_H
 
 #include <lcsm/LCSM.h>

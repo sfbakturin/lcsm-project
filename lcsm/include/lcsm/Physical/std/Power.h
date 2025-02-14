@@ -1,6 +1,7 @@
 #ifndef LCSM_PHYSICAL_STD_POWER_H
 #define LCSM_PHYSICAL_STD_POWER_H
 
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Physical/std/Constant.h>
 
@@ -11,7 +12,7 @@ namespace lcsm
 		class Power : public Constant
 		{
 		  public:
-			Power(Width width);
+			Power(ObjectType objectType, Width width);
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_POWER_H
+#ifndef LCSM_MODEL_STD_POWER_H
 #define LCSM_MODEL_STD_POWER_H
 
 #include <lcsm/LCSM.h>

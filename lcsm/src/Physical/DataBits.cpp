@@ -1,7 +1,8 @@
-#include "lcsm/LCSM.h"
 #include <initializer_list>
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Physical/DataBits.h>
+#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
 #include <lcsm/Verilog/Value.h>
@@ -91,16 +92,12 @@ lcsm::DataBits::DataBits(DataBits &&other) noexcept : m_width(std::move(other.m_
 
 lcsm::DataBits &lcsm::DataBits::operator=(const lcsm::DataBits &other) noexcept
 {
-	if (this != std::addressof(other))
-		lcsm::DataBits(other).swap(*this);
-	return *this;
+	return lcsm::support::CopyAssign< lcsm::DataBits >(this, other);
 }
 
 lcsm::DataBits &lcsm::DataBits::operator=(lcsm::DataBits &&other) noexcept
 {
-	if (this != std::addressof(other))
-		lcsm::DataBits(std::move(other)).swap(*this);
-	return *this;
+	return lcsm::support::MoveAssign< lcsm::DataBits >(this, std::move(other));
 }
 
 lcsm::DataBits lcsm::DataBits::operator|(const lcsm::DataBits &other)

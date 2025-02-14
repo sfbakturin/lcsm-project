@@ -239,9 +239,9 @@ void lcsm::LCSMState::tick()
 					localQueue.pop_front();
 
 					/* Targeting invoke in future node. */
-					lcsm::support::PointerView< lcsm::EvaluatorNode > &caller = event.targetFrom();
-					lcsm::support::PointerView< lcsm::EvaluatorNode > &target = event.targetTo();
 					lcsm::Instruction &instruction = event.instruction();
+					lcsm::support::PointerView< lcsm::EvaluatorNode > caller = instruction.caller();
+					lcsm::support::PointerView< lcsm::EvaluatorNode > target = instruction.target();
 
 					/* Check if target is not in visited set. */
 					if (std::find(visited.begin(), visited.end(), caller) != visited.end())
@@ -309,8 +309,8 @@ void lcsm::LCSMState::tick()
 				localQueue.pop_front();
 
 				/* Add scheduled instant to target. */
-				lcsm::support::PointerView< lcsm::EvaluatorNode > target = event.targetTo();
 				lcsm::Instruction instruction = event.instruction();
+				lcsm::support::PointerView< lcsm::EvaluatorNode > target = instruction.target();
 				target->addInstant(std::move(instruction));
 				nodes.push_back(std::move(target));
 			}

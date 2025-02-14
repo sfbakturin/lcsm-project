@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_CONSTANT_H
+#ifndef LCSM_MODEL_STD_CONSTANT_H
 #define LCSM_MODEL_STD_CONSTANT_H
 
 #include <lcsm/LCSM.h>

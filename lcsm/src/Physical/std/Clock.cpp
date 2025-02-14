@@ -13,8 +13,8 @@
 #include <stdexcept>
 #include <vector>
 
-lcsm::physical::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+lcsm::physical::Clock::Clock(lcsm::ObjectType objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
+	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
@@ -85,8 +85,7 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 	/* Write value to Wire. */
 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.ptr());
-	lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), { this }, m_connect);
-	events.push_back(std::move(e));
+	events.emplace_back(std::move(i));
 
 	return events;
 }

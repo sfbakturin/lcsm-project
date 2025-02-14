@@ -19,8 +19,8 @@ namespace lcsm
 		class Constant : public EvaluatorNode
 		{
 		  public:
-			Constant(const DataBits &databits);
-			Constant(DataBits &&databits);
+			Constant(ObjectType objectType, const DataBits &databits);
+			Constant(ObjectType objectType, DataBits &&databits);
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -36,6 +36,7 @@ namespace lcsm
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;
+
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
 			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;

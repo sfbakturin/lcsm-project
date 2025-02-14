@@ -14,7 +14,9 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Pin::Pin(bool output) : m_output(output) {}
+lcsm::physical::Pin::Pin(lcsm::ObjectType objectType, bool output) : lcsm::EvaluatorNode(objectType), m_output(output)
+{
+}
 
 const lcsm::DataBits &lcsm::physical::Pin::read() const
 {
@@ -151,26 +153,16 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 	{
 		if (m_externalConnect)
 		{
-			/* Extract target and caller. */
-			lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
-			lcsm::EvaluatorNode *target = static_cast< lcsm::EvaluatorNode * >(m_externalConnect.ptr());
-			lcsm::EvaluatorNode *caller = static_cast< lcsm::EvaluatorNode * >(targetFrom.ptr());
 			/* Write wire's value to target. */
-			lcsm::Instruction i = lcsm::CreateWriteValueInstruction(caller, target);
-			lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, m_externalConnect);
-			events.push_back(std::move(e));
+			lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_externalConnect.ptr());
+			events.emplace_back(std::move(i));
 		}
 	}
 	else
 	{
-		/* Target from this object. */
-		const lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = static_cast< lcsm::EvaluatorNode * >(this);
-		lcsm::EvaluatorNode *c = m_internalConnect.ptr();
-
 		/* Write value to Wire. */
-		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, c);
-		lcsm::Event e = lcsm::CreateInstantEvent(std::move(i), targetFrom, m_internalConnect);
-		events.push_back(std::move(e));
+		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_internalConnect.ptr());
+		events.push_back(std::move(i));
 	}
 
 	return events;

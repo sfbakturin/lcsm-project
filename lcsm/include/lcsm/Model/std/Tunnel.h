@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_TUNNEL_H
+#ifndef LCSM_MODEL_TUNNEL_H
 #define LCSM_MODEL_TUNNEL_H
 
 #include <lcsm/LCSM.h>

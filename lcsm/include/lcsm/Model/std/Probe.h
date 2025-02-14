@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_PROBE_H
+#ifndef LCSM_MODEL_STD_PROBE_H
 #define LCSM_MODEL_STD_PROBE_H
 
 #include <lcsm/LCSM.h>

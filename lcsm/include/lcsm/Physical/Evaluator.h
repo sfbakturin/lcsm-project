@@ -18,11 +18,10 @@ namespace lcsm
 	class EvaluatorNode
 	{
 	  public:
-		EvaluatorNode() noexcept;
+		EvaluatorNode(ObjectType objectType) noexcept;
 		virtual ~EvaluatorNode() noexcept = default;
 
 		ObjectType objectType() const noexcept;
-		void setObjectType(ObjectType objectType) noexcept;
 
 		virtual NodeType nodeType() const noexcept = 0;
 
@@ -43,29 +42,6 @@ namespace lcsm
 
 	  private:
 		ObjectType m_objectType;
-	};
-
-	class Evaluator
-	{
-	  public:
-		Evaluator() = default;
-
-		Evaluator(const Evaluator &other) = delete;
-		Evaluator(Evaluator &&other) noexcept;
-
-		Evaluator &operator=(const Evaluator &other) = delete;
-		Evaluator &operator=(Evaluator &&other) noexcept;
-
-		void swap(Evaluator &other) noexcept;
-
-		void addRoot(const support::PointerView< EvaluatorNode > &node);
-		void addRoot(support::PointerView< EvaluatorNode > &&node);
-
-		const std::vector< support::PointerView< EvaluatorNode > > &roots() const noexcept;
-		std::vector< support::PointerView< EvaluatorNode > > &roots() noexcept;
-
-	  private:
-		std::vector< support::PointerView< EvaluatorNode > > m_roots;
 	};
 }	 // namespace lcsm
 

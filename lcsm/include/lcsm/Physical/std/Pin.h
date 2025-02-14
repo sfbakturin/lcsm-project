@@ -15,7 +15,7 @@ namespace lcsm
 		class Pin : public EvaluatorNode
 		{
 		  public:
-			Pin(bool output);
+			Pin(ObjectType objectType, bool output);
 
 			virtual const DataBits &read() const override final;
 
@@ -31,6 +31,7 @@ namespace lcsm
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;
+
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
 			void connectInternal(const support::PointerView< EvaluatorNode > &internal);

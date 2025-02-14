@@ -1,7 +1,6 @@
 #ifndef LCSM_LCSMBUILDER_H
 #define LCSM_LCSMBUILDER_H
 
-#include "lcsm/Model/std/Tunnel.h"
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
@@ -16,6 +15,7 @@
 #include <lcsm/Model/std/Splitter.h>
 #include <lcsm/Model/std/Transistor.h>
 #include <lcsm/Model/std/TransmissionGate.h>
+#include <lcsm/Model/std/Tunnel.h>
 
 namespace lcsm
 {

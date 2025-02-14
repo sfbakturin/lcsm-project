@@ -19,7 +19,7 @@ namespace lcsm
 		class Clock : public EvaluatorNode
 		{
 		  public:
-			Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
+			Clock(ObjectType objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -35,6 +35,7 @@ namespace lcsm
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;
+
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
 			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;

@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_PIN_H
+#ifndef LCSM_MODEL_STD_PIN_H
 #define LCSM_MODEL_STD_PIN_H
 
 #include <lcsm/LCSM.h>

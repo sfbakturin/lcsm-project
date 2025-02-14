@@ -1,4 +1,4 @@
-﻿#ifndef LCSM_MODEL_STD_GROUND_H
+#ifndef LCSM_MODEL_STD_GROUND_H
 #define LCSM_MODEL_STD_GROUND_H
 
 #include <lcsm/LCSM.h>
