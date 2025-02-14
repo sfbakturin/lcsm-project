@@ -8,6 +8,16 @@
 #include <utility>
 #include <vector>
 
+const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &lcsm::model::Wire::wires() const noexcept
+{
+	return m_wires;
+}
+
+const lcsm::support::PointerView< lcsm::Circuit > &lcsm::model::Wire::connect() const noexcept
+{
+	return m_connect;
+}
+
 lcsm::Identifier lcsm::model::Wire::id() const noexcept
 {
 	return m_id;
@@ -67,14 +77,4 @@ void lcsm::model::Wire::connectConnect(const lcsm::support::PointerView< lcsm::C
 lcsm::Circuit *lcsm::model::Wire::byPort(portid_t)
 {
 	return nullptr;
-}
-
-const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &lcsm::model::Wire::wires() const noexcept
-{
-	return m_wires;
-}
-
-const lcsm::support::PointerView< lcsm::Circuit > &lcsm::model::Wire::connect() const noexcept
-{
-	return m_connect;
 }

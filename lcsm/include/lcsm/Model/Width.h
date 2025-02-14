@@ -1,11 +1,12 @@
 #ifndef LCSM_MODEL_WIDTH_H
 #define LCSM_MODEL_WIDTH_H
 
-#include <lcsm/LCSM.h>
+#include <cstdint>
 
 namespace lcsm
 {
-	using width_t = std::uint32_t;
+	using width_t = std::uint8_t;
+	using width_bitmask_t = std::uint64_t;
 
 	enum Width : width_t
 	{

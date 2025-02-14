@@ -21,16 +21,10 @@ namespace lcsm
 		  public:
 			Ground(Width width);
 
-			Ground(const Ground &other);
-			Ground(Ground &&other);
-
-			Ground &operator=(const Ground &other);
-			Ground &operator=(Ground &&other) noexcept;
-
-			void swap(Ground &other) noexcept;
-
 			Width width() const noexcept;
-			void setWidth(Width newWidth) noexcept;
+			void setWidth(Width width) noexcept;
+
+			const Wire &wire() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
@@ -42,8 +36,6 @@ namespace lcsm
 			void connect(const support::PointerView< Circuit > &circuit);
 
 			virtual Circuit *byPort(portid_t portId) override final;
-
-			const Wire &wire() const noexcept;
 
 		  private:
 			Identifier m_id;

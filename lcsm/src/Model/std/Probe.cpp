@@ -1,38 +1,71 @@
-// #include <lcsm/Component/IOComponent.h>
-// #include <lcsm/Component/Identifier.h>
-// #include <lcsm/Model/IO/Probe.h>
-// #include <lcsm/Model/Wiring/Wire.h>
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+#include <lcsm/Model/std/Probe.h>
+#include <lcsm/Support/PointerView.hpp>
 
-// #include <stdexcept>
-// #include <utility>
+#include <memory>
+#include <stdexcept>
 
-// lcsm::model::Probe::Probe() : m_wireIn(this) {}
+lcsm::model::Probe::Probe()
+{
+	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
+	m_wire.connectConnect(circuit);
+}
 
-// lcsm::Identifier lcsm::model::Probe::ID() const noexcept
-// {
-// 	return m_id;
-// }
+const lcsm::model::Wire &lcsm::model::Probe::wire() const noexcept
+{
+	return m_wire;
+}
 
-// lcsm::Identifier lcsm::model::Probe::identify(lcsm::Identifier ID) noexcept
-// {
-// 	m_id = std::move(ID);
-// 	return m_wireIn.identify(m_id.next());
-// }
+lcsm::Identifier lcsm::model::Probe::id() const noexcept
+{
+	return m_id;
+}
 
-// void lcsm::model::Probe::connectIn(lcsm::wire_t &wire, std::size_t i)
-// {
-// 	if (i != 0)
-// 		throw std::logic_error("Probe element has only 1 input.");
-// 	m_wireIn.connectWire(wire);
-// 	wire->connectWire(m_wireIn);
-// }
+lcsm::Identifier lcsm::model::Probe::identify(lcsm::Identifier id) noexcept
+{
+	m_id = std::move(id);
+	return m_wire.identify(m_id.next());
+}
 
-// void lcsm::model::Probe::connectOut(lcsm::wire_t &, std::size_t)
-// {
-// 	throw std::logic_error("Probe element doesn't have any outputs.");
-// }
+lcsm::ObjectType lcsm::model::Probe::objectType() const noexcept
+{
+	return lcsm::ObjectType::PureInt;
+}
 
-// lcsm::IOComponentType lcsm::model::Probe::ioComponentType() const noexcept
-// {
-// 	return lcsm::IOComponentType::IO_COMP_PROBE;
-// }
+lcsm::CircuitType lcsm::model::Probe::circuitType() const noexcept
+{
+	return lcsm::CircuitType::Probe;
+}
+
+void lcsm::model::Probe::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+{
+	const lcsm::model::Probe::Port p = static_cast< lcsm::model::Probe::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Probe::Port::Wiring:
+		m_wire.connectToWire(circuit);
+		break;
+	default:
+		throw std::logic_error("Bad port!");
+	}
+}
+
+void lcsm::model::Probe::connect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+{
+	connect(lcsm::model::Probe::Port::Wiring, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Probe::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Probe::Port p = static_cast< lcsm::model::Probe::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Probe::Port::Wiring:
+		return std::addressof(m_wire);
+	}
+	return nullptr;
+}

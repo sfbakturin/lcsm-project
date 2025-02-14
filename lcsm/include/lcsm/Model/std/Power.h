@@ -22,16 +22,10 @@ namespace lcsm
 		  public:
 			Power(Width width);
 
-			Power(const Power &other);
-			Power(Power &&other);
-
-			Power &operator=(const Power &other);
-			Power &operator=(Power &&other) noexcept;
-
-			void swap(Power &other) noexcept;
-
 			Width width() const noexcept;
-			void setWidth(Width newWidth) noexcept;
+			void setWidth(Width width) noexcept;
+
+			const Wire &wire() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
@@ -43,8 +37,6 @@ namespace lcsm
 			void connect(const support::PointerView< Circuit > &circuit);
 
 			virtual Circuit *byPort(portid_t portId) override final;
-
-			const Wire &wire() const noexcept;
 
 		  private:
 			Identifier m_id;

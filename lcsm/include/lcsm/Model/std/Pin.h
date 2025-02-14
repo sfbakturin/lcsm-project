@@ -24,19 +24,11 @@ namespace lcsm
 		  public:
 			Pin(bool output, Width width);
 
-			Pin(const Pin &other);
-			Pin(Pin &&other) noexcept;
-
-			Pin &operator=(const Pin &other);
-			Pin &operator=(Pin &&other) noexcept;
-
-			void swap(Pin &other) noexcept;
-
 			bool output() const noexcept;
-			void setOutput(bool newOutput) noexcept;
+			void setOutput(bool output) noexcept;
 
 			Width width() const noexcept;
-			void setWidth(Width newWidth) noexcept;
+			void setWidth(Width width) noexcept;
 
 			const Wire &internal() const noexcept;
 			const Wire &external() const noexcept;

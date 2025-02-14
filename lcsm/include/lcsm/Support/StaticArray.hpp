@@ -48,6 +48,8 @@ namespace lcsm
 
 			void swap(StaticArray &other) noexcept;
 
+			std::size_t size() const noexcept;
+
 			reference operator[](size_type pos);
 			const_reference operator[](size_type pos) const;
 
@@ -134,6 +136,12 @@ void lcsm::support::StaticArray< T, S >::swap(StaticArray &other) noexcept
 {
 	for (std::size_t i = 0; i < S; i++)
 		std::swap(m_data[i], other[i]);
+}
+
+template< typename T, std::size_t S >
+std::size_t lcsm::support::StaticArray< T, S >::size() const noexcept
+{
+	return S;
 }
 
 template< typename T, std::size_t S >

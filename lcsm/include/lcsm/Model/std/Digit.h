@@ -1,47 +1,53 @@
 ﻿#ifndef LCSM_MODEL_STD_DIGIT_H
 #define LCSM_MODEL_STD_DIGIT_H
 
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+#include <lcsm/Support/PointerView.hpp>
+
 namespace lcsm
 {
 	namespace model
 	{
-		// class Digit : public IOComponent
-		// {
-		//   public:
-		// 	enum CompositeIndex : std::size_t
-		// 	{
-		// 		DIGIT_INDEX_DATA = 0,
-		// 		DIGIT_INDEX_DECIMAL_POINT = 1
-		// 	};
+		class Digit : public Circuit
+		{
+		  public:
+			enum Port : portid_t
+			{
+				WiringData,
+				WiringDecimalPoint
+			};
 
-		// 	Digit(bool hasDecimalPoint);
+		  public:
+			Digit(bool hasDecimalPoint);
 
-		// 	Digit(const Digit &other);
-		// 	Digit(Digit &&other) noexcept;
+			bool hasDecimalPoint() const noexcept;
+			void setHasDecimalPoint(bool hasDecimalPoint) noexcept;
 
-		// 	Digit &operator=(const Digit &other);
-		// 	Digit &operator=(Digit &other) noexcept;
+			const Wire &wireData() const noexcept;
+			const Wire &wireDecimalPoint() const noexcept;
 
-		// 	void swap(Digit &other) noexcept;
+			virtual Identifier id() const noexcept override final;
+			virtual Identifier identify(Identifier id) noexcept override final;
 
-		// 	virtual Identifier ID() const noexcept override final;
-		// 	virtual Identifier identify(Identifier ID) noexcept override final;
+			virtual ObjectType objectType() const noexcept override final;
+			virtual CircuitType circuitType() const noexcept override final;
 
-		// 	virtual void connectIn(wire_t &wire, std::size_t i) override final;
-		// 	virtual void connectOut(wire_t &wire, std::size_t i) override final;
+			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
+			void connectData(const support::PointerView< Circuit > &circuit);
+			void connectDecimalPoint(const support::PointerView< Circuit > &circuit);
 
-		// 	bool hasDecimalPoint() const noexcept;
-		// 	void setHasDecimalPoint(bool hasDecimalPoint) noexcept;
+			virtual Circuit *byPort(portid_t portId) override final;
 
-		// 	virtual IOComponentType ioComponentType() const noexcept final;
-
-		//   private:
-		// 	Identifier m_id;
-
-		// 	bool m_hasDecimalPoint;
-		// 	Wire m_data;
-		// 	Wire m_decimalPoint;
-		// };
+		  private:
+			Identifier m_id;
+			bool m_hasDecimalPoint;
+			Wire m_wireData;
+			Wire m_wireDecimalPoint;
+		};
 	}	 // namespace model
 }	 // namespace lcsm
 

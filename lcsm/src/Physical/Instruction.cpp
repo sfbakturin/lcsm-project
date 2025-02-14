@@ -80,13 +80,3 @@ lcsm::Instruction lcsm::CreateWriteValueInstruction(lcsm::EvaluatorNode *caller,
 {
 	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target);
 }
-
-lcsm::Instruction lcsm::CreateRequestInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
-{
-	return lcsm::Instruction(lcsm::InstructionType::RequestUpdate, caller, target);
-}
-
-lcsm::Instruction lcsm::CreateUpdateStateInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
-{
-	return lcsm::Instruction(lcsm::InstructionType::UpdateState, caller, target);
-}

@@ -3,7 +3,6 @@
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
-#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <memory>
@@ -17,45 +16,14 @@ lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_widt
 	m_external.connectConnect(circuit);
 }
 
-lcsm::model::Pin::Pin(const lcsm::model::Pin &other) : m_output(other.m_output), m_width(other.m_width)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_internal.connectConnect(circuit);
-	m_external.connectConnect(circuit);
-}
-
-lcsm::model::Pin::Pin(lcsm::model::Pin &&other) noexcept :
-	m_output(std::move(other.m_output)), m_width(std::move(other.m_width))
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_internal.connectConnect(circuit);
-	m_external.connectConnect(circuit);
-}
-
-lcsm::model::Pin &lcsm::model::Pin::operator=(const lcsm::model::Pin &other)
-{
-	return lcsm::support::CopyAssign< lcsm::model::Pin >(this, other);
-}
-
-lcsm::model::Pin &lcsm::model::Pin::operator=(lcsm::model::Pin &&other) noexcept
-{
-	return lcsm::support::MoveAssign< lcsm::model::Pin >(this, std::move(other));
-}
-
-void lcsm::model::Pin::swap(lcsm::model::Pin &other) noexcept
-{
-	std::swap(m_output, other.m_output);
-	std::swap(m_width, other.m_width);
-}
-
 bool lcsm::model::Pin::output() const noexcept
 {
 	return m_output;
 }
 
-void lcsm::model::Pin::setOutput(bool newOutput) noexcept
+void lcsm::model::Pin::setOutput(bool output) noexcept
 {
-	m_output = newOutput;
+	m_output = output;
 }
 
 lcsm::Width lcsm::model::Pin::width() const noexcept
@@ -63,9 +31,9 @@ lcsm::Width lcsm::model::Pin::width() const noexcept
 	return m_width;
 }
 
-void lcsm::model::Pin::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::model::Pin::setWidth(lcsm::Width width) noexcept
 {
-	m_width = newWidth;
+	m_width = width;
 }
 
 const lcsm::model::Wire &lcsm::model::Pin::internal() const noexcept

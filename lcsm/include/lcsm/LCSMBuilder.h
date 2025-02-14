@@ -1,6 +1,7 @@
 #ifndef LCSM_LCSMBUILDER_H
 #define LCSM_LCSMBUILDER_H
 
+#include "lcsm/Model/std/Tunnel.h"
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
@@ -35,7 +36,12 @@ namespace lcsm
 		model::Pin *CreatePin(bool output, Width width = Width::Bit1);
 		model::Transistor *CreateTransistor(model::Transistor::Type type = model::Transistor::Type::P);
 		model::TransmissionGate *CreateTransmissionGate();
+		model::Tunnel *CreateTunnel();
 		model::Clock *CreateClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
+		model::Button *CreateButton(bool activeOnPress = false);
+		model::Digit *CreateDigit(bool hasDecimalPoint = true);
+		model::Probe *CreateProbe();
+		model::Splitter *CreateSplitter(Width widthIn = Width::Bit2, width_t widthOut = 2);
 
 		model::Wire *Connect(Circuit *comp1, portid_t port1, Circuit *comp2, portid_t port2);
 

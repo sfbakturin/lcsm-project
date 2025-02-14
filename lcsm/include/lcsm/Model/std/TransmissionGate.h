@@ -17,26 +17,18 @@ namespace lcsm
 			enum Port : portid_t
 			{
 				Base,
-				InoutA,
-				InoutB,
-				InoutC
+				SrcA,
+				SrcB,
+				SrcC
 			};
 
 		  public:
 			TransmissionGate();
 
-			TransmissionGate(const TransmissionGate &other) = default;
-			TransmissionGate(TransmissionGate &&other) noexcept = default;
-
-			TransmissionGate &operator=(const TransmissionGate &other);
-			TransmissionGate &operator=(TransmissionGate &&other) noexcept;
-
-			void swap(TransmissionGate &other) noexcept;
-
-			Identifier idBase() const noexcept;
-			Identifier idInoutA() const noexcept;
-			Identifier idInoutB() const noexcept;
-			Identifier idInoutC() const noexcept;
+			const Wire &wireBase() const noexcept;
+			const Wire &wireSrcA() const noexcept;
+			const Wire &wireSrcB() const noexcept;
+			const Wire &wireSrcC() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
@@ -46,24 +38,18 @@ namespace lcsm
 
 			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
 			void connectBase(const support::PointerView< Circuit > &circuit);
-			void connectInoutA(const support::PointerView< Circuit > &circuit);
-			void connectInoutB(const support::PointerView< Circuit > &circuit);
-			void connectInoutC(const support::PointerView< Circuit > &circuit);
+			void connectSrcA(const support::PointerView< Circuit > &circuit);
+			void connectSrcB(const support::PointerView< Circuit > &circuit);
+			void connectSrcC(const support::PointerView< Circuit > &circuit);
 
 			virtual Circuit *byPort(portid_t portId) override final;
 
 		  private:
 			Identifier m_id;
-
-			Identifier m_idBase;
-			Identifier m_idInoutA;
-			Identifier m_idInoutB;
-			Identifier m_idInoutC;
-
 			Wire m_base;
-			Wire m_inoutA;
-			Wire m_inoutB;
-			Wire m_inoutC;
+			Wire m_srcA;
+			Wire m_srcB;
+			Wire m_srcC;
 		};
 	}	 // namespace model
 }	 // namespace lcsm

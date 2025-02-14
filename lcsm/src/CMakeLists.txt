@@ -13,6 +13,7 @@
     Model/std/Button.cpp
     Model/std/Digit.cpp
     Model/std/Probe.cpp
+    Model/std/Splitter.cpp
 
     Verilog/Value.cpp
     Verilog/Strength.cpp
@@ -32,6 +33,7 @@
     Physical/std/Power.cpp
     Physical/std/Ground.cpp
     Physical/std/Wire.cpp
+    Physical/std/Clock.cpp
 
     LCSMBuilder.cpp
     LCSMCircuit.cpp

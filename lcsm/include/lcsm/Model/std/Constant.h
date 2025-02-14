@@ -23,19 +23,13 @@ namespace lcsm
 		  public:
 			Constant(Width width, value_t value);
 
-			Constant(const Constant &other);
-			Constant(Constant &&other) noexcept;
-
-			Constant &operator=(const Constant &other);
-			Constant &operator=(Constant &&other) noexcept;
-
-			void swap(Constant &other) noexcept;
-
 			Width width() const noexcept;
-			void setWidth(Width newWidth) noexcept;
+			void setWidth(Width width) noexcept;
 
 			value_t value() const noexcept;
-			void setValue(value_t newValue) noexcept;
+			void setValue(value_t value) noexcept;
+
+			const Wire &wire() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
@@ -47,8 +41,6 @@ namespace lcsm
 			void connect(const support::PointerView< Circuit > &circuit);
 
 			virtual Circuit *byPort(portid_t portId) override final;
-
-			const Wire &wire() const noexcept;
 
 		  private:
 			Identifier m_id;

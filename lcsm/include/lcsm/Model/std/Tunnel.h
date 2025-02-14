@@ -23,13 +23,8 @@ namespace lcsm
 		  public:
 			Tunnel();
 
-			Tunnel(const Tunnel &other);
-			Tunnel(Tunnel &&other) noexcept;
-
-			Tunnel &operator=(const Tunnel &other);
-			Tunnel &operator=(Tunnel &&other) noexcept;
-
-			void swap(Tunnel &other) noexcept;
+			const Wire &wire() const noexcept;
+			const support::PointerView< Circuit > &tunnel() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
@@ -42,9 +37,6 @@ namespace lcsm
 			void connectTunnel(const support::PointerView< Circuit > &circuit);
 
 			virtual Circuit *byPort(portid_t portId) override final;
-
-			const Wire &wire() const noexcept;
-			const support::PointerView< Circuit > &tunnel() const noexcept;
 
 		  private:
 			Wire m_wire;

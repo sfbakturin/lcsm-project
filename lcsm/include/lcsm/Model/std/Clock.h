@@ -22,22 +22,16 @@ namespace lcsm
 		  public:
 			Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 
-			Clock(const Clock &other);
-			Clock(Clock &&other) noexcept;
-
-			Clock &operator=(const Clock &other);
-			Clock &operator=(Clock &&other) noexcept;
-
-			void swap(Clock &other) noexcept;
-
 			unsigned highDuration() const noexcept;
-			void setHighDuration(unsigned newHighDuration) noexcept;
+			void setHighDuration(unsigned highDuration) noexcept;
 
 			unsigned lowDuration() const noexcept;
-			void setLowDuration(unsigned newLowDuration) noexcept;
+			void setLowDuration(unsigned lowDuration) noexcept;
 
 			unsigned phaseOffset() const noexcept;
-			void setPhaseOffset(unsigned newPhaseOffset) noexcept;
+			void setPhaseOffset(unsigned phaseOffset) noexcept;
+
+			const Wire &wire() const noexcept;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;

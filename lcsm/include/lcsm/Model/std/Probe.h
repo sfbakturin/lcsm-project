@@ -1,28 +1,44 @@
 ﻿#ifndef LCSM_MODEL_STD_PROBE_H
 #define LCSM_MODEL_STD_PROBE_H
 
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+
 namespace lcsm
 {
 	namespace model
 	{
-		// class Probe : public IOComponent
-		// {
-		//   public:
-		// 	Probe();
+		class Probe : public Circuit
+		{
+		  public:
+			enum Port
+			{
+				Wiring
+			};
 
-		// 	virtual Identifier ID() const noexcept override final;
-		// 	virtual Identifier identify(Identifier ID) noexcept override final;
+		  public:
+			Probe();
 
-		// 	virtual void connectIn(wire_t &wire, std::size_t i) override final;
-		// 	virtual void connectOut(wire_t &wire, std::size_t i) override final;
+			const Wire &wire() const noexcept;
 
-		// 	virtual IOComponentType ioComponentType() const noexcept final;
+			virtual Identifier id() const noexcept override final;
+			virtual Identifier identify(Identifier id) noexcept override final;
 
-		//   private:
-		// 	Identifier m_id;
+			virtual ObjectType objectType() const noexcept override final;
+			virtual CircuitType circuitType() const noexcept override final;
 
-		// 	Wire m_wireIn;
-		// };
+			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
+			void connect(const support::PointerView< Circuit > &circuit);
+
+			virtual Circuit *byPort(portid_t portId) override final;
+
+		  private:
+			Identifier m_id;
+			Wire m_wire;
+		};
 	}	 // namespace model
 }	 // namespace lcsm
 

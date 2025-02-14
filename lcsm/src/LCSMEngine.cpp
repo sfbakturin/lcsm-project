@@ -1,3 +1,5 @@
+#include "lcsm/Model/std/Clock.h"
+#include "lcsm/Physical/std/Clock.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
@@ -180,8 +182,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		const lcsm::ObjectType wireInternalObjectType = wireInternal.objectType();
 		const lcsm::ObjectType wireExternalObjectType = wireExternal.objectType();
 
-		// Build physical Pin.
-		// By the algorithm, we have never created PinOutput before this moment.
+		// By the algorithm, we have never created Pin before this moment.
 		m_objects[idPin] = std::make_shared< lcsm::physical::Pin >(pin->output());
 		lcsm::physical::Pin *pinPhysical = static_cast< lcsm::physical::Pin * >(m_objects[idPin].get());
 		pinPhysical->setObjectType(pinObjectType);
@@ -219,7 +220,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		const lcsm::ObjectType constantObjectType = constantModel->objectType();
 		const lcsm::ObjectType wireObjectType = wireModel.objectType();
 
-		// By the algorithm, we have never created PinOutput before this moment.
+		// By the algorithm, we have never created Constant before this moment.
 		const lcsm::Width width = constantModel->width();
 		const lcsm::value_t value = constantModel->value();
 		m_objects[constantId] = std::make_shared< lcsm::physical::Constant >(lcsm::DataBits::fromModel(width, value));
@@ -255,7 +256,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		const lcsm::ObjectType powerObjectType = powerModel->objectType();
 		const lcsm::ObjectType wireObjectType = wireModel.objectType();
 
-		// By the algorithm, we have never created PinOutput before this moment.
+		// By the algorithm, we have never created Power before this moment.
 		const lcsm::Width width = powerModel->width();
 		m_objects[powerId] = std::make_shared< lcsm::physical::Power >(width);
 		lcsm::support::PointerView< lcsm::EvaluatorNode > powerEvaluatorNode = m_objects[powerId];
@@ -315,7 +316,41 @@ void lcsm::LCSMEngine::buildCircuit(
 		break;
 	}
 	case lcsm::CircuitType::Clock:
-		throw std::logic_error("Building clock is not implemented.");
+	{
+		// Extract Clock as model object.
+		const lcsm::model::Clock *clockModel = static_cast< const lcsm::model::Clock * >(circuit.cptr());
+		const lcsm::model::Wire &wireModel = clockModel->wire();
+		const lcsm::Identifier clockId = clockModel->id();
+		const lcsm::Identifier wireId = wireModel.id();
+		const lcsm::ObjectType clockObjectType = clockModel->objectType();
+		const lcsm::ObjectType wireObjectType = wireModel.objectType();
+
+		// By the algorithm, we have never created Clock before this moment.
+		const unsigned highDuration = clockModel->highDuration();
+		const unsigned lowDuration = clockModel->lowDuration();
+		const unsigned phaseOffset = clockModel->phaseOffset();
+		m_objects[clockId] = std::make_shared< lcsm::physical::Clock >(highDuration, lowDuration, phaseOffset);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > clockEvaluatorNode = m_objects[clockId];
+		clockEvaluatorNode->setObjectType(clockObjectType);
+		lcsm::support::PointerView< lcsm::physical::Clock > clockNode = clockEvaluatorNode.staticCast< lcsm::physical::Clock >();
+
+		// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+		wireEvaluatorNode->setObjectType(wireObjectType);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wire to constant. Make them to know about each other.
+		clockNode->connect(wireEvaluatorNode);
+		wireNode->connect(clockEvaluatorNode);
+
+		// Add Constant's wire to queue.
+		bfsVisit.emplace_back(std::addressof(wireModel));
+
+		// Update visited objects.
+		visited.insert(clockId);
+
+		break;
+	}
 	case lcsm::CircuitType::Transistor:
 	{
 		break;

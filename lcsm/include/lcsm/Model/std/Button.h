@@ -1,40 +1,49 @@
 ﻿#ifndef LCSM_MODEL_STD_BUTTON_H
 #define LCSM_MODEL_STD_BUTTON_H
 
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+#include <lcsm/Support/PointerView.hpp>
+
 namespace lcsm
 {
 	namespace model
 	{
-		// class Button : public IOComponent
-		// {
-		//   public:
-		// 	Button(bool activeOnPress);
+		class Button : public Circuit
+		{
+		  public:
+			enum Port : portid_t
+			{
+				Wiring
+			};
 
-		// 	Button(const Button &other);
-		// 	Button(Button &&other) noexcept;
+		  public:
+			Button(bool activeOnPress);
 
-		// 	Button &operator=(const Button &other);
-		// 	Button &operator=(Button &&other) noexcept;
+			bool activeOnPress() const noexcept;
+			void setActiveOnPress(bool activeOnPress) noexcept;
 
-		// 	void swap(Button &other) noexcept;
+			const Wire &wire() const noexcept;
 
-		// 	virtual Identifier ID() const noexcept override final;
-		// 	virtual Identifier identify(Identifier ID) noexcept override final;
+			virtual Identifier id() const noexcept override final;
+			virtual Identifier identify(Identifier id) noexcept override final;
 
-		// 	virtual void connectIn(wire_t &wire, std::size_t i) override final;
-		// 	virtual void connectOut(wire_t &wire, std::size_t i) override final;
+			virtual ObjectType objectType() const noexcept override final;
+			virtual CircuitType circuitType() const noexcept override final;
 
-		// 	bool activeOnPress() const noexcept;
-		// 	void setActiveOnPress(bool activeOnPress) noexcept;
+			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
+			void connect(const support::PointerView< Circuit > &circuit);
 
-		// 	virtual IOComponentType ioComponentType() const noexcept final;
+			virtual Circuit *byPort(portid_t portId) override final;
 
-		//   private:
-		// 	Identifier m_id;
-
-		// 	bool m_activeOnPress;
-		// 	Wire m_wireOut;
-		// };
+		  private:
+			Identifier m_id;
+			bool m_activeOnPress;
+			Wire m_wire;
+		};
 	}	 // namespace model
 }	 // namespace lcsm
 

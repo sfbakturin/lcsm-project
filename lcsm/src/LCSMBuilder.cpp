@@ -14,6 +14,7 @@
 #include <lcsm/Model/std/Splitter.h>
 #include <lcsm/Model/std/Transistor.h>
 #include <lcsm/Model/std/TransmissionGate.h>
+#include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <memory>
@@ -51,10 +52,36 @@ lcsm::model::TransmissionGate *lcsm::LCSMBuilder::CreateTransmissionGate()
 		m_circuit.registerElement(std::make_shared< lcsm::model::TransmissionGate >()));
 }
 
+lcsm::model::Tunnel *lcsm::LCSMBuilder::CreateTunnel()
+{
+	return static_cast< lcsm::model::Tunnel * >(m_circuit.registerElement(std::make_shared< lcsm::model::Tunnel >()));
+}
+
 lcsm::model::Clock *lcsm::LCSMBuilder::CreateClock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset)
 {
 	return static_cast< lcsm::model::Clock * >(
 		m_circuit.registerElement(std::make_shared< lcsm::model::Clock >(highDuration, lowDuration, phaseOffset)));
+}
+
+lcsm::model::Button *lcsm::LCSMBuilder::CreateButton(bool activeOnPress)
+{
+	return static_cast< lcsm::model::Button * >(m_circuit.registerElement(std::make_shared< lcsm::model::Button >(activeOnPress)));
+}
+
+lcsm::model::Digit *lcsm::LCSMBuilder::CreateDigit(bool hasDecimalPoint)
+{
+	return static_cast< lcsm::model::Digit * >(m_circuit.registerElement(std::make_shared< lcsm::model::Digit >(hasDecimalPoint)));
+}
+
+lcsm::model::Probe *lcsm::LCSMBuilder::CreateProbe()
+{
+	return static_cast< lcsm::model::Probe * >(m_circuit.registerElement(std::make_shared< lcsm::model::Probe >()));
+}
+
+lcsm::model::Splitter *lcsm::LCSMBuilder::CreateSplitter(lcsm::Width widthIn, lcsm::width_t widthOut)
+{
+	return static_cast< lcsm::model::Splitter * >(
+		m_circuit.registerElement(std::make_shared< lcsm::model::Splitter >(widthIn, widthOut)));
 }
 
 lcsm::model::Wire *lcsm::LCSMBuilder::Connect(lcsm::Circuit *comp1, lcsm::portid_t port1, lcsm::Circuit *comp2, lcsm::portid_t port2)

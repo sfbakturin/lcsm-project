@@ -3,7 +3,6 @@
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Constant.h>
-#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <memory>
@@ -16,42 +15,14 @@ lcsm::model::Constant::Constant(lcsm::Width width, lcsm::value_t value) : m_widt
 	m_wire.connectToWire(circuit);
 }
 
-lcsm::model::Constant::Constant(const lcsm::model::Constant &other) : m_width(other.m_width), m_value(other.m_value)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectToWire(circuit);
-}
-
-lcsm::model::Constant::Constant(lcsm::model::Constant &&other) noexcept : m_width(other.m_width), m_value(other.m_value)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectToWire(circuit);
-}
-
-lcsm::model::Constant &lcsm::model::Constant::operator=(const lcsm::model::Constant &other)
-{
-	return lcsm::support::CopyAssign< lcsm::model::Constant >(this, other);
-}
-
-lcsm::model::Constant &lcsm::model::Constant::operator=(lcsm::model::Constant &&other) noexcept
-{
-	return lcsm::support::MoveAssign< lcsm::model::Constant >(this, std::move(other));
-}
-
-void lcsm::model::Constant::swap(lcsm::model::Constant &other) noexcept
-{
-	std::swap(m_width, other.m_width);
-	std::swap(m_value, other.m_value);
-}
-
 lcsm::Width lcsm::model::Constant::width() const noexcept
 {
 	return m_width;
 }
 
-void lcsm::model::Constant::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::model::Constant::setWidth(lcsm::Width width) noexcept
 {
-	m_width = newWidth;
+	m_width = width;
 }
 
 lcsm::value_t lcsm::model::Constant::value() const noexcept
@@ -59,9 +30,14 @@ lcsm::value_t lcsm::model::Constant::value() const noexcept
 	return m_value;
 }
 
-void lcsm::model::Constant::setValue(lcsm::value_t newValue) noexcept
+void lcsm::model::Constant::setValue(lcsm::value_t value) noexcept
 {
-	m_value = newValue;
+	m_value = value;
+}
+
+const lcsm::model::Wire &lcsm::model::Constant::wire() const noexcept
+{
+	return m_wire;
 }
 
 lcsm::Identifier lcsm::model::Constant::id() const noexcept
@@ -87,14 +63,12 @@ lcsm::CircuitType lcsm::model::Constant::circuitType() const noexcept
 
 void lcsm::model::Constant::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
 {
-	const lcsm::model::Constant::Port pc = static_cast< lcsm::model::Constant::Port >(portId);
-	switch (pc)
+	const lcsm::model::Constant::Port p = static_cast< lcsm::model::Constant::Port >(portId);
+	switch (p)
 	{
 	case lcsm::model::Constant::Port::Wiring:
-	{
 		m_wire.connectToWire(circuit);
 		break;
-	}
 	default:
 		throw std::logic_error("Bad port!");
 	}
@@ -115,9 +89,4 @@ lcsm::Circuit *lcsm::model::Constant::byPort(lcsm::portid_t portId)
 		return std::addressof(m_wire);
 	}
 	return nullptr;
-}
-
-const lcsm::model::Wire &lcsm::model::Constant::wire() const noexcept
-{
-	return m_wire;
 }

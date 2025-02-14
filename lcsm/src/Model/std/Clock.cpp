@@ -2,7 +2,6 @@
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Clock.h>
-#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <memory>
@@ -16,31 +15,39 @@ lcsm::model::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned 
 	m_wire.connectConnect(circuit);
 }
 
-lcsm::model::Clock::Clock(const lcsm::model::Clock &other) :
-	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
+unsigned lcsm::model::Clock::highDuration() const noexcept
 {
+	return m_highDuration;
 }
 
-lcsm::model::Clock::Clock(lcsm::model::Clock &&other) noexcept :
-	m_highDuration(other.m_highDuration), m_lowDuration(other.m_lowDuration), m_phaseOffset(other.m_phaseOffset)
+void lcsm::model::Clock::setHighDuration(unsigned highDuration) noexcept
 {
+	m_highDuration = highDuration;
 }
 
-lcsm::model::Clock &lcsm::model::Clock::operator=(const lcsm::model::Clock &other)
+unsigned lcsm::model::Clock::lowDuration() const noexcept
 {
-	return lcsm::support::CopyAssign< lcsm::model::Clock >(this, other);
+	return m_lowDuration;
 }
 
-lcsm::model::Clock &lcsm::model::Clock::operator=(lcsm::model::Clock &&other) noexcept
+void lcsm::model::Clock::setLowDuration(unsigned lowDuration) noexcept
 {
-	return lcsm::support::MoveAssign< lcsm::model::Clock >(this, std::move(other));
+	m_lowDuration = lowDuration;
 }
 
-void lcsm::model::Clock::swap(lcsm::model::Clock &other) noexcept
+unsigned lcsm::model::Clock::phaseOffset() const noexcept
 {
-	std::swap(m_highDuration, other.m_highDuration);
-	std::swap(m_lowDuration, other.m_lowDuration);
-	std::swap(m_phaseOffset, other.m_phaseOffset);
+	return m_phaseOffset;
+}
+
+void lcsm::model::Clock::setPhaseOffset(unsigned phaseOffset) noexcept
+{
+	m_phaseOffset = phaseOffset;
+}
+
+const lcsm::model::Wire &lcsm::model::Clock::wire() const noexcept
+{
+	return m_wire;
 }
 
 lcsm::Identifier lcsm::model::Clock::id() const noexcept
@@ -70,10 +77,8 @@ void lcsm::model::Clock::connect(lcsm::portid_t portId, const lcsm::support::Poi
 	switch (p)
 	{
 	case lcsm::model::Clock::Port::Wiring:
-	{
 		m_wire.connectToWire(circuit);
 		break;
-	}
 	default:
 		throw std::logic_error("Bad port!");
 	}

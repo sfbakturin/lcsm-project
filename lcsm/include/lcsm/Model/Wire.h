@@ -1,5 +1,5 @@
-﻿#ifndef LCSM_MODEL_WIRING_WIRE_H
-#define LCSM_MODEL_WIRING_WIRE_H
+﻿#ifndef LCSM_MODEL_WIRE_H
+#define LCSM_MODEL_WIRE_H
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
@@ -24,6 +24,9 @@ namespace lcsm
 		  public:
 			Wire() = default;
 
+			const std::vector< support::PointerView< Circuit > > &wires() const noexcept;
+			const support::PointerView< Circuit > &connect() const noexcept;
+
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
 
@@ -36,9 +39,6 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) override final;
 
-			const std::vector< support::PointerView< Circuit > > &wires() const noexcept;
-			const support::PointerView< Circuit > &connect() const noexcept;
-
 		  private:
 			std::vector< support::PointerView< Circuit > > m_wires;
 			support::PointerView< Circuit > m_connect;
@@ -47,4 +47,4 @@ namespace lcsm
 	}	 // namespace model
 }	 // namespace lcsm
 
-#endif /* LCSM_MODEL_WIRING_WIRE_H */
+#endif /* LCSM_MODEL_WIRE_H */

@@ -1,71 +1,82 @@
-// #include <lcsm/Component/IOComponent.h>
-// #include <lcsm/Component/Identifier.h>
-// #include <lcsm/Model/IO/Button.h>
-// #include <lcsm/Model/Wiring/Wire.h>
+#include <lcsm/LCSM.h>
+#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
+#include <lcsm/Model/std/Button.h>
+#include <lcsm/Support/PointerView.hpp>
 
-// #include <stdexcept>
-// #include <utility>
+#include <memory>
+#include <stdexcept>
+#include <utility>
 
-// lcsm::model::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress), m_wireOut(this) {}
+lcsm::model::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress)
+{
+	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
+	m_wire.connectConnect(circuit);
+}
 
-// lcsm::model::Button::Button(const lcsm::model::Button &other) : m_activeOnPress(other.m_activeOnPress) {}
+bool lcsm::model::Button::activeOnPress() const noexcept
+{
+	return m_activeOnPress;
+}
 
-// lcsm::model::Button::Button(lcsm::model::Button &&other) noexcept : m_activeOnPress(other.m_activeOnPress) {}
+void lcsm::model::Button::setActiveOnPress(bool activeOnPress) noexcept
+{
+	m_activeOnPress = activeOnPress;
+}
 
-// lcsm::model::Button &lcsm::model::Button::operator=(const lcsm::model::Button &other)
-// {
-// 	if (this != &other)
-// 		lcsm::model::Button(other).swap(*this);
-// 	return *this;
-// }
+const lcsm::model::Wire &lcsm::model::Button::wire() const noexcept
+{
+	return m_wire;
+}
 
-// lcsm::model::Button &lcsm::model::Button::operator=(lcsm::model::Button &&other) noexcept
-// {
-// 	if (this != &other)
-// 		lcsm::model::Button(std::move(other)).swap(*this);
-// 	return *this;
-// }
+lcsm::Identifier lcsm::model::Button::id() const noexcept
+{
+	return m_id;
+}
 
-// void lcsm::model::Button::swap(lcsm::model::Button &other) noexcept
-// {
-// 	std::swap(m_activeOnPress, other.m_activeOnPress);
-// }
+lcsm::Identifier lcsm::model::Button::identify(lcsm::Identifier id) noexcept
+{
+	m_id = std::move(id);
+	return m_wire.identify(m_id.next());
+}
 
-// lcsm::Identifier lcsm::model::Button::ID() const noexcept
-// {
-// 	return m_id;
-// }
+lcsm::ObjectType lcsm::model::Button::objectType() const noexcept
+{
+	return lcsm::ObjectType::IntExtIn;	  // FIXME: Button is not externally providable.
+}
 
-// lcsm::Identifier lcsm::model::Button::identify(lcsm::Identifier ID) noexcept
-// {
-// 	m_id = std::move(ID);
-// 	return m_wireOut.identify(m_id.next());
-// }
+lcsm::CircuitType lcsm::model::Button::circuitType() const noexcept
+{
+	return lcsm::CircuitType::Button;
+}
 
-// void lcsm::model::Button::connectIn(lcsm::wire_t &, std::size_t)
-// {
-// 	throw std::logic_error("Button element doesn't have any inputs.");
-// }
+void lcsm::model::Button::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+{
+	const lcsm::model::Button::Port p = static_cast< lcsm::model::Button::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Button::Port::Wiring:
+		m_wire.connectToWire(circuit);
+		break;
+	default:
+		throw std::logic_error("Bad port!");
+	}
+}
 
-// void lcsm::model::Button::connectOut(lcsm::wire_t &wire, std::size_t i)
-// {
-// 	if (i != 0)
-// 		throw std::logic_error("Button element has only 1 output.");
-// 	m_wireOut.connectWire(wire);
-// 	wire->connectWire(m_wireOut);
-// }
+void lcsm::model::Button::connect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+{
+	connect(lcsm::model::Button::Port::Wiring, circuit);
+}
 
-// bool lcsm::model::Button::activeOnPress() const noexcept
-// {
-// 	return m_activeOnPress;
-// }
-
-// void lcsm::model::Button::setActiveOnPress(bool activeOnPress) noexcept
-// {
-// 	m_activeOnPress = activeOnPress;
-// }
-
-// lcsm::IOComponentType lcsm::model::Button::ioComponentType() const noexcept
-// {
-// 	return lcsm::IOComponentType::IO_COMP_BUTTON;
-// }
+lcsm::Circuit *lcsm::model::Button::byPort(lcsm::portid_t portId)
+{
+	const lcsm::model::Button::Port p = static_cast< lcsm::model::Button::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Button::Port::Wiring:
+		return std::addressof(m_wire);
+	}
+	return nullptr;
+}

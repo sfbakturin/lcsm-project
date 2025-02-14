@@ -2,7 +2,6 @@
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Ground.h>
-#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <memory>
@@ -14,41 +13,19 @@ lcsm::model::Ground::Ground(lcsm::Width width) : m_width(width)
 	m_wire.connectConnect(circuit);
 }
 
-lcsm::model::Ground::Ground(const lcsm::model::Ground &other) : m_width(other.m_width)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectConnect(circuit);
-}
-
-lcsm::model::Ground::Ground(lcsm::model::Ground &&other) : m_width(other.m_width)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectConnect(circuit);
-}
-
-lcsm::model::Ground &lcsm::model::Ground::operator=(const lcsm::model::Ground &other)
-{
-	return lcsm::support::CopyAssign< lcsm::model::Ground >(this, other);
-}
-
-lcsm::model::Ground &lcsm::model::Ground::operator=(lcsm::model::Ground &&other) noexcept
-{
-	return lcsm::support::MoveAssign< lcsm::model::Ground >(this, std::move(other));
-}
-
-void lcsm::model::Ground::swap(lcsm::model::Ground &other) noexcept
-{
-	std::swap(m_width, other.m_width);
-}
-
 lcsm::Width lcsm::model::Ground::width() const noexcept
 {
 	return m_width;
 }
 
-void lcsm::model::Ground::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::model::Ground::setWidth(lcsm::Width width) noexcept
 {
-	m_width = newWidth;
+	m_width = width;
+}
+
+const lcsm::model::Wire &lcsm::model::Ground::wire() const noexcept
+{
+	return m_wire;
 }
 
 lcsm::Identifier lcsm::model::Ground::id() const noexcept
@@ -102,9 +79,4 @@ lcsm::Circuit *lcsm::model::Ground::byPort(lcsm::portid_t portId)
 		return std::addressof(m_wire);
 	}
 	return nullptr;
-}
-
-const lcsm::model::Wire &lcsm::model::Ground::wire() const noexcept
-{
-	return m_wire;
 }

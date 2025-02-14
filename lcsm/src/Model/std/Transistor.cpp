@@ -14,54 +14,33 @@ lcsm::model::Transistor::Transistor(lcsm::model::Transistor::Type type) : m_type
 {
 	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
 	m_base.connectConnect(circuit);
-	m_inoutA.connectConnect(circuit);
-	m_inoutB.connectConnect(circuit);
+	m_srcA.connectConnect(circuit);
+	m_srcB.connectConnect(circuit);
 }
 
-lcsm::model::Transistor::Transistor(const lcsm::model::Transistor &other) : m_type(other.m_type)
+lcsm::model::Transistor::Type lcsm::model::Transistor::type() const noexcept
 {
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_base.connectConnect(circuit);
-	m_inoutA.connectConnect(circuit);
-	m_inoutB.connectConnect(circuit);
+	return m_type;
 }
 
-lcsm::model::Transistor::Transistor(lcsm::model::Transistor &&other) noexcept : m_type(other.m_type)
+void lcsm::model::Transistor::setType(lcsm::model::Transistor::Type type) noexcept
 {
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_base.connectConnect(circuit);
-	m_inoutA.connectConnect(circuit);
-	m_inoutB.connectConnect(circuit);
+	m_type = type;
 }
 
-lcsm::model::Transistor &lcsm::model::Transistor::operator=(const lcsm::model::Transistor &other)
+const lcsm::model::Wire &lcsm::model::Transistor::wireBase() const noexcept
 {
-	return lcsm::support::CopyAssign< lcsm::model::Transistor >(this, other);
+	return m_base;
 }
 
-lcsm::model::Transistor &lcsm::model::Transistor::operator=(lcsm::model::Transistor &&other)
+const lcsm::model::Wire &lcsm::model::Transistor::wireSrcA() const noexcept
 {
-	return lcsm::support::MoveAssign< lcsm::model::Transistor >(this, std::move(other));
+	return m_srcA;
 }
 
-void lcsm::model::Transistor::swap(lcsm::model::Transistor &other) noexcept
+const lcsm::model::Wire &lcsm::model::Transistor::wireSrcB() const noexcept
 {
-	std::swap(m_type, other.m_type);
-}
-
-lcsm::Identifier lcsm::model::Transistor::idBase() const noexcept
-{
-	return m_idBase;
-}
-
-lcsm::Identifier lcsm::model::Transistor::idInoutA() const noexcept
-{
-	return m_idInoutA;
-}
-
-lcsm::Identifier lcsm::model::Transistor::idInoutB() const noexcept
-{
-	return m_idInoutB;
+	return m_srcB;
 }
 
 lcsm::Identifier lcsm::model::Transistor::id() const noexcept
@@ -72,14 +51,9 @@ lcsm::Identifier lcsm::model::Transistor::id() const noexcept
 lcsm::Identifier lcsm::model::Transistor::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
-	m_idBase = m_id.next();
-	m_idInoutA = m_idBase.next();
-	m_idInoutB = m_idInoutA.next();
-
-	lcsm::Identifier next = m_base.identify(m_idInoutB.next());
-	next = m_inoutA.identify(next);
-	next = m_inoutB.identify(next);
-
+	lcsm::Identifier next = m_base.identify(m_id.next());
+	next = m_srcA.identify(next);
+	next = m_srcB.identify(next);
 	return next;
 }
 
@@ -100,20 +74,14 @@ void lcsm::model::Transistor::connect(lcsm::portid_t portId, const lcsm::support
 	switch (p)
 	{
 	case lcsm::model::Transistor::Port::Base:
-	{
 		select = std::addressof(m_base);
 		break;
-	}
-	case lcsm::model::Transistor::Port::InoutA:
-	{
-		select = std::addressof(m_inoutA);
+	case lcsm::model::Transistor::Port::SrcA:
+		select = std::addressof(m_srcA);
 		break;
-	}
-	case lcsm::model::Transistor::Port::InoutB:
-	{
-		select = std::addressof(m_inoutB);
+	case lcsm::model::Transistor::Port::SrcB:
+		select = std::addressof(m_srcB);
 		break;
-	}
 	default:
 		throw std::logic_error("Bad port!");
 	}
@@ -122,20 +90,17 @@ void lcsm::model::Transistor::connect(lcsm::portid_t portId, const lcsm::support
 
 void lcsm::model::Transistor::connectBase(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Transistor::Port::Base);
-	connect(portId, circuit);
+	connect(lcsm::model::Transistor::Port::Base, circuit);
 }
 
-void lcsm::model::Transistor::connectInoutA(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Transistor::connectSrcA(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Transistor::Port::InoutA);
-	connect(portId, circuit);
+	connect(lcsm::model::Transistor::Port::SrcA, circuit);
 }
 
-void lcsm::model::Transistor::connectInoutB(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Transistor::connectSrcB(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Transistor::Port::InoutB);
-	connect(portId, circuit);
+	connect(lcsm::model::Transistor::Port::SrcB, circuit);
 }
 
 lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId)
@@ -145,10 +110,10 @@ lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId)
 	{
 	case lcsm::model::Transistor::Port::Base:
 		return std::addressof(m_base);
-	case lcsm::model::Transistor::Port::InoutA:
-		return std::addressof(m_inoutA);
-	case lcsm::model::Transistor::Port::InoutB:
-		return std::addressof(m_inoutB);
+	case lcsm::model::Transistor::Port::SrcA:
+		return std::addressof(m_srcA);
+	case lcsm::model::Transistor::Port::SrcB:
+		return std::addressof(m_srcB);
 	}
 	return nullptr;
 }
