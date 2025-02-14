@@ -1,4 +1,4 @@
-﻿ADD_LIBRARY(LCSM
+ADD_LIBRARY(LCSM
     Model/Identifier.cpp
     Model/Wire.cpp
 
