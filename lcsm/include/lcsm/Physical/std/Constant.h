@@ -19,8 +19,8 @@ namespace lcsm
 		class Constant : public EvaluatorNode
 		{
 		  public:
-			Constant(ObjectType objectType, const DataBits &databits);
-			Constant(ObjectType objectType, DataBits &&databits);
+			Constant(object_type_t objectType, const DataBits &databits);
+			Constant(object_type_t objectType, DataBits &&databits);
 
 			virtual NodeType nodeType() const noexcept override final;
 

@@ -15,7 +15,7 @@ namespace lcsm
 		class Pin : public EvaluatorNode
 		{
 		  public:
-			Pin(ObjectType objectType, bool output);
+			Pin(object_type_t objectType, bool output);
 
 			virtual const DataBits &read() const override final;
 

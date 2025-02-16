@@ -1,5 +1,4 @@
 #include <lcsm/LCSM.h>
-#include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
@@ -15,14 +14,13 @@
 int main()
 {
 	lcsm::LCSMCircuit circuit;
-	lcsm::LCSMBuilder builder(circuit);
 
 	/* Create input and output pins. */
-	lcsm::model::Ground *ground = builder.CreateGround(lcsm::Width::Byte);
-	lcsm::model::Pin *out = builder.CreatePin(true);
+	lcsm::model::Ground *ground = circuit.createGround(lcsm::Width::Byte);
+	lcsm::model::Pin *out = circuit.createPin(true);
 
 	/* Connect pins. */
-	builder.Connect(ground, lcsm::model::Ground::Port::Wiring, out, lcsm::model::Pin::Port::Internal);
+	circuit.connect(ground, lcsm::model::Ground::Port::Wiring, out, lcsm::model::Pin::Port::Internal);
 
 	/* Build runtime calculation graph from circuit. */
 	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);

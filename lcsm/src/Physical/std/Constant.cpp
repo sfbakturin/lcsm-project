@@ -10,12 +10,12 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::physical::Constant::Constant(lcsm::ObjectType objectType, const lcsm::DataBits &databits) :
+lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, const lcsm::DataBits &databits) :
 	lcsm::EvaluatorNode(objectType), m_databits(databits)
 {
 }
 
-lcsm::physical::Constant::Constant(lcsm::ObjectType objectType, lcsm::DataBits &&databits) :
+lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, lcsm::DataBits &&databits) :
 	lcsm::EvaluatorNode(objectType), m_databits(std::move(databits))
 {
 }

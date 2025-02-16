@@ -8,6 +8,9 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
+#include <vector>
+
 namespace lcsm
 {
 	namespace model
@@ -29,24 +32,30 @@ namespace lcsm
 			value_t value() const noexcept;
 			void setValue(value_t value) noexcept;
 
-			const Wire &wire() const noexcept;
+			const Wire *wire() const noexcept;
+
+			virtual std::size_t numOfWires() const noexcept override final;
+			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
 
-			virtual ObjectType objectType() const noexcept override final;
+			virtual object_type_t objectType() const noexcept override final;
 			virtual CircuitType circuitType() const noexcept override;
 
-			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
-			void connect(const support::PointerView< Circuit > &circuit);
+			virtual void connect(portid_t portId, Circuit *circuit) override final;
+			virtual void disconnect(Circuit *circuit) override final;
+			virtual void disconnectAll() override final;
 
-			virtual Circuit *byPort(portid_t portId) override final;
+			void connect(Circuit *circuit);
+
+			virtual Circuit *byPort(portid_t portId) noexcept override final;
 
 		  private:
 			Identifier m_id;
 			Width m_width;
 			value_t m_value;
-			Wire m_wire;
+			std::shared_ptr< model::Wire > m_wire;
 		};
 	}	 // namespace model
 }	 // namespace lcsm

@@ -8,6 +8,9 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
+#include <vector>
+
 namespace lcsm
 {
 	namespace model
@@ -30,27 +33,30 @@ namespace lcsm
 			Width width() const noexcept;
 			void setWidth(Width width) noexcept;
 
-			const Wire &internal() const noexcept;
-			const Wire &external() const noexcept;
+			const Wire *internal() const noexcept;
+			const Wire *external() const noexcept;
+
+			virtual std::size_t numOfWires() const noexcept override final;
+			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
 
-			virtual ObjectType objectType() const noexcept override final;
+			virtual object_type_t objectType() const noexcept override final;
 			virtual CircuitType circuitType() const noexcept override final;
 
-			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
-			void connectInternal(const support::PointerView< Circuit > &circuit);
-			void connectExternal(const support::PointerView< Circuit > &circuit);
+			virtual void connect(portid_t portId, Circuit *circuit) override final;
+			virtual void disconnect(Circuit *circuit) override final;
+			virtual void disconnectAll() override final;
 
-			virtual Circuit *byPort(portid_t portId) override final;
+			virtual Circuit *byPort(portid_t portId) noexcept override final;
 
 		  private:
 			Identifier m_id;
 			bool m_output;
 			Width m_width;
-			Wire m_internal;
-			Wire m_external;
+			std::shared_ptr< Wire > m_internal;
+			std::shared_ptr< Wire > m_external;
 		};
 	}	 // namespace model
 }	 // namespace lcsm

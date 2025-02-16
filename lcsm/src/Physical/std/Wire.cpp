@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Wire::Wire(lcsm::ObjectType objectType) : lcsm::EvaluatorNode(objectType) {}
+lcsm::physical::Wire::Wire(lcsm::object_type_t objectType) : lcsm::EvaluatorNode(objectType) {}
 
 const lcsm::DataBits &lcsm::physical::Wire::read() const
 {

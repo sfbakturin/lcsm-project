@@ -16,7 +16,7 @@ namespace lcsm
 		class Wire : public EvaluatorNode
 		{
 		  public:
-			Wire(ObjectType objectType);
+			Wire(object_type_t objectType);
 
 			virtual const DataBits &read() const override final;
 

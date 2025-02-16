@@ -18,10 +18,10 @@ namespace lcsm
 	class EvaluatorNode
 	{
 	  public:
-		EvaluatorNode(ObjectType objectType) noexcept;
+		EvaluatorNode(object_type_t objectType) noexcept;
 		virtual ~EvaluatorNode() noexcept = default;
 
-		ObjectType objectType() const noexcept;
+		object_type_t objectType() const noexcept;
 
 		virtual NodeType nodeType() const noexcept = 0;
 
@@ -41,7 +41,7 @@ namespace lcsm
 		virtual std::vector< Event > invokeInstants(const Timestamp &now) = 0;
 
 	  private:
-		ObjectType m_objectType;
+		object_type_t m_objectType;
 	};
 }	 // namespace lcsm
 

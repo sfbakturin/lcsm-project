@@ -4,15 +4,13 @@
 #include <lcsm/Model/std/Power.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
-lcsm::model::Power::Power(lcsm::Width width) : m_width(width)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectConnect(circuit);
-}
+lcsm::model::Power::Power(lcsm::Width width) : m_width(width) {}
 
 lcsm::Width lcsm::model::Power::width() const noexcept
 {
@@ -24,9 +22,22 @@ void lcsm::model::Power::setWidth(lcsm::Width width) noexcept
 	m_width = width;
 }
 
-const lcsm::model::Wire &lcsm::model::Power::wire() const noexcept
+const lcsm::model::Wire *lcsm::model::Power::wire() const noexcept
 {
-	return m_wire;
+	return m_wire.get();
+}
+
+std::size_t lcsm::model::Power::numOfWires() const noexcept
+{
+	return 1;
+}
+
+void lcsm::model::Power::provideWires(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires)
+{
+	if (wires.size() != numOfWires())
+		throw std::logic_error("Bad num of wires!");
+	m_wire = wires[0];
+	m_wire->connectConnect(this);
 }
 
 lcsm::Identifier lcsm::model::Power::id() const noexcept
@@ -37,12 +48,12 @@ lcsm::Identifier lcsm::model::Power::id() const noexcept
 lcsm::Identifier lcsm::model::Power::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
-	return m_wire.identify(m_id.next());
+	return m_wire->identify(m_id.next());
 }
 
-lcsm::ObjectType lcsm::model::Power::objectType() const noexcept
+lcsm::object_type_t lcsm::model::Power::objectType() const noexcept
 {
-	return lcsm::ObjectType::RootInt;
+	return lcsm::ObjectType::Root | lcsm::ObjectType::Internal;
 }
 
 lcsm::CircuitType lcsm::model::Power::circuitType() const noexcept
@@ -50,34 +61,36 @@ lcsm::CircuitType lcsm::model::Power::circuitType() const noexcept
 	return lcsm::CircuitType::Power;
 }
 
-void lcsm::model::Power::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Power::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	const lcsm::model::Power::Port p = static_cast< lcsm::model::Power::Port >(portId);
-	switch (p)
-	{
-	case lcsm::model::Power::Port::Wiring:
-	{
-		m_wire.connectToWire(circuit);
-		break;
-	}
-	default:
+	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
+	if (!wire)
 		throw std::logic_error("Bad port!");
-	}
+	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Power::connect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Power::disconnect(lcsm::Circuit *)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Power::Port::Wiring);
-	connect(portId, circuit);
+	// Do nothing.
 }
 
-lcsm::Circuit *lcsm::model::Power::byPort(lcsm::portid_t portId)
+void lcsm::model::Power::disconnectAll()
+{
+	m_wire->disconnectAll();
+}
+
+void lcsm::model::Power::connect(lcsm::Circuit *circuit)
+{
+	connect(lcsm::model::Power::Port::Wiring, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Power::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Power::Port p = static_cast< lcsm::model::Power::Port >(portId);
 	switch (p)
 	{
 	case lcsm::model::Power::Port::Wiring:
-		return std::addressof(m_wire);
+		return m_wire.get();
 	}
 	return nullptr;
 }

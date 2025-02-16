@@ -19,7 +19,7 @@ namespace lcsm
 		class Clock : public EvaluatorNode
 		{
 		  public:
-			Clock(ObjectType objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
+			Clock(object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 
 			virtual NodeType nodeType() const noexcept override final;
 

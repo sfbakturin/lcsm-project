@@ -6,10 +6,17 @@
 #include <lcsm/Support/PointerView.hpp>
 
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace lcsm
 {
 	using portid_t = std::size_t;
+
+	namespace model
+	{
+		class Wire;
+	}
 
 	class Circuit
 	{
@@ -17,14 +24,20 @@ namespace lcsm
 		Circuit() noexcept = default;
 		virtual ~Circuit() noexcept = default;
 
+		virtual std::size_t numOfWires() const noexcept = 0;
+		virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) = 0;
+
 		virtual Identifier id() const noexcept = 0;
 		virtual Identifier identify(Identifier id) noexcept = 0;
 
-		virtual ObjectType objectType() const noexcept = 0;
+		virtual object_type_t objectType() const noexcept = 0;
 		virtual CircuitType circuitType() const noexcept = 0;
 
-		virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) = 0;
-		virtual Circuit *byPort(portid_t portId) = 0;
+		virtual void connect(portid_t portId, Circuit *circuit) = 0;
+		virtual void disconnect(Circuit *circuit) = 0;
+		virtual void disconnectAll() = 0;
+
+		virtual Circuit *byPort(portid_t portId) noexcept = 0;
 	};
 }	 // namespace lcsm
 

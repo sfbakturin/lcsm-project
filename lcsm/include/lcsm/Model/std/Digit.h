@@ -8,6 +8,8 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <memory>
+
 namespace lcsm
 {
 	namespace model
@@ -27,26 +29,32 @@ namespace lcsm
 			bool hasDecimalPoint() const noexcept;
 			void setHasDecimalPoint(bool hasDecimalPoint) noexcept;
 
-			const Wire &wireData() const noexcept;
-			const Wire &wireDecimalPoint() const noexcept;
+			const Wire *wireData() const noexcept;
+			const Wire *wireDecimalPoint() const noexcept;
+
+			virtual std::size_t numOfWires() const noexcept override final;
+			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
 
-			virtual ObjectType objectType() const noexcept override final;
+			virtual object_type_t objectType() const noexcept override final;
 			virtual CircuitType circuitType() const noexcept override final;
 
-			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
-			void connectData(const support::PointerView< Circuit > &circuit);
-			void connectDecimalPoint(const support::PointerView< Circuit > &circuit);
+			virtual void connect(portid_t portId, Circuit *circuit) override final;
+			virtual void disconnect(Circuit *circuit) override final;
+			virtual void disconnectAll() override final;
 
-			virtual Circuit *byPort(portid_t portId) override final;
+			void connectData(Circuit *circuit);
+			void connectDecimalPoint(Circuit *circuit);
+
+			virtual Circuit *byPort(portid_t portId) noexcept override final;
 
 		  private:
 			Identifier m_id;
 			bool m_hasDecimalPoint;
-			Wire m_wireData;
-			Wire m_wireDecimalPoint;
+			std::shared_ptr< Wire > m_wireData;
+			std::shared_ptr< Wire > m_wireDecimalPoint;
 		};
 	}	 // namespace model
 }	 // namespace lcsm

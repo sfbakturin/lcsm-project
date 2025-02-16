@@ -33,27 +33,11 @@ lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 		obj->setContext(context);
 
 		/* Init schedule new events. */
-		const lcsm::ObjectType objectType = obj->objectType();
-		switch (objectType)
+		const lcsm::object_type_t objectType = obj->objectType();
+		if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root))
 		{
-		case lcsm::ObjectType::UnknownObjectType:
-		case lcsm::ObjectType::LastObjectType:
-			throw std::logic_error("State can't have a deal with unknown object type.");
-		case lcsm::ObjectType::IntExtOut:
-		case lcsm::ObjectType::PureInt:
-		case lcsm::ObjectType::Wiring:
-		{
-			/* For pure internal and external outputs objects there is no need to schedule events. */
-			break;
-		}
-		case lcsm::ObjectType::RootInt:
-		case lcsm::ObjectType::IntExtIn:
-		{
-			/* For all roots and inputs we prefer to schedule new value traversals. */
 			lcsm::support::PointerView< lcsm::EvaluatorNode > node = obj;
 			m_roots.push_back(node);
-			break;
-		}
 		}
 	}
 }

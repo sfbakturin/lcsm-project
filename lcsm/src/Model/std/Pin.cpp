@@ -2,6 +2,7 @@
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
+#include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Support/PointerView.hpp>
 
@@ -9,12 +10,7 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_width(width)
-{
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_internal.connectConnect(circuit);
-	m_external.connectConnect(circuit);
-}
+lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_width(width) {}
 
 bool lcsm::model::Pin::output() const noexcept
 {
@@ -36,14 +32,33 @@ void lcsm::model::Pin::setWidth(lcsm::Width width) noexcept
 	m_width = width;
 }
 
-const lcsm::model::Wire &lcsm::model::Pin::internal() const noexcept
+const lcsm::model::Wire *lcsm::model::Pin::internal() const noexcept
 {
-	return m_internal;
+	return m_internal.get();
 }
 
-const lcsm::model::Wire &lcsm::model::Pin::external() const noexcept
+const lcsm::model::Wire *lcsm::model::Pin::external() const noexcept
 {
-	return m_external;
+	return m_external.get();
+}
+
+std::size_t lcsm::model::Pin::numOfWires() const noexcept
+{
+	return 2;
+}
+
+void lcsm::model::Pin::provideWires(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires)
+{
+	if (wires.size() != numOfWires())
+		throw std::logic_error("Bad number of wires!");
+	if (m_internal)
+		m_internal->disconnect(this);
+	if (m_external)
+		m_external->disconnect(this);
+	m_internal = wires[0];
+	m_external = wires[1];
+	m_internal->connectConnect(this);
+	m_external->connectConnect(this);
 }
 
 lcsm::Identifier lcsm::model::Pin::id() const noexcept
@@ -54,13 +69,13 @@ lcsm::Identifier lcsm::model::Pin::id() const noexcept
 lcsm::Identifier lcsm::model::Pin::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
-	const lcsm::Identifier next = m_internal.identify(m_id.next());
-	return m_external.identify(next);
+	const lcsm::Identifier next = m_internal->identify(m_id.next());
+	return m_external->identify(next);
 }
 
-lcsm::ObjectType lcsm::model::Pin::objectType() const noexcept
+lcsm::object_type_t lcsm::model::Pin::objectType() const noexcept
 {
-	return (m_output ? lcsm::ObjectType::IntExtOut : lcsm::ObjectType::IntExtIn);
+	return lcsm::ObjectType::Internal | lcsm::ObjectType::External | (m_output ? lcsm::ObjectType::Output : lcsm::ObjectType::Input);
 }
 
 lcsm::CircuitType lcsm::model::Pin::circuitType() const noexcept
@@ -68,47 +83,34 @@ lcsm::CircuitType lcsm::model::Pin::circuitType() const noexcept
 	return lcsm::CircuitType::Pin;
 }
 
-void lcsm::model::Pin::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Pin::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	const lcsm::model::Pin::Port pp = static_cast< lcsm::model::Pin::Port >(portId);
-	switch (pp)
-	{
-	case lcsm::model::Pin::Port::Internal:
-	{
-		m_internal.connectToWire(circuit);
-		break;
-	}
-	case lcsm::model::Pin::Port::External:
-	{
-		m_external.connectToWire(circuit);
-		break;
-	}
-	default:
+	lcsm::model::Wire *selected = static_cast< lcsm::model::Wire * >(byPort(portId));
+	if (!selected)
 		throw std::logic_error("Bad port!");
-	}
+	selected->connectToWire(circuit);
 }
 
-void lcsm::model::Pin::connectInternal(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Pin::disconnect(lcsm::Circuit *)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Pin::Port::Internal);
-	connect(portId, circuit);
+	// Do nothing.
 }
 
-void lcsm::model::Pin::connectExternal(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Pin::disconnectAll()
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Pin::Port::External);
-	connect(portId, circuit);
+	m_internal->disconnectAll();
+	m_external->disconnectAll();
 }
 
-lcsm::Circuit *lcsm::model::Pin::byPort(lcsm::portid_t portId)
+lcsm::Circuit *lcsm::model::Pin::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Pin::Port p = static_cast< lcsm::model::Pin::Port >(portId);
 	switch (p)
 	{
 	case lcsm::model::Pin::Port::Internal:
-		return std::addressof(m_internal);
+		return m_internal.get();
 	case lcsm::model::Pin::Port::External:
-		return std::addressof(m_external);
+		return m_external.get();
 	}
 	return nullptr;
 }

@@ -19,7 +19,7 @@ namespace lcsm
 		class Transistor : public EvaluatorNode
 		{
 		  public:
-			Transistor(ObjectType objectType, model::Transistor::Type type);
+			Transistor(object_type_t objectType, model::Transistor::Type type);
 
 			virtual const DataBits &read() const override final;
 

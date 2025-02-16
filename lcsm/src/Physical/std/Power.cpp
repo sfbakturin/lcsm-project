@@ -6,7 +6,7 @@
 #include <lcsm/Physical/std/Power.h>
 #include <lcsm/Verilog/Bit.h>
 
-lcsm::physical::Power::Power(lcsm::ObjectType objectType, lcsm::Width width) :
+lcsm::physical::Power::Power(lcsm::object_type_t objectType, lcsm::Width width) :
 	lcsm::physical::Constant(objectType, lcsm::DataBits(width, lcsm::verilog::Bit::True))
 {
 }

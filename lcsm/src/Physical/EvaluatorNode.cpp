@@ -3,9 +3,9 @@
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Support/PointerView.hpp>
 
-lcsm::EvaluatorNode::EvaluatorNode(lcsm::ObjectType objectType) noexcept : m_objectType(objectType) {}
+lcsm::EvaluatorNode::EvaluatorNode(lcsm::object_type_t objectType) noexcept : m_objectType(objectType) {}
 
-lcsm::ObjectType lcsm::EvaluatorNode::objectType() const noexcept
+lcsm::object_type_t lcsm::EvaluatorNode::objectType() const noexcept
 {
 	return m_objectType;
 }

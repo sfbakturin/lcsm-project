@@ -6,7 +6,7 @@
 #include <lcsm/Physical/std/Ground.h>
 #include <lcsm/Verilog/Bit.h>
 
-lcsm::physical::Ground::Ground(lcsm::ObjectType objectType, lcsm::Width width) :
+lcsm::physical::Ground::Ground(lcsm::object_type_t objectType, lcsm::Width width) :
 	lcsm::physical::Constant(objectType, lcsm::DataBits(width, lcsm::verilog::Bit::False))
 {
 }

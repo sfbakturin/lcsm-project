@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Pin::Pin(lcsm::ObjectType objectType, bool output) : lcsm::EvaluatorNode(objectType), m_output(output)
+lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output) :
+	lcsm::EvaluatorNode(objectType), m_output(output)
 {
 }
 

@@ -8,6 +8,7 @@ namespace lcsm
 	using value_t = std::uint64_t;
 	using id_t = std::uint64_t;
 	using target_t = std::int8_t;
+	using object_type_t = std::uint32_t;
 
 	/* All available model circuits. */
 	enum CircuitType : target_t
@@ -39,16 +40,20 @@ namespace lcsm
 	};
 
 	/* All available physical object types. */
-	enum ObjectType : target_t
+	enum ObjectType : object_type_t
 	{
-		UnknownObjectType,
-		Wiring,
-		PureInt,
-		RootInt,
-		IntExtIn,
-		IntExtOut,
-		LastObjectType = IntExtOut + 1
+		Wiring = 1 << 0,
+		Root = 1 << 1,
+		Internal = 1 << 2,
+		External = 1 << 3,
+		Input = 1 << 4 | Root,
+		Output = 1 << 5
 	};
+
+	constexpr inline bool TestObjectType(object_type_t actual, object_type_t expected) noexcept
+	{
+		return static_cast< bool >(actual & expected);
+	}
 
 	/* All available instructions. */
 	enum InstructionType : target_t

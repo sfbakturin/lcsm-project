@@ -4,15 +4,15 @@
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 lcsm::model::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_wire.connectConnect(circuit);
 }
 
 unsigned lcsm::model::Clock::highDuration() const noexcept
@@ -45,9 +45,22 @@ void lcsm::model::Clock::setPhaseOffset(unsigned phaseOffset) noexcept
 	m_phaseOffset = phaseOffset;
 }
 
-const lcsm::model::Wire &lcsm::model::Clock::wire() const noexcept
+const lcsm::model::Wire *lcsm::model::Clock::wire() const noexcept
 {
-	return m_wire;
+	return m_wire.get();
+}
+
+std::size_t lcsm::model::Clock::numOfWires() const noexcept
+{
+	return 1;
+}
+
+void lcsm::model::Clock::provideWires(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires)
+{
+	if (wires.size() != numOfWires())
+		throw std::logic_error("Bad num of wires!");
+	m_wire = wires[0];
+	m_wire->connectConnect(this);
 }
 
 lcsm::Identifier lcsm::model::Clock::id() const noexcept
@@ -55,9 +68,9 @@ lcsm::Identifier lcsm::model::Clock::id() const noexcept
 	return m_id;
 }
 
-lcsm::ObjectType lcsm::model::Clock::objectType() const noexcept
+lcsm::object_type_t lcsm::model::Clock::objectType() const noexcept
 {
-	return lcsm::ObjectType::RootInt;
+	return lcsm::ObjectType::Root | lcsm::ObjectType::Internal;
 }
 
 lcsm::CircuitType lcsm::model::Clock::circuitType() const noexcept
@@ -68,35 +81,39 @@ lcsm::CircuitType lcsm::model::Clock::circuitType() const noexcept
 lcsm::Identifier lcsm::model::Clock::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
-	return m_wire.identify(m_id.next());
+	return m_wire->identify(m_id.next());
 }
 
-void lcsm::model::Clock::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Clock::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	const lcsm::model::Clock::Port p = static_cast< lcsm::model::Clock::Port >(portId);
-	switch (p)
-	{
-	case lcsm::model::Clock::Port::Wiring:
-		m_wire.connectToWire(circuit);
-		break;
-	default:
+	lcsm::model::Wire *selected = static_cast< lcsm::model::Wire * >(byPort(portId));
+	if (!selected)
 		throw std::logic_error("Bad port!");
-	}
+	selected->connectToWire(circuit);
 }
 
-void lcsm::model::Clock::connect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Clock::disconnect(lcsm::Circuit *)
 {
-	const lcsm::portid_t portId = static_cast< lcsm::portid_t >(lcsm::model::Clock::Port::Wiring);
-	connect(portId, circuit);
+	// Do nothing.
 }
 
-lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId)
+void lcsm::model::Clock::disconnectAll()
+{
+	m_wire->disconnectAll();
+}
+
+void lcsm::model::Clock::connect(lcsm::Circuit *circuit)
+{
+	connect(lcsm::model::Clock::Port::Wiring, circuit);
+}
+
+lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Clock::Port p = static_cast< lcsm::model::Clock::Port >(portId);
 	switch (p)
 	{
 	case lcsm::model::Clock::Port::Wiring:
-		return std::addressof(m_wire);
+		return m_wire.get();
 	}
 	return nullptr;
 }

@@ -12,7 +12,7 @@ namespace lcsm
 		class Power : public Constant
 		{
 		  public:
-			Power(ObjectType objectType, Width width);
+			Power(object_type_t objectType, Width width);
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

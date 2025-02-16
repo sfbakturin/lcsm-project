@@ -12,7 +12,7 @@ namespace lcsm
 		class Ground : public Constant
 		{
 		  public:
-			Ground(ObjectType objectType, Width width);
+			Ground(object_type_t objectType, Width width);
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

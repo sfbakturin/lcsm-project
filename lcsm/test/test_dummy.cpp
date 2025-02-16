@@ -1,5 +1,4 @@
 #include <lcsm/LCSM.h>
-#include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
@@ -13,15 +12,15 @@
 
 int main()
 {
+	// Main circuit.
 	lcsm::LCSMCircuit circuit;
-	lcsm::LCSMBuilder builder(circuit);
 
-	/* Create input and output pins. */
-	lcsm::model::Pin *in0 = builder.CreatePin(false);
-	lcsm::model::Pin *out0 = builder.CreatePin(true);
+	// Create input and output pins.
+	lcsm::model::Pin *i0 = circuit.createPin(false);
+	lcsm::model::Pin *o0 = circuit.createPin(true);
 
 	/* Connect pins. */
-	builder.Connect(in0, lcsm::model::Pin::Port::Internal, out0, lcsm::model::Pin::Port::Internal);
+	circuit.connect(i0, lcsm::model::Pin::Port::Internal, o0, lcsm::model::Pin::Port::Internal);
 
 	const std::vector< lcsm::DataBits > values = {
 		{ lcsm::Width::Bit1, lcsm::verilog::Bit::False },
@@ -37,16 +36,16 @@ int main()
 	for (const lcsm::DataBits &value : values)
 	{
 		/* Put value to in0 (input pin). */
-		state.putValue(in0->id(), value);
+		state.putValue(i0->id(), value);
 
 		/* Step once. */
 		state.tick();
 
 		/* Extract value from out0 (output pin). */
-		const lcsm::DataBits &out = state.valueOf(out0->id());
+		const lcsm::DataBits &out = state.valueOf(o0->id());
 
 		/* Print. */
-		std::cout << "in" << in0->id() << " = " << value << ", "
-				  << "out" << out0->id() << " = " << out << '\n';
+		std::cout << "in" << i0->id() << " = " << value << ", "
+				  << "out" << o0->id() << " = " << out << '\n';
 	}
 }

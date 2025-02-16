@@ -4,6 +4,7 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -18,6 +19,17 @@ const lcsm::support::PointerView< lcsm::Circuit > &lcsm::model::Wire::connect() 
 	return m_connect;
 }
 
+std::size_t lcsm::model::Wire::numOfWires() const noexcept
+{
+	return 0;
+}
+
+void lcsm::model::Wire::provideWires(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires)
+{
+	if (wires.size() != numOfWires())
+		throw std::logic_error("Bad num of wires!");
+}
+
 lcsm::Identifier lcsm::model::Wire::id() const noexcept
 {
 	return m_id;
@@ -29,9 +41,9 @@ lcsm::Identifier lcsm::model::Wire::identify(lcsm::Identifier id) noexcept
 	return m_id.next();
 }
 
-lcsm::ObjectType lcsm::model::Wire::objectType() const noexcept
+lcsm::object_type_t lcsm::model::Wire::objectType() const noexcept
 {
-	return lcsm::ObjectType::Wiring;
+	return lcsm::ObjectType::Internal | lcsm::ObjectType::Wiring;
 }
 
 lcsm::CircuitType lcsm::model::Wire::circuitType() const noexcept
@@ -39,19 +51,19 @@ lcsm::CircuitType lcsm::model::Wire::circuitType() const noexcept
 	return lcsm::CircuitType::Wire;
 }
 
-void lcsm::model::Wire::connect(lcsm::portid_t portId, const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Wire::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	const lcsm::model::Wire::Port pw = static_cast< lcsm::model::Wire::Port >(portId);
+	const lcsm::model::Wire::Port p = static_cast< lcsm::model::Wire::Port >(portId);
 
 	/* If port is Wiring, then connect as wire, otherwise as connector. */
-	switch (pw)
+	switch (p)
 	{
 	case lcsm::model::Wire::Port::Wiring:
 	{
 		/* To Port::Wiring there is must be only Wire object. */
 		if (circuit->objectType() != objectType())
 			throw std::logic_error("Can't connect non-wiring object to wiring Wire's port.");
-		m_wires.push_back(circuit);
+		m_wires.emplace_back(circuit);
 		break;
 	}
 	case lcsm::model::Wire::Port::Connect:
@@ -64,17 +76,41 @@ void lcsm::model::Wire::connect(lcsm::portid_t portId, const lcsm::support::Poin
 	}
 }
 
-void lcsm::model::Wire::connectToWire(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit)
+{
+	if (m_connect == circuit)
+	{
+		m_connect = nullptr;
+		circuit->disconnect(this);
+	}
+	else
+	{
+		std::vector< lcsm::support::PointerView< lcsm::Circuit > >::iterator found =
+			std::find(m_wires.begin(), m_wires.end(), circuit);
+		if (found != m_wires.end())
+		{
+			m_wires.erase(found);
+			circuit->disconnect(this);
+		}
+	}
+}
+
+void lcsm::model::Wire::disconnectAll()
+{
+	// TODO: Implement me.
+}
+
+void lcsm::model::Wire::connectToWire(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::Wire::Port::Wiring, circuit);
 }
 
-void lcsm::model::Wire::connectConnect(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::Wire::connectConnect(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::Wire::Port::Connect, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Wire::byPort(portid_t)
+lcsm::Circuit *lcsm::model::Wire::byPort(portid_t) noexcept
 {
 	return nullptr;
 }

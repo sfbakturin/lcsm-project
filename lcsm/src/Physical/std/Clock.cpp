@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <vector>
 
-lcsm::physical::Clock::Clock(lcsm::ObjectType objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
+lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }

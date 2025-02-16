@@ -8,6 +8,9 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/StaticArray.hpp>
 
+#include <memory>
+#include <vector>
+
 namespace lcsm
 {
 	namespace model
@@ -15,7 +18,7 @@ namespace lcsm
 		class Splitter : public Circuit
 		{
 		  public:
-			enum Port
+			enum Port : portid_t
 			{
 				Out0,
 				Out1,
@@ -95,25 +98,30 @@ namespace lcsm
 
 			width_bitmask_t bitsOut(portid_t portId) const noexcept;
 
-			const Wire &wireIn() const noexcept;
-			const Wire &wireOut(portid_t portId) const noexcept;
+			const Wire *wireIn() const noexcept;
+			const Wire *wireOut(portid_t portId) const noexcept;
+
+			virtual std::size_t numOfWires() const noexcept override final;
+			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
 
 			virtual Identifier id() const noexcept override final;
 			virtual Identifier identify(Identifier id) noexcept override final;
 
-			virtual ObjectType objectType() const noexcept override final;
+			virtual object_type_t objectType() const noexcept override final;
 			virtual CircuitType circuitType() const noexcept override final;
 
-			virtual void connect(portid_t portId, const support::PointerView< Circuit > &circuit) override final;
+			virtual void connect(portid_t portId, Circuit *circuit) override final;
+			virtual void disconnect(Circuit *circuit) override final;
+			virtual void disconnectAll() override final;
 
-			virtual Circuit *byPort(portid_t portId) override final;
+			virtual Circuit *byPort(portid_t portId) noexcept override final;
 
 		  private:
 			Identifier m_id;
 			Width m_widthIn;
 			width_t m_widthOut;
-			Wire m_wireIn;
-			support::StaticArray< Wire, Width::LastWidth > m_wireOut;
+			std::shared_ptr< Wire > m_wireIn;
+			support::StaticArray< std::shared_ptr< Wire >, Width::LastWidth > m_wireOut;
 			support::StaticArray< width_bitmask_t, Width::LastWidth > m_bitsOut;
 
 		  private:

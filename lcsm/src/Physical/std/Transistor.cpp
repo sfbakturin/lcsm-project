@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Transistor::Transistor(lcsm::ObjectType objectType, lcsm::model::Transistor::Type type) :
+lcsm::physical::Transistor::Transistor(lcsm::object_type_t objectType, lcsm::model::Transistor::Type type) :
 	lcsm::EvaluatorNode(objectType), m_type(type)
 {
 }

@@ -1,5 +1,4 @@
 #include <lcsm/LCSM.h>
-#include <lcsm/LCSMBuilder.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
@@ -14,14 +13,13 @@
 int main()
 {
 	lcsm::LCSMCircuit circuit;
-	lcsm::LCSMBuilder builder(circuit);
 
-	/* Create input and output pins. */
-	lcsm::model::Pin *in0 = builder.CreatePin(false);
-	lcsm::model::Pin *in1 = builder.CreatePin(false);
+	// Create input and output pins.
+	lcsm::model::Pin *i0 = circuit.createPin(false);
+	lcsm::model::Pin *i1 = circuit.createPin(false);
 
 	/* Connect pins. */
-	lcsm::model::Wire *w = builder.Connect(in0, lcsm::model::Pin::Port::Internal, in1, lcsm::model::Pin::Port::Internal);
+	lcsm::model::Wire *w = circuit.connect(i0, lcsm::model::Pin::Port::Internal, i1, lcsm::model::Pin::Port::Internal);
 
 	/* Build runtime calculation graph from circuit. */
 	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);
@@ -30,8 +28,8 @@ int main()
 	lcsm::LCSMState state = engine.fork();
 
 	/* Put True/False to inputs. */
-	state.putValue(in0->id(), { lcsm::Width::Bit1, lcsm::verilog::Bit::False });
-	state.putValue(in1->id(), { lcsm::Width::Bit1, lcsm::verilog::Bit::True });
+	state.putValue(i0->id(), { lcsm::Width::Bit1, lcsm::verilog::Bit::False });
+	state.putValue(i1->id(), { lcsm::Width::Bit1, lcsm::verilog::Bit::True });
 
 	/* Step once. */
 	state.tick();
@@ -43,8 +41,8 @@ int main()
 	std::cout << "w [ins 1] = " << out1 << '\n';
 
 	/* Put True/False to inputs. */
-	state.putValue(in0->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::True });
-	state.putValue(in1->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::False });
+	state.putValue(i0->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::True });
+	state.putValue(i1->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::False });
 
 	/* Step once. */
 	state.tick();

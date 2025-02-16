@@ -7,37 +7,49 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
-lcsm::model::TransmissionGate::TransmissionGate()
+const lcsm::model::Wire *lcsm::model::TransmissionGate::wireBase() const noexcept
 {
-	const lcsm::support::PointerView< lcsm::Circuit > circuit = this;
-	m_base.connectConnect(circuit);
-	m_srcA.connectConnect(circuit);
-	m_srcB.connectConnect(circuit);
-	m_srcC.connectConnect(circuit);
+	return m_base.get();
 }
 
-const lcsm::model::Wire &lcsm::model::TransmissionGate::wireBase() const noexcept
+const lcsm::model::Wire *lcsm::model::TransmissionGate::wireSrcA() const noexcept
 {
-	return m_base;
+	return m_srcA.get();
 }
 
-const lcsm::model::Wire &lcsm::model::TransmissionGate::wireSrcA() const noexcept
+const lcsm::model::Wire *lcsm::model::TransmissionGate::wireSrcB() const noexcept
 {
-	return m_srcA;
+	return m_srcB.get();
 }
 
-const lcsm::model::Wire &lcsm::model::TransmissionGate::wireSrcB() const noexcept
+const lcsm::model::Wire *lcsm::model::TransmissionGate::wireSrcC() const noexcept
 {
-	return m_srcB;
+	return m_srcC.get();
 }
 
-const lcsm::model::Wire &lcsm::model::TransmissionGate::wireSrcC() const noexcept
+std::size_t lcsm::model::TransmissionGate::numOfWires() const noexcept
 {
-	return m_srcC;
+	return 4;
+}
+
+void lcsm::model::TransmissionGate::provideWires(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires)
+{
+	if (wires.size() != numOfWires())
+		throw std::logic_error("Bad num of wires!");
+	m_base = wires[0];
+	m_srcA = wires[1];
+	m_srcB = wires[2];
+	m_srcC = wires[3];
+	m_base->connectConnect(this);
+	m_srcA->connectConnect(this);
+	m_srcB->connectConnect(this);
+	m_srcC->connectConnect(this);
 }
 
 lcsm::Identifier lcsm::model::TransmissionGate::id() const noexcept
@@ -48,16 +60,16 @@ lcsm::Identifier lcsm::model::TransmissionGate::id() const noexcept
 lcsm::Identifier lcsm::model::TransmissionGate::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
-	lcsm::Identifier next = m_base.identify(m_id);
-	next = m_srcA.identify(next);
-	next = m_srcB.identify(next);
-	next = m_srcC.identify(next);
+	lcsm::Identifier next = m_base->identify(m_id);
+	next = m_srcA->identify(next);
+	next = m_srcB->identify(next);
+	next = m_srcC->identify(next);
 	return next;
 }
 
-lcsm::ObjectType lcsm::model::TransmissionGate::objectType() const noexcept
+lcsm::object_type_t lcsm::model::TransmissionGate::objectType() const noexcept
 {
-	return lcsm::ObjectType::PureInt;
+	return lcsm::ObjectType::Internal;
 }
 
 lcsm::CircuitType lcsm::model::TransmissionGate::circuitType() const noexcept
@@ -65,63 +77,60 @@ lcsm::CircuitType lcsm::model::TransmissionGate::circuitType() const noexcept
 	return lcsm::CircuitType::TransmissionGate;
 }
 
-void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, const support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	const lcsm::model::TransmissionGate::Port p = static_cast< lcsm::model::TransmissionGate::Port >(portId);
-	lcsm::support::PointerView< lcsm::model::Wire > selected;
-	switch (p)
-	{
-	case lcsm::model::TransmissionGate::Port::Base:
-		selected = std::addressof(m_base);
-		break;
-	case lcsm::model::TransmissionGate::Port::SrcA:
-		selected = std::addressof(m_srcA);
-		break;
-	case lcsm::model::TransmissionGate::Port::SrcB:
-		selected = std::addressof(m_srcB);
-		break;
-	case lcsm::model::TransmissionGate::Port::SrcC:
-		selected = std::addressof(m_srcC);
-		break;
-	default:
+	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
+	if (!wire)
 		throw std::logic_error("Bad port!");
-	}
-	selected->connectToWire(circuit);
+	wire->connectToWire(circuit);
 }
 
-void lcsm::model::TransmissionGate::connectBase(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::TransmissionGate::disconnect(lcsm::Circuit *)
+{
+	// Do nothing.
+}
+
+void lcsm::model::TransmissionGate::disconnectAll()
+{
+	m_base->disconnectAll();
+	m_srcA->disconnectAll();
+	m_srcB->disconnectAll();
+	m_srcC->disconnectAll();
+}
+
+void lcsm::model::TransmissionGate::connectBase(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::Base, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcA(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::TransmissionGate::connectSrcA(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcA, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcB(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::TransmissionGate::connectSrcB(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcB, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcC(const lcsm::support::PointerView< lcsm::Circuit > &circuit)
+void lcsm::model::TransmissionGate::connectSrcC(lcsm::Circuit *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcC, circuit);
 }
 
-lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId)
+lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::TransmissionGate::Port p = static_cast< lcsm::model::TransmissionGate::Port >(portId);
 	switch (p)
 	{
 	case lcsm::model::TransmissionGate::Port::Base:
-		return std::addressof(m_base);
+		return m_base.get();
 	case lcsm::model::TransmissionGate::Port::SrcA:
-		return std::addressof(m_srcA);
+		return m_srcA.get();
 	case lcsm::model::TransmissionGate::Port::SrcB:
-		return std::addressof(m_srcB);
+		return m_srcB.get();
 	case lcsm::model::TransmissionGate::Port::SrcC:
-		return std::addressof(m_srcC);
+		return m_srcC.get();
 	}
 	return nullptr;
 }

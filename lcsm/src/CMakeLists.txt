@@ -35,7 +35,6 @@ ADD_LIBRARY(LCSM
     Physical/std/Wire.cpp
     Physical/std/Clock.cpp
 
-    LCSMBuilder.cpp
     LCSMCircuit.cpp
     LCSMState.cpp
     LCSMEngine.cpp
