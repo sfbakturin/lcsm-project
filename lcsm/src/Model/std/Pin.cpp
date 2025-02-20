@@ -75,7 +75,8 @@ lcsm::Identifier lcsm::model::Pin::identify(lcsm::Identifier id) noexcept
 
 lcsm::object_type_t lcsm::model::Pin::objectType() const noexcept
 {
-	return lcsm::ObjectType::Internal | lcsm::ObjectType::External | (m_output ? lcsm::ObjectType::Output : lcsm::ObjectType::Input);
+	return lcsm::ObjectType::Internal | lcsm::ObjectType::External |
+		   (m_output ? lcsm::ObjectType::Output : lcsm::ObjectType::Input | lcsm::ObjectType::Root);
 }
 
 lcsm::CircuitType lcsm::model::Pin::circuitType() const noexcept

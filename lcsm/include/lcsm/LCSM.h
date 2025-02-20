@@ -46,7 +46,7 @@ namespace lcsm
 		Root = 1 << 1,
 		Internal = 1 << 2,
 		External = 1 << 3,
-		Input = 1 << 4 | Root,
+		Input = 1 << 4,
 		Output = 1 << 5
 	};
 
