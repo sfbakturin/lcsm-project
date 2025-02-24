@@ -43,8 +43,8 @@ namespace lcsm
 		Identifier globalId() const noexcept;
 
 		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
-		const std::unordered_map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
-		const std::unordered_map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
 
 		model::Constant *createConstant(Width width = Width::Bit1, value_t value = 0x1);
 		model::Ground *createGround(Width width = Width::Bit1);
@@ -74,11 +74,11 @@ namespace lcsm
 
 		std::map< Identifier, std::shared_ptr< Circuit > > m_components;
 
-		std::unordered_map< Identifier, std::shared_ptr< Circuit > > m_inputs;
-		std::unordered_map< Identifier, std::shared_ptr< Circuit > > m_outputs;
+		std::map< Identifier, std::shared_ptr< Circuit > > m_inputs;
+		std::map< Identifier, std::shared_ptr< Circuit > > m_outputs;
 
-		std::unordered_map< Identifier, std::shared_ptr< Circuit > > m_wiresComp;
-		std::unordered_map< Identifier, std::shared_ptr< Circuit > > m_wiresConn;
+		std::map< Identifier, std::shared_ptr< Circuit > > m_componentWires;
+		std::map< Identifier, std::shared_ptr< Circuit > > m_connectorWires;
 
 		std::unordered_map< Identifier, std::shared_ptr< LCSMCircuit > > m_circuits;
 
@@ -88,8 +88,9 @@ namespace lcsm
 		void copyImpl(LCSMCircuit *newCircuit, const Identifier &entryId) const;
 		LCSMCircuit copyImpl(const Identifier &entryId) const;
 
-		std::shared_ptr< Circuit > createWire();
-		std::shared_ptr< Circuit > createIdentifiedWire();
+		std::shared_ptr< model::Wire > createHeadlessWire();
+		std::shared_ptr< model::Wire > createIdentifiedWire();
+		std::shared_ptr< model::Wire > createConnectorWire();
 	};
 }	 // namespace lcsm
 

@@ -23,6 +23,7 @@ namespace lcsm
 
 		  public:
 			Wire() = default;
+			~Wire() noexcept;
 
 			const std::vector< support::PointerView< Circuit > > &wires() const noexcept;
 			const support::PointerView< Circuit > &connect() const noexcept;

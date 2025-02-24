@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -59,12 +60,12 @@ const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSM
 	return m_components;
 }
 
-const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::inputs() const noexcept
+const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::inputs() const noexcept
 {
 	return m_inputs;
 }
 
-const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::outputs() const noexcept
+const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::outputs() const noexcept
 {
 	return m_outputs;
 }
@@ -153,23 +154,84 @@ lcsm::model::Splitter *lcsm::LCSMCircuit::createSplitter(lcsm::Width widthIn, lc
 	return circuit;
 }
 
+static std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator
+	FindCircuit(const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &m, lcsm::Circuit *c)
+{
+	return std::find_if(
+		m.begin(),
+		m.end(),
+		[c](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i) { return i.second.get() == c; });
+}
+
 lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::portid_t port2)
 {
 	// Ensure, that circuit1 and circuit2 is in this circuit.
-	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found1 = m_components.begin();
-	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found2 = m_components.begin();
-	for (; found1 != m_components.end(); found1++)
-		if (found1->second.get() == circuit1)
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator end = m_components.cend();
+
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsComponent1 =
+		FindCircuit(m_components, circuit1);
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsConnectorWire1 =
+		FindCircuit(m_connectorWires, circuit1);
+
+	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsInputInCircuit1 = end;
+	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &lcsmCircuit : m_circuits)
+	{
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputsInLcsmCircuit = lcsmCircuit.second->inputs();
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputsInLcsmCircuit = lcsmCircuit.second->outputs();
+
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInInputs =
+			FindCircuit(inputsInLcsmCircuit, circuit1);
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInOutputs =
+			FindCircuit(outputsInLcsmCircuit, circuit1);
+
+		if (foundInInputs != inputsInLcsmCircuit.end())
+		{
+			foundAsInputInCircuit1 = foundInInputs;
 			break;
-	for (; found2 != m_components.end(); found2++)
-		if (found2->second.get() == circuit2)
+		}
+
+		if (foundInOutputs != outputsInLcsmCircuit.end())
+		{
+			foundAsInputInCircuit1 = foundInOutputs;
 			break;
-	if (found1 == m_components.end() || found2 == m_components.end())
+		}
+	}
+
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsComponent2 =
+		FindCircuit(m_components, circuit2);
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsConnectorWire2 =
+		FindCircuit(m_connectorWires, circuit2);
+
+	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsInputInCircuit2 = end;
+	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &lcsmCircuit : m_circuits)
+	{
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputsInLcsmCircuit = lcsmCircuit.second->inputs();
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputsInLcsmCircuit = lcsmCircuit.second->outputs();
+
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInInputs =
+			FindCircuit(inputsInLcsmCircuit, circuit1);
+		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInOutputs =
+			FindCircuit(outputsInLcsmCircuit, circuit1);
+
+		if (foundInInputs != inputsInLcsmCircuit.end())
+		{
+			foundAsInputInCircuit2 = foundInInputs;
+			break;
+		}
+
+		if (foundInOutputs != outputsInLcsmCircuit.end())
+		{
+			foundAsInputInCircuit2 = foundInOutputs;
+			break;
+		}
+	}
+
+	if ((foundAsComponent1 == end && foundAsConnectorWire1 == end && foundAsInputInCircuit1 == end) ||
+		(foundAsComponent2 == end && foundAsConnectorWire2 == end && foundAsInputInCircuit2 == end))
 		throw std::logic_error("One of two components is not found in this circuit");
+
 	// Make connect via new wire.
-	std::shared_ptr< lcsm::model::Wire > wire = std::make_shared< lcsm::model::Wire >();
-	m_globalId = wire->identify(m_globalId);
-	m_wiresConn[wire->id()] = wire;
+	std::shared_ptr< lcsm::model::Wire > wire = createConnectorWire();
 	circuit1->connect(port1, wire.get());
 	circuit2->connect(port2, wire.get());
 	lcsm::Circuit *wire1 = circuit1->byPort(port1);
@@ -196,7 +258,7 @@ void lcsm::LCSMCircuit::remove(lcsm::Circuit *circuit)
 	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Output))
 		m_outputs.erase(id);
 	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Wiring))
-		m_wiresConn.erase(id);
+		m_connectorWires.erase(id);
 	// Disconnect and remove.
 	m_components.erase(found);
 }
@@ -242,7 +304,7 @@ lcsm::Circuit *lcsm::LCSMCircuit::registerElement(std::shared_ptr< lcsm::Circuit
 	for (std::size_t i = 0; i < numOfWires; i++)
 	{
 		const lcsm::Identifier id = wires[i]->id();
-		m_wiresComp[id] = wires[i];
+		m_componentWires[id] = wires[i];
 	}
 	const lcsm::object_type_t objectType = circuit->objectType();
 	const lcsm::Identifier id = circuit->id();
@@ -277,7 +339,6 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 	for (const auto &component : m_components)
 	{
 		const std::shared_ptr< lcsm::Circuit > &oldCircuit = component.second;
-		const lcsm::Identifier oldId = oldCircuit->id();
 		switch (oldCircuit->circuitType())
 		{
 		case lcsm::CircuitType::Wire:
@@ -287,135 +348,170 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 		case lcsm::CircuitType::Pin:
 		{
 			const lcsm::model::Pin *oldPin = static_cast< const lcsm::model::Pin * >(oldCircuit.get());
+			const lcsm::model::Wire *oldInternal = oldPin->internal();
+			const lcsm::model::Wire *oldExternal = oldPin->external();
 			const bool output = oldPin->output();
 			const lcsm::Width width = oldPin->width();
-			const lcsm::model::Pin *pin = newCircuit->createPin(output, width);
-			oldToNewId[oldId] = pin->id();
-			GetEdges(edges, oldPin->internal(), true);
-			GetEdges(edges, oldPin->external(), true);
+			const lcsm::model::Pin *newPin = newCircuit->createPin(output, width);
+			oldToNewId[oldPin->id()] = newPin->id();
+			oldToNewId[oldInternal->id()] = newPin->internal()->id();
+			oldToNewId[oldExternal->id()] = newPin->external()->id();
+			GetEdges(edges, oldInternal, true);
+			GetEdges(edges, oldExternal, true);
 			break;
 		}
 		case lcsm::CircuitType::Constant:
 		{
 			const lcsm::model::Constant *oldConstant = static_cast< const lcsm::model::Constant * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWire = oldConstant->wire();
 			const lcsm::Width width = oldConstant->width();
 			const lcsm::value_t value = oldConstant->value();
-			const lcsm::Circuit *constant = newCircuit->createConstant(width, value);
-			oldToNewId[oldId] = constant->id();
-			GetEdges(edges, oldConstant->wire(), true);
+			const lcsm::model::Constant *newConstant = newCircuit->createConstant(width, value);
+			oldToNewId[oldConstant->id()] = newConstant->id();
+			oldToNewId[oldWire->id()] = newConstant->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Power:
 		{
 			const lcsm::model::Power *oldPower = static_cast< const lcsm::model::Power * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWire = oldPower->wire();
 			const lcsm::Width width = oldPower->width();
-			const lcsm::Circuit *power = newCircuit->createPower(width);
-			oldToNewId[oldId] = power->id();
-			GetEdges(edges, oldPower->wire(), true);
+			const lcsm::model::Power *power = newCircuit->createPower(width);
+			oldToNewId[oldPower->id()] = power->id();
+			oldToNewId[oldWire->id()] = power->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Ground:
 		{
 			const lcsm::model::Ground *oldGround = static_cast< const lcsm::model::Ground * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWire = oldGround->wire();
 			const lcsm::Width width = oldGround->width();
-			const lcsm::Circuit *ground = newCircuit->createGround(width);
-			oldToNewId[oldId] = ground->id();
+			const lcsm::model::Ground *newGround = newCircuit->createGround(width);
+			oldToNewId[oldGround->id()] = newGround->id();
+			oldToNewId[oldWire->id()] = newGround->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Clock:
 		{
 			const lcsm::model::Clock *oldClock = static_cast< const lcsm::model::Clock * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWire = oldClock->wire();
 			const unsigned highDuration = oldClock->highDuration();
 			const unsigned lowDuration = oldClock->lowDuration();
 			const unsigned phaseOffset = oldClock->phaseOffset();
-			const lcsm::Circuit *clock = newCircuit->createClock(highDuration, lowDuration, phaseOffset);
-			oldToNewId[oldId] = clock->id();
-			GetEdges(edges, oldClock->wire(), true);
+			const lcsm::model::Clock *newClock = newCircuit->createClock(highDuration, lowDuration, phaseOffset);
+			oldToNewId[oldClock->id()] = newClock->id();
+			oldToNewId[oldWire->id()] = newClock->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Transistor:
 		{
 			const lcsm::model::Transistor *oldTransistor = static_cast< const lcsm::model::Transistor * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWireBase = oldTransistor->wireBase();
+			const lcsm::model::Wire *oldWireSrcA = oldTransistor->wireSrcA();
+			const lcsm::model::Wire *oldWireSrcB = oldTransistor->wireSrcB();
 			const lcsm::model::Transistor::Type type = oldTransistor->type();
-			const lcsm::Circuit *transistor = newCircuit->createTransistor(type);
-			oldToNewId[oldId] = transistor->id();
-			GetEdges(edges, oldTransistor->wireBase(), true);
-			GetEdges(edges, oldTransistor->wireSrcA(), true);
-			GetEdges(edges, oldTransistor->wireSrcB(), true);
+			const lcsm::model::Transistor *newTransistor = newCircuit->createTransistor(type);
+			oldToNewId[oldTransistor->id()] = newTransistor->id();
+			oldToNewId[oldWireBase->id()] = newTransistor->wireBase()->id();
+			oldToNewId[oldWireSrcA->id()] = newTransistor->wireSrcA()->id();
+			oldToNewId[oldWireSrcB->id()] = newTransistor->wireSrcB()->id();
+			GetEdges(edges, oldWireBase, true);
+			GetEdges(edges, oldWireSrcA, true);
+			GetEdges(edges, oldWireSrcB, true);
 			break;
 		}
 		case lcsm::CircuitType::TransmissionGate:
 		{
 			const lcsm::model::TransmissionGate *oldTransmissionGate =
 				static_cast< const lcsm::model::TransmissionGate * >(oldCircuit.get());
-			const lcsm::Circuit *transmissionGate = newCircuit->createTransmissionGate();
-			oldToNewId[oldId] = transmissionGate->id();
-			GetEdges(edges, oldTransmissionGate->wireBase(), true);
-			GetEdges(edges, oldTransmissionGate->wireSrcA(), true);
-			GetEdges(edges, oldTransmissionGate->wireSrcB(), true);
-			GetEdges(edges, oldTransmissionGate->wireSrcC(), true);
+			const lcsm::model::Wire *oldWireBase = oldTransmissionGate->wireBase();
+			const lcsm::model::Wire *oldWireSrcA = oldTransmissionGate->wireSrcA();
+			const lcsm::model::Wire *oldWireSrcB = oldTransmissionGate->wireSrcB();
+			const lcsm::model::Wire *oldWireSrcC = oldTransmissionGate->wireSrcB();
+			const lcsm::model::TransmissionGate *newTransmissionGate = newCircuit->createTransmissionGate();
+			oldToNewId[oldTransmissionGate->id()] = newTransmissionGate->id();
+			oldToNewId[oldWireBase->id()] = newTransmissionGate->wireBase()->id();
+			oldToNewId[oldWireSrcA->id()] = newTransmissionGate->wireSrcA()->id();
+			oldToNewId[oldWireSrcB->id()] = newTransmissionGate->wireSrcB()->id();
+			oldToNewId[oldWireSrcC->id()] = newTransmissionGate->wireSrcB()->id();
+			GetEdges(edges, oldWireBase, true);
+			GetEdges(edges, oldWireSrcA, true);
+			GetEdges(edges, oldWireSrcB, true);
+			GetEdges(edges, oldWireSrcC, true);
 			break;
 		}
 		case lcsm::CircuitType::Button:
 		{
 			const lcsm::model::Button *oldButton = static_cast< const lcsm::model::Button * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWire = oldButton->wire();
 			const bool activeOnPress = oldButton->activeOnPress();
-			const lcsm::Circuit *button = newCircuit->createButton(activeOnPress);
-			oldToNewId[oldId] = button->id();
-			GetEdges(edges, oldButton->wire(), true);
+			const lcsm::model::Button *newButton = newCircuit->createButton(activeOnPress);
+			oldToNewId[oldButton->id()] = newButton->id();
+			oldToNewId[oldWire->id()] = newButton->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Digit:
 		{
 			const lcsm::model::Digit *oldDigit = static_cast< const lcsm::model::Digit * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWireData = oldDigit->wireData();
+			const lcsm::model::Wire *oldWireDecimalPoint = oldDigit->wireDecimalPoint();
 			const bool hasDecimalPoint = oldDigit->hasDecimalPoint();
-			const lcsm::Circuit *digit = newCircuit->createDigit(hasDecimalPoint);
-			oldToNewId[oldId] = digit->id();
-			GetEdges(edges, oldDigit->wireData(), true);
-			if (hasDecimalPoint)
-				GetEdges(edges, oldDigit->wireDecimalPoint(), true);
+			const lcsm::model::Digit *newDigit = newCircuit->createDigit(hasDecimalPoint);
+			oldToNewId[oldDigit->id()] = newDigit->id();
+			oldToNewId[oldWireData->id()] = newDigit->wireData()->id();
+			oldToNewId[oldWireDecimalPoint->id()] = newDigit->wireDecimalPoint()->id();
+			GetEdges(edges, oldWireData, true);
+			GetEdges(edges, oldWireDecimalPoint, true);
 			break;
 		}
 		case lcsm::CircuitType::Probe:
 		{
 			const lcsm::model::Probe *oldProbe = static_cast< const lcsm::model::Probe * >(oldCircuit.get());
-			const lcsm::Circuit *probe = newCircuit->createProbe();
-			oldToNewId[oldId] = probe->id();
-			GetEdges(edges, oldProbe->wire(), true);
+			const lcsm::model::Wire *oldWire = oldProbe->wire();
+			const lcsm::model::Probe *newProbe = newCircuit->createProbe();
+			oldToNewId[oldProbe->id()] = newProbe->id();
+			oldToNewId[oldWire->id()] = newProbe->wire()->id();
+			GetEdges(edges, oldWire, true);
 			break;
 		}
 		case lcsm::CircuitType::Splitter:
 		{
 			const lcsm::model::Splitter *oldSplitter = static_cast< const lcsm::model::Splitter * >(oldCircuit.get());
+			const lcsm::model::Wire *oldWireIn = oldSplitter->wireIn();
 			const lcsm::Width widthIn = oldSplitter->widthIn();
 			const lcsm::width_t widthOut = oldSplitter->widthOut();
-			const lcsm::Circuit *splitter = newCircuit->createSplitter(widthIn, widthOut);
-			oldToNewId[oldId] = splitter->id();
+			const lcsm::model::Splitter *newSplitter = newCircuit->createSplitter(widthIn, widthOut);
+			oldToNewId[oldSplitter->id()] = newSplitter->id();
+			oldToNewId[oldWireIn->id()] = newSplitter->wireIn()->id();
 			GetEdges(edges, oldSplitter->wireIn(), true);
 			for (lcsm::portid_t i = 0; i < static_cast< lcsm::portid_t >(widthOut); i++)
+			{
+				const lcsm::model::Wire *oldWireOut = oldSplitter->wireOut(i);
+				oldToNewId[oldWireOut->id()] = newSplitter->wireOut(i)->id();
 				GetEdges(edges, oldSplitter->wireOut(i), true);
+			}
 			break;
 		}
 		}
 	}
 
 	// Stage 1.2. Re-create all wires as 1.1.
-	for (const auto &wireConn : m_wiresConn)
+	for (const auto &connector : m_connectorWires)
 	{
-		const lcsm::model::Wire *oldWire = static_cast< const lcsm::model::Wire * >(wireConn.second.get());
-		std::shared_ptr< lcsm::Circuit > wire = newCircuit->createIdentifiedWire();
-		newCircuit->m_wiresConn[wire->id()] = wire;
-		const lcsm::Identifier oldId = oldWire->id();
-		oldToNewId[oldId] = wire->id();
+		const lcsm::model::Wire *oldWire = static_cast< const lcsm::model::Wire * >(connector.second.get());
+		std::shared_ptr< lcsm::Circuit > wire = newCircuit->createConnectorWire();
+		oldToNewId[oldWire->id()] = wire->id();
 		GetEdges(edges, oldWire, false);
 	}
 
 	// Stage 2. Copy in within circuits.
 	for (const auto &circuit : m_circuits)
-	{
-		const lcsm::LCSMCircuit &other = *(circuit.second.get());
-		newCircuit->addCircuit(other);
-	}
+		newCircuit->addCircuit(*circuit.second);
 
 	// Stage 3. Make connections.
 	for (const std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > &edge : edges)
@@ -427,13 +523,13 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 		lcsm::model::Wire *wire1 = nullptr;
 		lcsm::model::Wire *wire2 = nullptr;
 		if (isFirstComp)
-			wire1 = static_cast< lcsm::model::Wire * >(newCircuit->m_wiresComp[wireId1].get());
+			wire1 = static_cast< lcsm::model::Wire * >(newCircuit->m_componentWires[wireId1].get());
 		else
-			wire1 = static_cast< lcsm::model::Wire * >(newCircuit->m_wiresConn[wireId1].get());
+			wire1 = static_cast< lcsm::model::Wire * >(newCircuit->m_connectorWires[wireId1].get());
 		if (isSecondComp)
-			wire2 = static_cast< lcsm::model::Wire * >(newCircuit->m_wiresComp[wireId2].get());
+			wire2 = static_cast< lcsm::model::Wire * >(newCircuit->m_componentWires[wireId2].get());
 		else
-			wire2 = static_cast< lcsm::model::Wire * >(newCircuit->m_wiresConn[wireId2].get());
+			wire2 = static_cast< lcsm::model::Wire * >(newCircuit->m_connectorWires[wireId2].get());
 		wire1->connectToWire(wire2);
 		wire2->connectToWire(wire1);
 	}
@@ -446,14 +542,21 @@ lcsm::LCSMCircuit lcsm::LCSMCircuit::copyImpl(const lcsm::Identifier &entryId) c
 	return newCircuit;
 }
 
-std::shared_ptr< lcsm::Circuit > lcsm::LCSMCircuit::createWire()
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createHeadlessWire()
 {
 	return std::make_shared< lcsm::model::Wire >();
 }
 
-std::shared_ptr< lcsm::Circuit > lcsm::LCSMCircuit::createIdentifiedWire()
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createIdentifiedWire()
 {
-	std::shared_ptr< lcsm::Circuit > wire = createWire();
+	std::shared_ptr< lcsm::model::Wire > wire = createHeadlessWire();
 	m_globalId = wire->identify(m_globalId);
+	return wire;
+}
+
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createConnectorWire()
+{
+	std::shared_ptr< lcsm::model::Wire > wire = createIdentifiedWire();
+	m_connectorWires[wire->id()] = wire;
 	return wire;
 }

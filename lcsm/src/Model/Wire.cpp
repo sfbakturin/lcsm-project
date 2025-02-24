@@ -9,6 +9,11 @@
 #include <utility>
 #include <vector>
 
+lcsm::model::Wire::~Wire() noexcept
+{
+	disconnectAll();
+}
+
 const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &lcsm::model::Wire::wires() const noexcept
 {
 	return m_wires;
@@ -90,7 +95,6 @@ void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit) noexcept
 		if (found != m_wires.end())
 		{
 			m_wires.erase(found);
-			circuit->disconnect(this);
 		}
 	}
 }
@@ -99,6 +103,7 @@ void lcsm::model::Wire::disconnectAll() noexcept
 {
 	for (lcsm::support::PointerView< lcsm::Circuit > &wire : m_wires)
 		wire->disconnect(this);
+	m_wires.clear();
 }
 
 void lcsm::model::Wire::connectToWire(lcsm::Circuit *circuit)
@@ -111,8 +116,16 @@ void lcsm::model::Wire::connectConnect(lcsm::Circuit *circuit)
 	connect(lcsm::model::Wire::Port::Connect, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t) noexcept
+lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t portId) noexcept
 {
+	const lcsm::model::Wire::Port p = static_cast< lcsm::model::Wire::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Wire::Port::Wiring:
+		return this;
+	case lcsm::model::Wire::Port::Connect:
+		return m_connect.get();
+	}
 	return nullptr;
 }
 

@@ -39,8 +39,8 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > visit;
 
 	// Components.
-	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
-	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
 
 	// Find all *In*/*Out* circuits and add them to BFS queue.
 	for (auto it = inputs.begin(); it != inputs.end(); it++)
