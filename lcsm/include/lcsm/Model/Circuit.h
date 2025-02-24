@@ -11,7 +11,7 @@
 
 namespace lcsm
 {
-	using portid_t = std::size_t;
+	using portid_t = std::ptrdiff_t;
 
 	namespace model
 	{
@@ -34,10 +34,12 @@ namespace lcsm
 		virtual CircuitType circuitType() const noexcept = 0;
 
 		virtual void connect(portid_t portId, Circuit *circuit) = 0;
-		virtual void disconnect(Circuit *circuit) = 0;
-		virtual void disconnectAll() = 0;
+
+		virtual void disconnect(Circuit *circuit) noexcept = 0;
+		virtual void disconnectAll() noexcept = 0;
 
 		virtual Circuit *byPort(portid_t portId) noexcept = 0;
+		virtual portid_t findPort(const Circuit *circuit) const noexcept = 0;
 	};
 }	 // namespace lcsm
 

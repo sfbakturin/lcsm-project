@@ -12,6 +12,11 @@
 
 lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_width(width) {}
 
+lcsm::model::Pin::~Pin() noexcept
+{
+	disconnectAll();
+}
+
 bool lcsm::model::Pin::output() const noexcept
 {
 	return m_output;
@@ -92,12 +97,12 @@ void lcsm::model::Pin::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	selected->connectToWire(circuit);
 }
 
-void lcsm::model::Pin::disconnect(lcsm::Circuit *)
+void lcsm::model::Pin::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Pin::disconnectAll()
+void lcsm::model::Pin::disconnectAll() noexcept
 {
 	m_internal->disconnectAll();
 	m_external->disconnectAll();
@@ -114,4 +119,14 @@ lcsm::Circuit *lcsm::model::Pin::byPort(lcsm::portid_t portId) noexcept
 		return m_external.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Pin::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_internal.get())
+		return lcsm::model::Pin::Port::Internal;
+	else if (circuit == m_external.get())
+		return lcsm::model::Pin::Port::External;
+	else
+		return -1;
 }

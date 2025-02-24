@@ -10,6 +10,11 @@
 
 lcsm::model::Ground::Ground(lcsm::Width width) : m_width(width) {}
 
+lcsm::model::Ground::~Ground() noexcept
+{
+	disconnectAll();
+}
+
 lcsm::Width lcsm::model::Ground::width() const noexcept
 {
 	return m_width;
@@ -67,12 +72,12 @@ void lcsm::model::Ground::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Ground::disconnect(lcsm::Circuit *)
+void lcsm::model::Ground::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Ground::disconnectAll()
+void lcsm::model::Ground::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 }
@@ -91,4 +96,12 @@ lcsm::Circuit *lcsm::model::Ground::byPort(lcsm::portid_t portId) noexcept
 		return m_wire.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Ground::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Ground::Port::Wiring;
+	else
+		return -1;
 }

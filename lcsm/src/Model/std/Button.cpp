@@ -14,6 +14,11 @@
 
 lcsm::model::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress) {}
 
+lcsm::model::Button::~Button() noexcept
+{
+	disconnectAll();
+}
+
 bool lcsm::model::Button::activeOnPress() const noexcept
 {
 	return m_activeOnPress;
@@ -71,12 +76,12 @@ void lcsm::model::Button::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Button::disconnect(lcsm::Circuit *)
+void lcsm::model::Button::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Button::disconnectAll()
+void lcsm::model::Button::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 }
@@ -95,4 +100,12 @@ lcsm::Circuit *lcsm::model::Button::byPort(lcsm::portid_t portId) noexcept
 		return m_wire.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Button::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Button::Port::Wiring;
+	else
+		return -1;
 }

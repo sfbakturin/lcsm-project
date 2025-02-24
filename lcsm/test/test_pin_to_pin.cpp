@@ -1,14 +1,12 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
-#include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Verilog/Bit.h>
-
-#include <iostream>
 
 int main()
 {
@@ -19,7 +17,7 @@ int main()
 	lcsm::model::Pin *i1 = circuit.createPin(false);
 
 	/* Connect pins. */
-	lcsm::model::Wire *w = circuit.connect(i0, lcsm::model::Pin::Port::Internal, i1, lcsm::model::Pin::Port::Internal);
+	circuit.connect(i0, lcsm::model::Pin::Port::Internal, i1, lcsm::model::Pin::Port::Internal);
 
 	/* Build runtime calculation graph from circuit. */
 	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);
@@ -34,22 +32,10 @@ int main()
 	/* Step once. */
 	state.tick();
 
-	/* Extract value from wire between pins. */
-	const lcsm::DataBits &out1 = state.valueOf(w->id());
-
-	/* Print. */
-	std::cout << "w [ins 1] = " << out1 << '\n';
-
 	/* Put True/False to inputs. */
 	state.putValue(i0->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::True });
 	state.putValue(i1->id(), { lcsm::Width::Bit7, lcsm::verilog::Bit::False });
 
 	/* Step once. */
 	state.tick();
-
-	/* Extract value from wire between pins. */
-	const lcsm::DataBits &out2 = state.valueOf(w->id());
-
-	/* Print. */
-	std::cout << "w [ins 2] = " << out2 << '\n';
 }

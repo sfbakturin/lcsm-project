@@ -12,6 +12,11 @@
 
 lcsm::model::Power::Power(lcsm::Width width) : m_width(width) {}
 
+lcsm::model::Power::~Power() noexcept
+{
+	disconnectAll();
+}
+
 lcsm::Width lcsm::model::Power::width() const noexcept
 {
 	return m_width;
@@ -69,12 +74,12 @@ void lcsm::model::Power::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Power::disconnect(lcsm::Circuit *)
+void lcsm::model::Power::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Power::disconnectAll()
+void lcsm::model::Power::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 }
@@ -93,4 +98,12 @@ lcsm::Circuit *lcsm::model::Power::byPort(lcsm::portid_t portId) noexcept
 		return m_wire.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Power::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Power::Port::Wiring;
+	else
+		return -1;
 }

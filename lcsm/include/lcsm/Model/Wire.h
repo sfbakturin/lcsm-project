@@ -37,13 +37,15 @@ namespace lcsm
 			virtual CircuitType circuitType() const noexcept override final;
 
 			virtual void connect(portid_t portId, Circuit *circuit) override final;
-			virtual void disconnect(Circuit *circuit) override final;
-			virtual void disconnectAll() override final;
+
+			virtual void disconnect(Circuit *circuit) noexcept override final;
+			virtual void disconnectAll() noexcept override final;
 
 			void connectToWire(Circuit *circuit);
 			void connectConnect(Circuit *circuit);
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
+			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
 		  private:
 			std::vector< support::PointerView< Circuit > > m_wires;

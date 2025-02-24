@@ -76,7 +76,7 @@ void lcsm::model::Wire::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit)
+void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit) noexcept
 {
 	if (m_connect == circuit)
 	{
@@ -95,9 +95,10 @@ void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Wire::disconnectAll()
+void lcsm::model::Wire::disconnectAll() noexcept
 {
-	// TODO: Implement me.
+	for (lcsm::support::PointerView< lcsm::Circuit > &wire : m_wires)
+		wire->disconnect(this);
 }
 
 void lcsm::model::Wire::connectToWire(lcsm::Circuit *circuit)
@@ -110,7 +111,12 @@ void lcsm::model::Wire::connectConnect(lcsm::Circuit *circuit)
 	connect(lcsm::model::Wire::Port::Connect, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Wire::byPort(portid_t) noexcept
+lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t) noexcept
 {
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Wire::findPort(const lcsm::Circuit *) const noexcept
+{
+	return -1;
 }

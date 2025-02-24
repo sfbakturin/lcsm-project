@@ -13,6 +13,11 @@
 #include <utility>
 #include <vector>
 
+lcsm::model::TransmissionGate::~TransmissionGate() noexcept
+{
+	disconnectAll();
+}
+
 const lcsm::model::Wire *lcsm::model::TransmissionGate::wireBase() const noexcept
 {
 	return m_base.get();
@@ -85,12 +90,12 @@ void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, lcsm::Circuit
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::TransmissionGate::disconnect(lcsm::Circuit *)
+void lcsm::model::TransmissionGate::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::TransmissionGate::disconnectAll()
+void lcsm::model::TransmissionGate::disconnectAll() noexcept
 {
 	m_base->disconnectAll();
 	m_srcA->disconnectAll();
@@ -133,4 +138,18 @@ lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId) noex
 		return m_srcC.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::TransmissionGate::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_base.get())
+		return lcsm::model::TransmissionGate::Port::Base;
+	else if (circuit == m_srcA.get())
+		return lcsm::model::TransmissionGate::Port::SrcA;
+	else if (circuit == m_srcB.get())
+		return lcsm::model::TransmissionGate::Port::SrcB;
+	else if (circuit == m_srcC.get())
+		return lcsm::model::TransmissionGate::Port::SrcC;
+	else
+		return -1;
 }

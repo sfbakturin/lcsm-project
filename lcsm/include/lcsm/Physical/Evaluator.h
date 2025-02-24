@@ -27,11 +27,6 @@ namespace lcsm
 
 		virtual std::size_t contextSize() const noexcept = 0;
 
-		virtual const DataBits &read() const = 0;
-
-		virtual Width width() const = 0;
-		virtual bool checkWidth(const DataBits &value) const = 0;
-
 		virtual void setContext(const support::PointerView< Context > &context) = 0;
 		virtual void resetContext() noexcept = 0;
 

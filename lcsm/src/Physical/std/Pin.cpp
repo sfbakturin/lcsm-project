@@ -19,21 +19,6 @@ lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output) :
 {
 }
 
-const lcsm::DataBits &lcsm::physical::Pin::read() const
-{
-	return m_context->getValue();
-}
-
-lcsm::Width lcsm::physical::Pin::width() const
-{
-	return read().width();
-}
-
-bool lcsm::physical::Pin::checkWidth(const lcsm::DataBits &value) const
-{
-	return width() == value.width();
-}
-
 lcsm::NodeType lcsm::physical::Pin::nodeType() const noexcept
 {
 	return lcsm::NodeType::Static;
@@ -134,12 +119,12 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 	{
 		const lcsm::Instruction instant = m_instants.front();
 		m_instants.pop_front();
-		value = instant.caller()->read();
+		value = instant.value();
 	}
 
 	/* Traverse value on instants from external connection. */
 	for (const lcsm::Instruction &instant : m_instants)
-		value |= instant.caller()->read();
+		value |= instant.value();
 
 	/* Update context value. */
 	m_context->updateValues(now, { value });
@@ -155,14 +140,14 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 		if (m_externalConnect)
 		{
 			/* Write wire's value to target. */
-			lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_externalConnect.ptr());
+			lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_externalConnect.get(), value);
 			events.emplace_back(std::move(i));
 		}
 	}
 	else
 	{
 		/* Write value to Wire. */
-		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_internalConnect.ptr());
+		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value);
 		events.push_back(std::move(i));
 	}
 

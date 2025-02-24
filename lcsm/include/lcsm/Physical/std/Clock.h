@@ -25,11 +25,6 @@ namespace lcsm
 
 			virtual std::size_t contextSize() const noexcept override final;
 
-			virtual const DataBits &read() const override final;
-
-			virtual Width width() const override final;
-			virtual bool checkWidth(const DataBits &value) const override final;
-
 			virtual void setContext(const support::PointerView< Context > &context) override final;
 			virtual void resetContext() noexcept override final;
 

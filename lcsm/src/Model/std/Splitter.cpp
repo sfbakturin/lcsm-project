@@ -15,6 +15,11 @@ lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) : m
 {
 }
 
+lcsm::model::Splitter::~Splitter() noexcept
+{
+	disconnectAll();
+}
+
 lcsm::Width lcsm::model::Splitter::widthIn() const noexcept
 {
 	return m_widthIn;
@@ -182,12 +187,25 @@ lcsm::Circuit *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-void lcsm::model::Splitter::disconnect(lcsm::Circuit *)
+lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wireIn.get())
+		return lcsm::model::Splitter::Port::Input;
+	else
+	{
+		for (lcsm::width_t i = 0; i < m_widthOut; i++)
+			if (circuit == m_wireOut[i].get())
+				return static_cast< lcsm::portid_t >(i);
+		return -1;
+	}
+}
+
+void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Splitter::disconnectAll()
+void lcsm::model::Splitter::disconnectAll() noexcept
 {
 	m_wireIn->disconnectAll();
 	for (std::size_t i = 0; i < m_wireOut.size(); i++)

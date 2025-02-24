@@ -12,6 +12,11 @@
 #include <utility>
 #include <vector>
 
+lcsm::model::Tunnel::~Tunnel() noexcept
+{
+	disconnectAll();
+}
+
 const lcsm::model::Wire *lcsm::model::Tunnel::wire() const noexcept
 {
 	return m_wire.get();
@@ -64,12 +69,12 @@ void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Tunnel::disconnect(lcsm::Circuit *)
+void lcsm::model::Tunnel::disconnect(lcsm::Circuit *) noexcept
 {
 	// TODO: Implement me.
 }
 
-void lcsm::model::Tunnel::disconnectAll()
+void lcsm::model::Tunnel::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 	m_tunnel->disconnectAll();
@@ -93,7 +98,15 @@ lcsm::Circuit *lcsm::model::Tunnel::byPort(lcsm::portid_t portId) noexcept
 	case lcsm::model::Tunnel::Port::Wiring:
 		return m_wire.get();
 	case lcsm::model::Tunnel::Port::Tunneling:
-		return m_tunnel.ptr();
+		return m_tunnel.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Tunnel::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Tunnel::Port::Wiring;
+	else
+		return -1;
 }

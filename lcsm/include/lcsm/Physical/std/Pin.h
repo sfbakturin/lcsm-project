@@ -17,11 +17,6 @@ namespace lcsm
 		  public:
 			Pin(object_type_t objectType, bool output);
 
-			virtual const DataBits &read() const override final;
-
-			virtual Width width() const override final;
-			virtual bool checkWidth(const DataBits &value) const override final;
-
 			virtual NodeType nodeType() const noexcept override final;
 
 			virtual std::size_t contextSize() const noexcept override final;

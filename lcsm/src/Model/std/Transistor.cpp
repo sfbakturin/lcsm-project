@@ -14,6 +14,11 @@
 
 lcsm::model::Transistor::Transistor(lcsm::model::Transistor::Type type) : m_type(type) {}
 
+lcsm::model::Transistor::~Transistor() noexcept
+{
+	disconnectAll();
+}
+
 lcsm::model::Transistor::Type lcsm::model::Transistor::type() const noexcept
 {
 	return m_type;
@@ -88,12 +93,12 @@ void lcsm::model::Transistor::connect(lcsm::portid_t portId, lcsm::Circuit *circ
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Transistor::disconnect(lcsm::Circuit *)
+void lcsm::model::Transistor::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Transistor::disconnectAll()
+void lcsm::model::Transistor::disconnectAll() noexcept
 {
 	m_base->disconnectAll();
 	m_srcA->disconnectAll();
@@ -128,4 +133,16 @@ lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId) noexcept
 		return m_srcB.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Transistor::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_base.get())
+		return lcsm::model::Transistor::Port::Base;
+	else if (circuit == m_srcA.get())
+		return lcsm::model::Transistor::Port::SrcA;
+	else if (circuit == m_srcB.get())
+		return lcsm::model::Transistor::Port::SrcB;
+	else
+		return -1;
 }

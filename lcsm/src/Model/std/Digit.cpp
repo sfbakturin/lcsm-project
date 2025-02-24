@@ -14,6 +14,11 @@
 
 lcsm::model::Digit::Digit(bool hasDecimalPoint) : m_hasDecimalPoint(hasDecimalPoint) {}
 
+lcsm::model::Digit::~Digit() noexcept
+{
+	disconnectAll();
+}
+
 bool lcsm::model::Digit::hasDecimalPoint() const noexcept
 {
 	return m_hasDecimalPoint;
@@ -22,8 +27,8 @@ bool lcsm::model::Digit::hasDecimalPoint() const noexcept
 void lcsm::model::Digit::setHasDecimalPoint(bool hasDecimalPoint) noexcept
 {
 	m_hasDecimalPoint = hasDecimalPoint;
-	// TODO: If digit now doesn't have decimal point, then we should erase Wire connections (must be another method of
-	// lcsm::model::Wire).
+	if (!hasDecimalPoint)
+		m_wireDecimalPoint->disconnectAll();
 }
 
 const lcsm::model::Wire *lcsm::model::Digit::wireData() const noexcept
@@ -90,12 +95,12 @@ void lcsm::model::Digit::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Digit::disconnect(lcsm::Circuit *)
+void lcsm::model::Digit::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Digit::disconnectAll()
+void lcsm::model::Digit::disconnectAll() noexcept
 {
 	m_wireData->disconnectAll();
 	m_wireDecimalPoint->disconnectAll();
@@ -122,4 +127,14 @@ lcsm::Circuit *lcsm::model::Digit::byPort(lcsm::portid_t portId) noexcept
 		return m_hasDecimalPoint ? m_wireDecimalPoint.get() : nullptr;
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Digit::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wireData.get())
+		return lcsm::model::Digit::Port::WiringData;
+	else if (circuit == m_wireDecimalPoint.get() && m_hasDecimalPoint)
+		return lcsm::model::Digit::Port::WiringDecimalPoint;
+	else
+		return -1;
 }

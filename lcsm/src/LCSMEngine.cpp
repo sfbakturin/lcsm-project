@@ -25,7 +25,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <cstddef>
 #include <deque>
 #include <memory>
 #include <stdexcept>
@@ -47,13 +46,13 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	for (auto it = inputs.begin(); it != inputs.end(); it++)
 	{
 		lcsm::support::PointerView< lcsm::Circuit > circ = lcsm::support::PointerView< lcsm::Circuit >::fromSharedPtr(it->second);
-		visit.emplace_back(circ.cptr());
+		visit.emplace_back(circ.get());
 	}
 
 	for (auto it = outputs.begin(); it != outputs.end(); it++)
 	{
 		lcsm::support::PointerView< lcsm::Circuit > circ = lcsm::support::PointerView< lcsm::Circuit >::fromSharedPtr(it->second);
-		visit.emplace_back(circ.cptr());
+		visit.emplace_back(circ.get());
 	}
 
 	engine.buildCircuit(visit);
@@ -126,7 +125,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Wire:
 	{
 		// Extract Wire as model object.
-		const lcsm::model::Wire *wire = static_cast< const lcsm::model::Wire * >(circuit.cptr());
+		const lcsm::model::Wire *wire = static_cast< const lcsm::model::Wire * >(circuit.get());
 		const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &wireWires = wire->wires();
 		const lcsm::support::PointerView< lcsm::Circuit > &wireConnect = wire->connect();
 		const lcsm::Identifier wireId = wire->id();
@@ -143,13 +142,13 @@ void lcsm::LCSMEngine::buildCircuit(
 			const lcsm::Identifier wireChildId = wireChild->id();
 			lcsm::support::PointerView< lcsm::EvaluatorNode > wireChildEvaluatorNode = registeredWire(wireChildId);
 			wireNode->connect(wireChildEvaluatorNode);
-			bfsVisit.emplace_back(wireChild.cptr());
+			bfsVisit.emplace_back(wireChild.get());
 		}
 
 		// This wire might be some object's wire, so we should make connection
 		// as tree's edge.
 		if (wireConnect)
-			bfsVisit.emplace_back(wireConnect.cptr());
+			bfsVisit.emplace_back(wireConnect.get());
 
 		// Add as visited objects.
 		visited.insert(wireId);
@@ -161,7 +160,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Pin:
 	{
 		// Extract Pin as model object.
-		const lcsm::model::Pin *pin = static_cast< const lcsm::model::Pin * >(circuit.cptr());
+		const lcsm::model::Pin *pin = static_cast< const lcsm::model::Pin * >(circuit.get());
 		const lcsm::model::Wire *wireInternal = pin->internal();
 		const lcsm::model::Wire *wireExternal = pin->external();
 		const lcsm::Identifier idPin = pin->id();
@@ -197,7 +196,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Constant:
 	{
 		// Extract Constant as model object.
-		const lcsm::model::Constant *constantModel = static_cast< const lcsm::model::Constant * >(circuit.cptr());
+		const lcsm::model::Constant *constantModel = static_cast< const lcsm::model::Constant * >(circuit.get());
 		const lcsm::model::Wire *wireModel = constantModel->wire();
 		const lcsm::Identifier constantId = constantModel->id();
 		const lcsm::Identifier wireId = wireModel->id();
@@ -231,7 +230,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Power:
 	{
 		// Extract Power as model object.
-		const lcsm::model::Power *powerModel = static_cast< const lcsm::model::Power * >(circuit.cptr());
+		const lcsm::model::Power *powerModel = static_cast< const lcsm::model::Power * >(circuit.get());
 		const lcsm::model::Wire *wireModel = powerModel->wire();
 		const lcsm::Identifier powerId = powerModel->id();
 		const lcsm::Identifier wireId = wireModel->id();
@@ -262,7 +261,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Ground:
 	{
 		// Extract Ground as model object.
-		const lcsm::model::Ground *groundModel = static_cast< const lcsm::model::Ground * >(circuit.cptr());
+		const lcsm::model::Ground *groundModel = static_cast< const lcsm::model::Ground * >(circuit.get());
 		const lcsm::model::Wire *wireModel = groundModel->wire();
 		const lcsm::Identifier groundId = groundModel->id();
 		const lcsm::Identifier wireId = wireModel->id();
@@ -294,7 +293,7 @@ void lcsm::LCSMEngine::buildCircuit(
 	case lcsm::CircuitType::Clock:
 	{
 		// Extract Clock as model object.
-		const lcsm::model::Clock *clockModel = static_cast< const lcsm::model::Clock * >(circuit.cptr());
+		const lcsm::model::Clock *clockModel = static_cast< const lcsm::model::Clock * >(circuit.get());
 		const lcsm::model::Wire *wireModel = clockModel->wire();
 		const lcsm::Identifier clockId = clockModel->id();
 		const lcsm::Identifier wireId = wireModel->id();

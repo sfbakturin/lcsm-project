@@ -15,6 +15,11 @@ lcsm::model::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned 
 {
 }
 
+lcsm::model::Clock::~Clock() noexcept
+{
+	disconnectAll();
+}
+
 unsigned lcsm::model::Clock::highDuration() const noexcept
 {
 	return m_highDuration;
@@ -92,12 +97,12 @@ void lcsm::model::Clock::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	selected->connectToWire(circuit);
 }
 
-void lcsm::model::Clock::disconnect(lcsm::Circuit *)
+void lcsm::model::Clock::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Clock::disconnectAll()
+void lcsm::model::Clock::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 }
@@ -116,4 +121,12 @@ lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId) noexcept
 		return m_wire.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Clock::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Clock::Port::Wiring;
+	else
+		return -1;
 }

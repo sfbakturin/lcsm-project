@@ -28,21 +28,6 @@ std::size_t lcsm::physical::Clock::contextSize() const noexcept
 	return 1;
 }
 
-const lcsm::DataBits &lcsm::physical::Clock::read() const
-{
-	return m_context->getValue(0);
-}
-
-lcsm::Width lcsm::physical::Clock::width() const
-{
-	return read().width();
-}
-
-bool lcsm::physical::Clock::checkWidth(const lcsm::DataBits &value) const
-{
-	return width() == value.width();
-}
-
 void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	if (context->size() != contextSize())
@@ -84,7 +69,7 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 	// TODO: Implement somehow counter.
 
 	/* Write value to Wire. */
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.ptr());
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
 	events.emplace_back(std::move(i));
 
 	return events;

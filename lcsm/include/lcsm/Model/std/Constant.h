@@ -25,6 +25,7 @@ namespace lcsm
 
 		  public:
 			Constant(Width width, value_t value);
+			~Constant() noexcept;
 
 			Width width() const noexcept;
 			void setWidth(Width width) noexcept;
@@ -44,12 +45,14 @@ namespace lcsm
 			virtual CircuitType circuitType() const noexcept override;
 
 			virtual void connect(portid_t portId, Circuit *circuit) override final;
-			virtual void disconnect(Circuit *circuit) override final;
-			virtual void disconnectAll() override final;
+
+			virtual void disconnect(Circuit *circuit) noexcept override final;
+			virtual void disconnectAll() noexcept override final;
 
 			void connect(Circuit *circuit);
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
+			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
 		  private:
 			Identifier m_id;

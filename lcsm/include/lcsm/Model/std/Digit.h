@@ -25,6 +25,7 @@ namespace lcsm
 
 		  public:
 			Digit(bool hasDecimalPoint);
+			~Digit() noexcept;
 
 			bool hasDecimalPoint() const noexcept;
 			void setHasDecimalPoint(bool hasDecimalPoint) noexcept;
@@ -42,13 +43,15 @@ namespace lcsm
 			virtual CircuitType circuitType() const noexcept override final;
 
 			virtual void connect(portid_t portId, Circuit *circuit) override final;
-			virtual void disconnect(Circuit *circuit) override final;
-			virtual void disconnectAll() override final;
+
+			virtual void disconnect(Circuit *circuit) noexcept override final;
+			virtual void disconnectAll() noexcept override final;
 
 			void connectData(Circuit *circuit);
 			void connectDecimalPoint(Circuit *circuit);
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
+			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
 		  private:
 			Identifier m_id;

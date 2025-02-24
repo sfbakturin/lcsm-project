@@ -11,7 +11,10 @@
 #include <stdexcept>
 #include <vector>
 
-lcsm::model::Probe::Probe() {}
+lcsm::model::Probe::~Probe() noexcept
+{
+	disconnectAll();
+}
 
 const lcsm::model::Wire *lcsm::model::Probe::wire() const noexcept
 {
@@ -60,12 +63,12 @@ void lcsm::model::Probe::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Probe::disconnect(lcsm::Circuit *)
+void lcsm::model::Probe::disconnect(lcsm::Circuit *) noexcept
 {
 	// Do nothing.
 }
 
-void lcsm::model::Probe::disconnectAll()
+void lcsm::model::Probe::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
 }
@@ -84,4 +87,12 @@ lcsm::Circuit *lcsm::model::Probe::byPort(lcsm::portid_t portId) noexcept
 		return m_wire.get();
 	}
 	return nullptr;
+}
+
+lcsm::portid_t lcsm::model::Probe::findPort(const lcsm::Circuit *circuit) const noexcept
+{
+	if (circuit == m_wire.get())
+		return lcsm::model::Probe::Port::Wiring;
+	else
+		return -1;
 }

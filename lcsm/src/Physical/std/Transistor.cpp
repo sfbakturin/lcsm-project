@@ -21,21 +21,6 @@ lcsm::physical::Transistor::Transistor(lcsm::object_type_t objectType, lcsm::mod
 {
 }
 
-const lcsm::DataBits &lcsm::physical::Transistor::read() const
-{
-	return m_context->getValue();
-}
-
-lcsm::Width lcsm::physical::Transistor::width() const
-{
-	return read().width();
-}
-
-bool lcsm::physical::Transistor::checkWidth(const DataBits &value) const
-{
-	return width() == value.width();
-}
-
 lcsm::NodeType lcsm::physical::Transistor::nodeType() const noexcept
 {
 	return lcsm::NodeType::Dynamic;
@@ -138,30 +123,30 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 		if (!m_instantsBase.empty())
 		{
 			const lcsm::Instruction instant = m_instantsBase.front();
-			valueBase = instant.caller()->read();
+			valueBase = instant.value();
 			m_instantsBase.pop_front();
 		}
 		if (!m_instantsSrcA.empty())
 		{
 			const lcsm::Instruction instant = m_instantsSrcA.front();
-			valueSrcA = instant.caller()->read();
+			valueSrcA = instant.value();
 			m_instantsSrcA.pop_front();
 		}
 		if (!m_instantsSrcB.empty())
 		{
 			const lcsm::Instruction instant = m_instantsSrcB.front();
-			valueSrcB = instant.caller()->read();
+			valueSrcB = instant.value();
 			m_instantsSrcB.pop_front();
 		}
 	}
 
 	/* Invoke all instructions. */
 	for (lcsm::Instruction &instant : m_instantsBase)
-		valueBase |= instant.caller()->read();
+		valueBase |= instant.value();
 	for (lcsm::Instruction &instant : m_instantsSrcA)
-		valueSrcA |= instant.caller()->read();
+		valueSrcA |= instant.value();
 	for (lcsm::Instruction &instant : m_instantsSrcB)
-		valueSrcB |= instant.caller()->read();
+		valueSrcB |= instant.value();
 
 	/* Values must be 1 bit (aka width == Width::Bit1)! */
 	if (valueBase.width() != lcsm::Width::Bit1 || valueSrcA != lcsm::Width::Bit1 || valueSrcB != lcsm::Width::Bit1)
@@ -191,17 +176,17 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 	/* If new values equals to old and there is exisiting connection, then make events to write. */
 	std::vector< lcsm::Event > events;
 
-	if (m_srca && valueSrcA != newValueSrcA)
-	{
-		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srca.ptr());
-		events.emplace_back(std::move(i));
-	}
+	// if (m_srca && valueSrcA != newValueSrcA)
+	// {
+	// 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srca.ptr());
+	// 	events.emplace_back(std::move(i));
+	// }
 
-	if (m_srcb && valueSrcA != newValueSrcB)
-	{
-		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srcb.ptr());
-		events.emplace_back(std::move(i));
-	}
+	// if (m_srcb && valueSrcA != newValueSrcB)
+	// {
+	// 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_srcb.ptr());
+	// 	events.emplace_back(std::move(i));
+	// }
 
 	return events;
 }

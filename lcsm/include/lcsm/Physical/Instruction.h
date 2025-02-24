@@ -12,6 +12,8 @@ namespace lcsm
 	{
 	  public:
 		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target) noexcept;
+		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
+		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target, DataBits &&value) noexcept;
 
 		Instruction(const Instruction &other) noexcept;
 		Instruction(Instruction &&other) noexcept;
@@ -29,19 +31,20 @@ namespace lcsm
 		const EvaluatorNode *target() const noexcept;
 		EvaluatorNode *target() noexcept;
 
-		const DataBits &value() const noexcept;
-		void setValue(const DataBits &value) noexcept;
+		bool hasValue() const noexcept;
+		const DataBits &value() const;
 
 	  private:
 		InstructionType m_type;
 		EvaluatorNode *m_caller;
 		EvaluatorNode *m_target;
+
+		bool m_hasValue;
 		DataBits m_value;
 	};
 
 	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
-	Instruction CreateRequestInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
-	Instruction CreateUpdateStateInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
+	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
 }	 // namespace lcsm
 
 #endif /* LCSM_PHYSICAL_INSTRUCTION_H */

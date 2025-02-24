@@ -51,6 +51,9 @@ namespace lcsm
 			reference ref() noexcept;
 			const_reference cref() const noexcept;
 
+			pointer get() noexcept;
+			const_pointer get() const noexcept;
+
 			void reset() noexcept;
 
 			std::size_t hashCode() const noexcept;
@@ -149,13 +152,13 @@ const T *lcsm::support::PointerView< T >::operator->() const noexcept
 template< typename T >
 T &lcsm::support::PointerView< T >::operator*() & noexcept
 {
-	return this->value();
+	return ref();
 }
 
 template< typename T >
 const T &lcsm::support::PointerView< T >::operator*() const & noexcept
 {
-	return this->value();
+	return cref();
 }
 
 template< typename T >
@@ -198,6 +201,18 @@ template< typename T >
 const T &lcsm::support::PointerView< T >::cref() const noexcept
 {
 	return *m_ptr;
+}
+
+template< typename T >
+typename lcsm::support::PointerView< T >::pointer lcsm::support::PointerView< T >::get() noexcept
+{
+	return ptr();
+}
+
+template< typename T >
+typename lcsm::support::PointerView< T >::const_pointer lcsm::support::PointerView< T >::get() const noexcept
+{
+	return cptr();
 }
 
 template< typename T >

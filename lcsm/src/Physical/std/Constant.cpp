@@ -30,21 +30,6 @@ std::size_t lcsm::physical::Constant::contextSize() const noexcept
 	return 1;
 }
 
-const lcsm::DataBits &lcsm::physical::Constant::read() const
-{
-	return m_databits;
-}
-
-lcsm::Width lcsm::physical::Constant::width() const
-{
-	return read().width();
-}
-
-bool lcsm::physical::Constant::checkWidth(const lcsm::DataBits &value) const
-{
-	return width() == value.width();
-}
-
 void lcsm::physical::Constant::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
 	m_context = context;
@@ -81,7 +66,7 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 	std::vector< lcsm::Event > events;
 
 	// Write value to Wire.
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.ptr());
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits);
 	events.emplace_back(std::move(i));
 
 	return events;
