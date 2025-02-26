@@ -167,7 +167,13 @@ void lcsm::verilog::Value::flip() noexcept
 		setBit(lcsm::verilog::Bit::True);
 }
 
-std::ostream &lcsm::verilog::operator<<(std::ostream &os, const lcsm::verilog::Value &v)
+namespace lcsm
 {
-	return os << '{' << v.m_bit << ", " << v.m_strength << '}';
-}
+	namespace verilog
+	{
+		std::ostream &operator<<(std::ostream &os, const lcsm::verilog::Value &v)
+		{
+			return os << '{' << v.m_bit << ", " << v.m_strength << '}';
+		}
+	}	 // namespace verilog
+}	 // namespace lcsm

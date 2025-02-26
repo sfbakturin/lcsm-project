@@ -26,6 +26,7 @@ namespace lcsm
 		LCSMEngine() = default;
 
 		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_objects;
+		support::PointerView< const LCSMCircuit > m_circuit;
 
 	  private:
 		friend class LCSMState;

@@ -227,20 +227,20 @@ void lcsm::DataBits::reset() noexcept
 		m_bits[i] = { lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };
 }
 
-std::ostream &lcsm::operator<<(std::ostream &os, const lcsm::DataBits &db)
+namespace lcsm
 {
-	os << '[';
-
-	const unsigned n = static_cast< unsigned >(db.m_width);
-	bool needsComma = false;
-
-	for (unsigned i = 0; i < n; i++)
+	std::ostream &operator<<(std::ostream &os, const lcsm::DataBits &db)
 	{
-		if (needsComma)
-			os << ',';
-		os << db.m_bits[i];
-		needsComma = true;
+		os << '[';
+		const unsigned n = static_cast< unsigned >(db.m_width);
+		bool needsComma = false;
+		for (unsigned i = 0; i < n; i++)
+		{
+			if (needsComma)
+				os << ',';
+			os << db.m_bits[i];
+			needsComma = true;
+		}
+		return os << ']';
 	}
-
-	return os << ']';
-}
+}	 // namespace lcsm

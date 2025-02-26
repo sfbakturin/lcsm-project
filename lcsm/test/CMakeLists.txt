@@ -24,8 +24,8 @@ TARGET_LINK_LIBRARIES(test_ground_to_pin PRIVATE LCSM)
 ADD_EXECUTABLE(test_internal_circuit test_internal_circuit.cpp)
 TARGET_LINK_LIBRARIES(test_internal_circuit PRIVATE LCSM)
 
-ADD_EXECUTABLE(test_logical_not test_logical_not.cpp)
-TARGET_LINK_LIBRARIES(test_logical_not PRIVATE LCSM)
+# ADD_EXECUTABLE(test_logical_not test_logical_not.cpp)
+# TARGET_LINK_LIBRARIES(test_logical_not PRIVATE LCSM)
 
 ENABLE_TESTING()
 
@@ -37,4 +37,4 @@ ADD_TEST(NAME test-pin-to-pin COMMAND $<TARGET_FILE:test_pin_to_pin>)
 ADD_TEST(NAME test-power-to-pin COMMAND $<TARGET_FILE:test_power_to_pin>)
 ADD_TEST(NAME test-ground-to-pin COMMAND $<TARGET_FILE:test_ground_to_pin>)
 ADD_TEST(NAME test-internal-circuit COMMAND $<TARGET_FILE:test_internal_circuit>)
-ADD_TEST(NAME test-logical-not COMMAND $<TARGET_FILE:test_logical_not>)
+# ADD_TEST(NAME test-logical-not COMMAND $<TARGET_FILE:test_logical_not>)

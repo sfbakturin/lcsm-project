@@ -56,7 +56,7 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	}
 
 	engine.buildCircuit(visit);
-
+	engine.m_circuit = std::addressof(circuit);
 	return engine;
 }
 

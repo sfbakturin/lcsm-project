@@ -1,6 +1,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
+#include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/DataBits.h>
@@ -15,6 +16,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <deque>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -22,6 +24,7 @@
 
 lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 {
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = engine->m_circuit->inputs();
 	for (auto &object : engine->m_objects)
 	{
 		const lcsm::Identifier &id = object.first;
@@ -32,9 +35,10 @@ lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 		const lcsm::support::PointerView< lcsm::Context > context = std::addressof(m_contexts[id]);
 		obj->setContext(context);
 
-		/* Init schedule new events. */
+		/* Init all inputs and only-Roots. */
 		const lcsm::object_type_t objectType = obj->objectType();
-		if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root))
+		if ((lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !TestObjectType(objectType, lcsm::ObjectType::Input)) ||
+			inputs.count(id))
 		{
 			lcsm::support::PointerView< lcsm::EvaluatorNode > node = obj;
 			m_roots.push_back(node);
@@ -216,7 +220,7 @@ void lcsm::LCSMState::tick()
 				const std::size_t size = localQueue.size();
 
 				/* Extract all events from queue. */
-				for (std::size_t i = 0; i < size; i++)
+				for (std::size_t i = 0; i < size && !localQueue.empty(); i++)
 				{
 					/* Extract from front and remove from scheduler. */
 					lcsm::Event event = localQueue.front();
@@ -243,6 +247,30 @@ void lcsm::LCSMState::tick()
 						target->addInstant(instruction);
 						/* Remember this node. */
 						nodes.push_back(target);
+						/* Find all events, where caller is certain this one. */
+						for (std::size_t j = i; j < size && !localQueue.empty(); j++)
+						{
+							/* Extract from front and remove from scheduler. */
+							lcsm::Event otherEvent = localQueue.front();
+							localQueue.pop_front();
+
+							/* Targeting invoke in future node. */
+							lcsm::Instruction &otherInstruction = otherEvent.instruction();
+							lcsm::support::PointerView< lcsm::EvaluatorNode > otherCaller = otherInstruction.caller();
+							lcsm::support::PointerView< lcsm::EvaluatorNode > otherTarget = otherInstruction.target();
+
+							/* Add to nodes, if caller is presented. */
+							if (caller == otherCaller)
+							{
+								otherTarget->addInstant(otherInstruction);
+								nodes.push_back(otherTarget);
+							}
+							else
+							{
+								/* If not, then return to queue. */
+								localQueue.push_back(otherEvent);
+							}
+						}
 						/* Mark as visited. */
 						visited.push_back(caller);
 					}

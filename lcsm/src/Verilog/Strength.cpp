@@ -6,15 +6,16 @@ std::ostream &lcsm::verilog::operator<<(std::ostream &os, const lcsm::verilog::S
 {
 	switch (s)
 	{
-	case HighImpedance:
+	case lcsm::verilog::Strength::HighImpedance:
 		return os << "highz";
-	case WeakDrive:
+	case lcsm::verilog::Strength::WeakDrive:
 		return os << "weak";
-	case PullDrive:
+	case lcsm::verilog::Strength::PullDrive:
 		return os << "pull";
-	case StrongDrive:
+	case lcsm::verilog::Strength::StrongDrive:
 		return os << "strong";
-	case SupplyDrive:
+	case lcsm::verilog::Strength::SupplyDrive:
 		return os << "supply";
 	}
+	return os;
 }

@@ -8,6 +8,7 @@
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Physical/std/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <unordered_set>
 
 #include <stdexcept>
 #include <utility>
@@ -53,6 +54,14 @@ void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
 		throw std::logic_error("Attempt to instant non BroadcastValue for wire");
 }
 
+static inline void
+	WireNeighbourInstructions(lcsm::EvaluatorNode *targetFrom, lcsm::EvaluatorNode *targetTo, const lcsm::DataBits &value, std::vector< lcsm::Event > &events)
+{
+	/* Write wire's value to target. */
+	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(targetFrom, targetTo, value);
+	events.emplace_back(std::move(i));
+}
+
 static inline void WireNeighbourInstructions(
 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo,
@@ -60,8 +69,7 @@ static inline void WireNeighbourInstructions(
 	std::vector< lcsm::Event > &events)
 {
 	/* Write wire's value to target. */
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(targetFrom.get(), targetTo.get(), value);
-	events.emplace_back(std::move(i));
+	WireNeighbourInstructions(targetFrom.get(), targetTo.get(), value, events);
 }
 
 std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Timestamp &now)
@@ -83,12 +91,28 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	}
 
 	/* Invoke all instructions. */
-	for (const lcsm::Instruction &instant : m_instants)
+	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
+	for (lcsm::Instruction &instant : m_instants)
+	{
 		value |= instant.value();
+		instant.caller();
+		callings.emplace(instant.caller());
+	}
 
-	/* Go through all objects-neighbour and create a new events. */
+	/* Go through all objects-neighbour and create a new events to all non callings. */
 	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &child : m_children)
+	{
+		if (callings.count(child))
+			continue;
 		WireNeighbourInstructions(targetFrom, child, value, events);
+	}
+
+	/* Go through all objects-neighbour and create a new events to all callings, where instant::value() != value. */
+	for (lcsm::Instruction &instant : m_instants)
+	{
+		if (value != instant.value())
+			WireNeighbourInstructions(this, instant.caller(), value, events);
+	}
 
 	/* Save last value. */
 	m_context->updateValues(now, { value });

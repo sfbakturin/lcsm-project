@@ -42,7 +42,7 @@ int main()
 	{
 		state.putValue(i0->id(), value);
 		state.tick();
-		const lcsm::DataBits &out = state.valueOf(o0->id());
+		const lcsm::DataBits &out = state.valueOf(c0o0->id());
 		std::cout << "in = " << value << " =>  out = " << out << '\n';
 	}
 }

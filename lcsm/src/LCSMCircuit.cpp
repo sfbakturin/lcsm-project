@@ -29,7 +29,9 @@
 #include <vector>
 
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMCircuit &&other) noexcept :
-	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components))
+	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components)), m_inputs(std::move(other.m_inputs)),
+	m_outputs(std::move(other.m_outputs)), m_componentWires(std::move(other.m_componentWires)),
+	m_connectorWires(std::move(other.m_connectorWires)), m_circuits(std::move(other.m_circuits))
 {
 }
 
@@ -42,6 +44,11 @@ void lcsm::LCSMCircuit::swap(lcsm::LCSMCircuit &other) noexcept
 {
 	std::swap(m_globalId, other.m_globalId);
 	std::swap(m_components, other.m_components);
+	std::swap(m_inputs, other.m_inputs);
+	std::swap(m_outputs, other.m_outputs);
+	std::swap(m_componentWires, other.m_componentWires);
+	std::swap(m_connectorWires, other.m_connectorWires);
+	std::swap(m_circuits, other.m_circuits);
 }
 
 lcsm::LCSMCircuit lcsm::LCSMCircuit::copy() const
@@ -277,6 +284,7 @@ const lcsm::LCSMCircuit *lcsm::LCSMCircuit::addCircuit(const lcsm::LCSMCircuit &
 	const lcsm::Identifier circuitId = m_globalId;
 	other.copyImpl(circuit.get(), m_globalId);
 	m_circuits[circuitId] = circuit;
+	m_globalId = circuit->globalId().next();
 	return circuit.get();
 }
 
@@ -531,7 +539,6 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 		else
 			wire2 = static_cast< lcsm::model::Wire * >(newCircuit->m_connectorWires[wireId2].get());
 		wire1->connectToWire(wire2);
-		wire2->connectToWire(wire1);
 	}
 }
 
