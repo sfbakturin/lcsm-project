@@ -9,17 +9,21 @@
 #include <utility>
 #include <vector>
 
-lcsm::Context::Context() : lcsm::Context(1) {}
+lcsm::Context::Context() : lcsm::Context(1, 0) {}
 
-lcsm::Context::Context(std::size_t n) : m_databits(n), m_updating(false) {}
+lcsm::Context::Context(std::size_t n, std::size_t privateSize) :
+	m_databits(n), m_private(privateSize), m_updating(false)
+{
+}
 
 lcsm::Context::Context(const lcsm::Context &other) :
-	m_databits(other.m_databits), m_timestamp(other.m_timestamp), m_updating(other.m_updating)
+	m_databits(other.m_databits), m_timestamp(other.m_timestamp), m_private(other.m_private), m_updating(other.m_updating)
 {
 }
 
 lcsm::Context::Context(lcsm::Context &&other) noexcept :
-	m_databits(std::move(other.m_databits)), m_timestamp(std::move(other.m_timestamp)), m_updating(other.m_updating)
+	m_databits(std::move(other.m_databits)), m_timestamp(std::move(other.m_timestamp)),
+	m_private(std::move(other.m_private)), m_updating(other.m_updating)
 {
 }
 
@@ -37,6 +41,7 @@ void lcsm::Context::swap(lcsm::Context &other) noexcept
 {
 	std::swap(m_databits, other.m_databits);
 	std::swap(m_timestamp, other.m_timestamp);
+	std::swap(m_private, other.m_private);
 	std::swap(m_updating, other.m_updating);
 }
 
@@ -55,6 +60,11 @@ const lcsm::DataBits &lcsm::Context::getValue(std::size_t i) const
 	if (i >= m_databits.size())
 		throw std::out_of_range("Context: Index out of bound");
 	return m_databits[i];
+}
+
+const std::vector< lcsm::DataBits > &lcsm::Context::values() const noexcept
+{
+	return m_databits;
 }
 
 bool lcsm::Context::isEqualsValues(const Context &other) const
@@ -177,4 +187,14 @@ void lcsm::Context::updateValues(lcsm::Timestamp &&timestamp, std::initializer_l
 bool lcsm::Context::neverUpdate() const noexcept
 {
 	return m_timestamp.isReset();
+}
+
+lcsm::PrivateContext &lcsm::Context::privateContext() noexcept
+{
+	return m_private;
+}
+
+const lcsm::PrivateContext &lcsm::Context::privateContext() const noexcept
+{
+	return m_private;
 }

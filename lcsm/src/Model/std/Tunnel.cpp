@@ -6,11 +6,14 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+lcsm::model::Tunnel::Tunnel(lcsm::label_t name) : lcsm::Circuit(name) {}
 
 lcsm::model::Tunnel::~Tunnel() noexcept
 {
@@ -22,9 +25,9 @@ const lcsm::model::Wire *lcsm::model::Tunnel::wire() const noexcept
 	return m_wire.get();
 }
 
-const lcsm::support::PointerView< lcsm::Circuit > &lcsm::model::Tunnel::tunnel() const noexcept
+const std::vector< lcsm::Circuit * > &lcsm::model::Tunnel::tunnels() const noexcept
 {
-	return m_tunnel;
+	return m_tunnels;
 }
 
 std::size_t lcsm::model::Tunnel::numOfWires() const noexcept
@@ -63,21 +66,39 @@ lcsm::CircuitType lcsm::model::Tunnel::circuitType() const noexcept
 
 void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 {
-	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
-	if (!wire)
+	const lcsm::model::Tunnel::Port p = static_cast< lcsm::model::Tunnel::Port >(portId);
+	switch (p)
+	{
+	case lcsm::model::Tunnel::Port::Wiring:
+		m_wire->connectToWire(circuit);
+		break;
+	case lcsm::model::Tunnel::Port::Tunneling:
+		if (circuit->circuitType() != circuitType())
+			throw std::logic_error("Can't connect non-Tunnel to Tunnel");
+		m_tunnels.push_back(circuit);
+		break;
+	default:
 		throw std::logic_error("Bad port!");
-	wire->connectToWire(circuit);
+	}
 }
 
-void lcsm::model::Tunnel::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Tunnel::disconnect(lcsm::Circuit *circuit) noexcept
 {
-	// TODO: Implement me.
+	const std::vector< lcsm::Circuit * >::const_iterator found = std::find(m_tunnels.begin(), m_tunnels.end(), circuit);
+	if (found != m_tunnels.end())
+	{
+		m_tunnels.erase(found);
+	}
 }
 
 void lcsm::model::Tunnel::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
-	m_tunnel->disconnectAll();
+	for (lcsm::Circuit *tunnel : m_tunnels)
+	{
+		tunnel->disconnect(this);
+	}
+	m_tunnels.clear();
 }
 
 void lcsm::model::Tunnel::connectToWire(lcsm::Circuit *circuit)
@@ -98,7 +119,7 @@ lcsm::Circuit *lcsm::model::Tunnel::byPort(lcsm::portid_t portId) noexcept
 	case lcsm::model::Tunnel::Port::Wiring:
 		return m_wire.get();
 	case lcsm::model::Tunnel::Port::Tunneling:
-		return m_tunnel.get();
+		return this;
 	}
 	return nullptr;
 }
@@ -109,4 +130,9 @@ lcsm::portid_t lcsm::model::Tunnel::findPort(const lcsm::Circuit *circuit) const
 		return lcsm::model::Tunnel::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Tunnel::defaultPort() const noexcept
+{
+	return lcsm::model::Tunnel::Port::Wiring;
 }

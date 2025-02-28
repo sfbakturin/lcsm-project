@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <vector>
 
+lcsm::model::Probe::Probe(lcsm::label_t name) : lcsm::Circuit(name) {}
+
 lcsm::model::Probe::~Probe() noexcept
 {
 	disconnectAll();
@@ -95,4 +97,9 @@ lcsm::portid_t lcsm::model::Probe::findPort(const lcsm::Circuit *circuit) const 
 		return lcsm::model::Probe::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Probe::defaultPort() const noexcept
+{
+	return lcsm::model::Probe::Port::Wiring;
 }

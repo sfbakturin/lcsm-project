@@ -23,6 +23,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 namespace lcsm
 {
@@ -30,6 +31,7 @@ namespace lcsm
 	{
 	  public:
 		LCSMCircuit() = default;
+		LCSMCircuit(label_t name);
 
 		LCSMCircuit(const LCSMCircuit &other) = delete;
 		LCSMCircuit(LCSMCircuit &&other) noexcept;
@@ -41,33 +43,50 @@ namespace lcsm
 
 		LCSMCircuit copy() const;
 		Identifier globalId() const noexcept;
+		const std::string &name() const noexcept;
+		label_t c_name() const noexcept;
 
 		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
 
-		model::Constant *createConstant(Width width = Width::Bit1, value_t value = 0x1);
-		model::Ground *createGround(Width width = Width::Bit1);
-		model::Power *createPower(Width width = Width::Bit1);
-		model::Pin *createPin(bool output, Width width = Width::Bit1);
-		model::Transistor *createTransistor(model::Transistor::Type type = model::Transistor::Type::P);
-		model::TransmissionGate *createTransmissionGate();
-		model::Tunnel *createTunnel();
-		model::Clock *createClock(unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
-		model::Button *createButton(bool activeOnPress = false);
-		model::Digit *createDigit(bool hasDecimalPoint = true);
-		model::Probe *createProbe();
-		model::Splitter *createSplitter(Width widthIn = Width::Bit2, width_t widthOut = 2);
+		model::Constant *createConstant(label_t name = "", Width width = Width::Bit1, value_t value = 0x1);
+		model::Ground *createGround(label_t name = "", Width width = Width::Bit1);
+		model::Power *createPower(label_t name = "", Width width = Width::Bit1);
+		model::Pin *createPin(bool output, label_t name = "", Width width = Width::Bit1);
+		model::Transistor *createTransistor(label_t name = "", model::Transistor::Type type = model::Transistor::Type::P);
+		model::TransmissionGate *createTransmissionGate(label_t name = "");
+		model::Tunnel *createTunnel(label_t name = "");
+		model::Clock *createClock(label_t name = "", unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
+		model::Button *createButton(label_t name = "", bool activeOnPress = false);
+		model::Digit *createDigit(label_t name = "", bool hasDecimalPoint = true);
+		model::Probe *createProbe(label_t name = "");
+		model::Splitter *createSplitter(label_t name = "", Width widthIn = Width::Bit2, width_t widthOut = 2);
 
 		Circuit *find(Identifier id) noexcept;
-		void remove(Circuit *circuit);
+		Circuit *find(label_t name) noexcept;
+		Circuit *find(const std::string &name) noexcept;
+
+		bool remove(Circuit *circuit);
+		bool remove(Identifier id);
+		bool remove(label_t name);
+		bool remove(const std::string &name);
 
 		const LCSMCircuit *addCircuit(const LCSMCircuit &other);
 
 		const LCSMCircuit *findCircuit(Identifier id) noexcept;
-		void removeCircuit(const LCSMCircuit *circuit);
+		const LCSMCircuit *findCircuit(label_t name) noexcept;
+		const LCSMCircuit *findCircuit(const std::string &name) noexcept;
+
+		bool removeCircuit(const LCSMCircuit *circuit);
+		bool removeCircuit(Identifier id);
+		bool removeCircuit(label_t name);
+		bool removeCircuit(const std::string &name);
 
 		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2);
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2);
+		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2);
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2);
 
 	  private:
 		Identifier m_globalId;
@@ -81,6 +100,8 @@ namespace lcsm
 		std::map< Identifier, std::shared_ptr< Circuit > > m_connectorWires;
 
 		std::unordered_map< Identifier, std::shared_ptr< LCSMCircuit > > m_circuits;
+
+		std::string m_name;
 
 	  private:
 		Circuit *registerElement(std::shared_ptr< Circuit > &&circuit);

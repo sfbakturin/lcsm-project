@@ -24,9 +24,14 @@ std::size_t lcsm::physical::Probe::contextSize() const noexcept
 	return 1;
 }
 
+std::size_t lcsm::physical::Probe::privateContextSize() const noexcept
+{
+	return 0;
+}
+
 void lcsm::physical::Probe::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (contextSize() != context->size())
+	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
 		throw std::logic_error("Bad context size!");
 	m_context = context;
 }

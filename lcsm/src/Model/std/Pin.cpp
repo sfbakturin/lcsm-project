@@ -10,7 +10,12 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Pin::Pin(bool output, lcsm::Width width) : m_output(output), m_width(width) {}
+lcsm::model::Pin::Pin(bool output, lcsm::Width width) : lcsm::model::Pin("", output, width) {}
+
+lcsm::model::Pin::Pin(lcsm::label_t name, bool output, lcsm::Width width) :
+	lcsm::Circuit(name), m_output(output), m_width(width)
+{
+}
 
 lcsm::model::Pin::~Pin() noexcept
 {
@@ -129,4 +134,9 @@ lcsm::portid_t lcsm::model::Pin::findPort(const lcsm::Circuit *circuit) const no
 		return lcsm::model::Pin::Port::External;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Pin::defaultPort() const noexcept
+{
+	return lcsm::model::Pin::Port::Internal;
 }

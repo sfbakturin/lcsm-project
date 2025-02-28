@@ -12,6 +12,7 @@
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Model/std/Power.h>
 #include <lcsm/Model/std/Transistor.h>
+#include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
@@ -20,14 +21,17 @@
 #include <lcsm/Physical/std/Ground.h>
 #include <lcsm/Physical/std/Pin.h>
 #include <lcsm/Physical/std/Power.h>
+#include <lcsm/Physical/std/Tunnel.h>
 #include <lcsm/Physical/std/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
 #include <deque>
+#include <map>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
@@ -41,6 +45,7 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	// Components.
 	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
 	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &components = circuit.components();
 
 	// Find all *In*/*Out* circuits and add them to BFS queue.
 	for (auto it = inputs.begin(); it != inputs.end(); it++)
@@ -56,7 +61,34 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	}
 
 	engine.buildCircuit(visit);
-	engine.m_circuit = std::addressof(circuit);
+
+	// Find all *In*/*Out*/*Root* circuit and add them to helpers.
+	for (auto it = inputs.begin(); it != inputs.end(); it++)
+	{
+		const lcsm::Identifier &id = it->first;
+		engine.m_realInputs[id] = engine.m_objects[id];
+		engine.m_realInputsIds.push_back(id);
+	}
+
+	for (auto it = outputs.begin(); it != outputs.end(); it++)
+	{
+		const lcsm::Identifier &id = it->first;
+		engine.m_realOutputs[id] = engine.m_objects[id];
+		engine.m_realOutputsIds.push_back(id);
+	}
+
+	for (auto it = components.begin(); it != components.end(); it++)
+	{
+		const lcsm::Identifier &id = it->first;
+		const lcsm::object_type_t objectType = it->second->objectType();
+		// Circuit must be *pure* root to add to helpers.
+		if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
+		{
+			engine.m_realRoots[id] = engine.m_objects[id];
+			engine.m_realOutputsIds.push_back(id);
+		}
+	}
+
 	return engine;
 }
 
@@ -64,6 +96,21 @@ lcsm::LCSMState lcsm::LCSMEngine::fork()
 {
 	lcsm::LCSMState state = this;
 	return state;
+}
+
+const std::vector< lcsm::Identifier > &lcsm::LCSMEngine::getInputIndexes() const noexcept
+{
+	return m_realInputsIds;
+}
+
+const std::vector< lcsm::Identifier > &lcsm::LCSMEngine::getOutputIndexes() const noexcept
+{
+	return m_realOutputsIds;
+}
+
+const std::vector< lcsm::Identifier > &lcsm::LCSMEngine::getRootIndexes() const noexcept
+{
+	return m_realRootsIds;
 }
 
 lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registered(lcsm::Identifier id) const noexcept
@@ -76,6 +123,10 @@ lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registered(l
 
 	return {};
 }
+
+// Hardcoded value of object type for lcsm::LCSMEngine::registered(Wire|Tunnel) methods.
+// FIXME: In future this must die.
+static constexpr lcsm::object_type_t WiringObject = lcsm::ObjectType::Internal | lcsm::ObjectType::Wiring;
 
 lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registeredWire(lcsm::Identifier id)
 {
@@ -90,12 +141,31 @@ lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registeredWi
 	}
 	else
 	{
-		// Hardcode...
-		m_objects[id] = std::make_shared< lcsm::physical::Wire >(lcsm::ObjectType::Wiring | lcsm::ObjectType::Internal);
+		m_objects[id] = std::make_shared< lcsm::physical::Wire >(WiringObject);
 		wireNode = m_objects[id];
 	}
 
 	return wireNode;
+}
+
+lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registeredTunnel(lcsm::Identifier id)
+{
+	lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelNode;
+	const lcsm::support::PointerView< lcsm::EvaluatorNode > foundTunnelNode = registered(id);
+
+	// As there is no error handling, like if found node is not wire as we expected, so we just use this private
+	// pretty in right place.
+	if (foundTunnelNode)
+	{
+		tunnelNode = foundTunnelNode;
+	}
+	else
+	{
+		m_objects[id] = std::make_shared< lcsm::physical::Tunnel >(WiringObject);
+		tunnelNode = m_objects[id];
+	}
+
+	return tunnelNode;
 }
 
 void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &bfsVisit)
@@ -156,7 +226,42 @@ void lcsm::LCSMEngine::buildCircuit(
 		break;
 	}
 	case lcsm::CircuitType::Tunnel:
-		throw std::logic_error("Building tunnel is not implemented.");
+	{
+		// Extract Tunnel as model object.
+		const lcsm::model::Tunnel *tunnel = static_cast< const lcsm::model::Tunnel * >(circuit.get());
+		const lcsm::model::Wire *tunnelWire = tunnel->wire();
+		const std::vector< lcsm::Circuit * > &tunnelTunnels = tunnel->tunnels();
+		const lcsm::Identifier tunnelId = tunnel->id();
+		const lcsm::Identifier tunnelWireId = tunnelWire->id();
+
+		// Tunnel's tree node.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelEvaluatorNode = registeredTunnel(tunnelId);
+		lcsm::support::PointerView< lcsm::physical::Tunnel > tunnelNode =
+			tunnelEvaluatorNode.staticCast< lcsm::physical::Tunnel >();
+
+		// Make connections from Tunnel object to his adjacent tunnels as tree's edges. Model guarantees, that
+		// tunnelTunnels (aka tunnel->tunnels()) is connect only to model::Tunnel.
+		for (const lcsm::Circuit *tunnelChild : tunnelTunnels)
+		{
+			const lcsm::Identifier tunnelChildId = tunnelChild->id();
+			lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelChildEvaluatorNode = registeredTunnel(tunnelChildId);
+			tunnelNode->connectTunnel(tunnelChildEvaluatorNode);
+			bfsVisit.emplace_back(tunnelChild);
+		}
+
+		// Make connect to tunnel's wiring as tree's node.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelWireEvaluatorNode = registeredWire(tunnelWireId);
+		lcsm::support::PointerView< lcsm::physical::Wire > tunnelWireNode =
+			tunnelWireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		tunnelNode->connectWiring(tunnelWireEvaluatorNode);
+		tunnelWireNode->connect(tunnelEvaluatorNode);
+		bfsVisit.emplace_back(tunnelWire);
+
+		// Add as visited objects.
+		visited.insert(tunnelId);
+
+		break;
+	}
 	case lcsm::CircuitType::Pin:
 	{
 		// Extract Pin as model object.

@@ -26,6 +26,7 @@ namespace lcsm
 		virtual NodeType nodeType() const noexcept = 0;
 
 		virtual std::size_t contextSize() const noexcept = 0;
+		virtual std::size_t privateContextSize() const noexcept = 0;
 
 		virtual void setContext(const support::PointerView< Context > &context) = 0;
 		virtual void resetContext() noexcept = 0;

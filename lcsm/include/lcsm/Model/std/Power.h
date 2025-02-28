@@ -24,6 +24,7 @@ namespace lcsm
 
 		  public:
 			Power(Width width);
+			Power(label_t name, Width width);
 			~Power() noexcept;
 
 			Width width() const noexcept;
@@ -49,6 +50,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

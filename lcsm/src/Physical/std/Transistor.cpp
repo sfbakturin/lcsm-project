@@ -31,10 +31,15 @@ std::size_t lcsm::physical::Transistor::contextSize() const noexcept
 	return 3;
 }
 
+std::size_t lcsm::physical::Transistor::privateContextSize() const noexcept
+{
+	return 0;
+}
+
 void lcsm::physical::Transistor::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize())
-		throw std::logic_error("Transistor requires 3 elements in context.");
+	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
+		throw std::logic_error("Bad context size!");
 	m_context = context;
 }
 

@@ -8,7 +8,9 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Ground::Ground(lcsm::Width width) : m_width(width) {}
+lcsm::model::Ground::Ground(lcsm::Width width) : lcsm::model::Ground("", width) {}
+
+lcsm::model::Ground::Ground(lcsm::label_t name, lcsm::Width width) : lcsm::Circuit(name), m_width(width) {}
 
 lcsm::model::Ground::~Ground() noexcept
 {
@@ -104,4 +106,9 @@ lcsm::portid_t lcsm::model::Ground::findPort(const lcsm::Circuit *circuit) const
 		return lcsm::model::Ground::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Ground::defaultPort() const noexcept
+{
+	return lcsm::model::Ground::Port::Wiring;
 }

@@ -11,7 +11,12 @@
 #include <vector>
 
 lcsm::model::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	lcsm::model::Clock("", highDuration, lowDuration, phaseOffset)
+{
+}
+
+lcsm::model::Clock::Clock(lcsm::label_t name, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
+	lcsm::Circuit(name), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
@@ -129,4 +134,9 @@ lcsm::portid_t lcsm::model::Clock::findPort(const lcsm::Circuit *circuit) const 
 		return lcsm::model::Clock::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Clock::defaultPort() const noexcept
+{
+	return lcsm::model::Clock::Port::Wiring;
 }

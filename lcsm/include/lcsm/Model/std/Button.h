@@ -26,6 +26,7 @@ namespace lcsm
 
 		  public:
 			Button(bool activeOnPress);
+			Button(label_t name, bool activeOnPress);
 			~Button() noexcept;
 
 			bool activeOnPress() const noexcept;
@@ -51,6 +52,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

@@ -28,6 +28,7 @@ namespace lcsm
 
 		  public:
 			TransmissionGate() = default;
+			TransmissionGate(label_t name);
 			~TransmissionGate() noexcept;
 
 			const Wire *wireBase() const noexcept;
@@ -56,6 +57,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

@@ -13,6 +13,8 @@
 #include <utility>
 #include <vector>
 
+lcsm::model::TransmissionGate::TransmissionGate(lcsm::label_t name) : lcsm::Circuit(name) {}
+
 lcsm::model::TransmissionGate::~TransmissionGate() noexcept
 {
 	disconnectAll();
@@ -152,4 +154,9 @@ lcsm::portid_t lcsm::model::TransmissionGate::findPort(const lcsm::Circuit *circ
 		return lcsm::model::TransmissionGate::Port::SrcC;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::TransmissionGate::defaultPort() const noexcept
+{
+	return lcsm::model::TransmissionGate::Port::Base;
 }

@@ -13,8 +13,11 @@
 #include <stdexcept>
 #include <vector>
 
+#define UNUSED(X) ((void)(X))
+
 lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration),
+	m_phaseOffset(phaseOffset), m_timeout0(0), m_timeout1(0)
 {
 }
 
@@ -28,15 +31,28 @@ std::size_t lcsm::physical::Clock::contextSize() const noexcept
 	return 1;
 }
 
+std::size_t lcsm::physical::Clock::privateContextSize() const noexcept
+{
+	return 2;
+}
+
 void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize())
+	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
 		throw std::logic_error("Bad context size!");
+
+	if (m_context)
+		resetContext();
+
 	m_context = context;
+	m_timeout0 = m_context->privateContext().asInt(0);
+	m_timeout1 = m_context->privateContext().asInt(1);
 }
 
 void lcsm::physical::Clock::resetContext() noexcept
 {
+	m_context->privateContext().putInt(0, m_timeout0);
+	m_context->privateContext().putInt(1, m_timeout1);
 	m_context.reset();
 }
 
@@ -54,7 +70,7 @@ void lcsm::physical::Clock::addInstant(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instant!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Timestamp &)
 {
 	/* Resulting events at end of invoking. */
 	std::vector< lcsm::Event > events;
@@ -65,6 +81,10 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 		value = { lcsm::Width::Bit1, lcsm::verilog::Bit::False };
 	else
 		value = m_context->getValue();
+
+	UNUSED(m_highDuration);
+	UNUSED(m_lowDuration);
+	UNUSED(m_phaseOffset);
 
 	// TODO: Implement somehow counter.
 

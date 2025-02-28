@@ -26,10 +26,11 @@ namespace lcsm
 
 		  public:
 			Tunnel() = default;
+			Tunnel(label_t name);
 			~Tunnel() noexcept;
 
 			const Wire *wire() const noexcept;
-			const support::PointerView< Circuit > &tunnel() const noexcept;
+			const std::vector< lcsm::Circuit * > &tunnels() const noexcept;
 
 			virtual std::size_t numOfWires() const noexcept override final;
 			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
@@ -51,9 +52,11 @@ namespace lcsm
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
+			virtual portid_t defaultPort() const noexcept override final;
+
 		  private:
 			std::shared_ptr< Wire > m_wire;
-			support::PointerView< Circuit > m_tunnel;
+			std::vector< Circuit * > m_tunnels;
 			Identifier m_id;
 		};
 	}	 // namespace model

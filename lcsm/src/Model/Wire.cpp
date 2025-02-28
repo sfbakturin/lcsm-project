@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+lcsm::model::Wire::Wire(lcsm::label_t name) : lcsm::Circuit(name) {}
+
 lcsm::model::Wire::~Wire() noexcept
 {
 	disconnectAll();
@@ -132,4 +134,9 @@ lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t portId) noexcept
 lcsm::portid_t lcsm::model::Wire::findPort(const lcsm::Circuit *) const noexcept
 {
 	return -1;
+}
+
+lcsm::portid_t lcsm::model::Wire::defaultPort() const noexcept
+{
+	return lcsm::model::Wire::Port::Wiring;
 }

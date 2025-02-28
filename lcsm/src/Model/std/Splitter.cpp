@@ -11,7 +11,13 @@
 #include <memory>
 #include <stdexcept>
 
-lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) : m_widthIn(widthIn), m_widthOut(widthOut)
+lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) :
+	lcsm::model::Splitter("", widthIn, widthOut)
+{
+}
+
+lcsm::model::Splitter::Splitter(lcsm::label_t name, lcsm::Width widthIn, lcsm::width_t widthOut) :
+	lcsm::Circuit(name), m_widthIn(widthIn), m_widthOut(widthOut)
 {
 }
 
@@ -198,6 +204,11 @@ lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Circuit *circuit) con
 				return static_cast< lcsm::portid_t >(i);
 		return -1;
 	}
+}
+
+lcsm::portid_t lcsm::model::Splitter::defaultPort() const noexcept
+{
+	return lcsm::model::Splitter::Port::Input;
 }
 
 void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept

@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Power::Power(lcsm::Width width) : m_width(width) {}
+lcsm::model::Power::Power(lcsm::Width width) : lcsm::model::Power("", width) {}
+
+lcsm::model::Power::Power(lcsm::label_t name, lcsm::Width width) : lcsm::Circuit(name), m_width(width) {}
 
 lcsm::model::Power::~Power() noexcept
 {
@@ -106,4 +108,9 @@ lcsm::portid_t lcsm::model::Power::findPort(const lcsm::Circuit *circuit) const 
 		return lcsm::model::Power::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Power::defaultPort() const noexcept
+{
+	return lcsm::model::Power::Port::Wiring;
 }

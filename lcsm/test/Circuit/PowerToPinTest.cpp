@@ -4,8 +4,8 @@
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
-#include <lcsm/Model/std/Ground.h>
 #include <lcsm/Model/std/Pin.h>
+#include <lcsm/Model/std/Power.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Verilog/Bit.h>
 
@@ -16,11 +16,11 @@ int main()
 	lcsm::LCSMCircuit circuit;
 
 	/* Create input and output pins. */
-	lcsm::model::Ground *ground = circuit.createGround(lcsm::Width::Byte);
+	lcsm::model::Power *power = circuit.createPower("", lcsm::Width::QuadWord);
 	lcsm::model::Pin *out = circuit.createPin(true);
 
-	/* Connect pins. */
-	circuit.connect(ground, lcsm::model::Ground::Port::Wiring, out, lcsm::model::Pin::Port::Internal);
+	/* Connect. */
+	circuit.connect(power, lcsm::model::Power::Port::Wiring, out, lcsm::model::Pin::Port::Internal);
 
 	/* Build runtime calculation graph from circuit. */
 	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);

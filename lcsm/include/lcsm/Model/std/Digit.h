@@ -25,6 +25,7 @@ namespace lcsm
 
 		  public:
 			Digit(bool hasDecimalPoint);
+			Digit(label_t name, bool hasDecimalPoint);
 			~Digit() noexcept;
 
 			bool hasDecimalPoint() const noexcept;
@@ -52,6 +53,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

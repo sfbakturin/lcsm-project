@@ -32,6 +32,7 @@ namespace lcsm
 
 		std::size_t valueSize(Identifier id) const;
 		const DataBits &valueOf(Identifier id, std::size_t i = 0) const;
+		const std::vector< DataBits > &valuesOf(Identifier id) const;
 
 		void putValue(Identifier id, const DataBits &databits, std::size_t i = 0);
 		void putValue(Identifier id, std::initializer_list< DataBits > databits);

@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace lcsm
@@ -21,7 +22,8 @@ namespace lcsm
 	class Circuit
 	{
 	  public:
-		Circuit() noexcept = default;
+		Circuit() = default;
+		Circuit(label_t name);
 		virtual ~Circuit() noexcept = default;
 
 		virtual std::size_t numOfWires() const noexcept = 0;
@@ -40,6 +42,16 @@ namespace lcsm
 
 		virtual Circuit *byPort(portid_t portId) noexcept = 0;
 		virtual portid_t findPort(const Circuit *circuit) const noexcept = 0;
+
+		virtual portid_t defaultPort() const noexcept = 0;
+
+		void setName(const std::string &name);
+		void setName(std::string &&name) noexcept;
+		const std::string &name() const noexcept;
+		label_t c_name() const noexcept;
+
+	  private:
+		std::string m_name;
 	};
 }	 // namespace lcsm
 

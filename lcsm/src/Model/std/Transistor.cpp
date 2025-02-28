@@ -12,7 +12,12 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Transistor::Transistor(lcsm::model::Transistor::Type type) : m_type(type) {}
+lcsm::model::Transistor::Transistor(lcsm::model::Transistor::Type type) : lcsm::model::Transistor("", type) {}
+
+lcsm::model::Transistor::Transistor(lcsm::label_t name, lcsm::model::Transistor::Type type) :
+	lcsm::Circuit(name), m_type(type)
+{
+}
 
 lcsm::model::Transistor::~Transistor() noexcept
 {
@@ -145,4 +150,9 @@ lcsm::portid_t lcsm::model::Transistor::findPort(const lcsm::Circuit *circuit) c
 		return lcsm::model::Transistor::Port::SrcB;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Transistor::defaultPort() const noexcept
+{
+	return lcsm::model::Transistor::Port::Base;
 }

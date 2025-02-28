@@ -34,6 +34,7 @@ namespace lcsm
 
 		  public:
 			Transistor(Type type);
+			Transistor(label_t name, Type type);
 			~Transistor() noexcept;
 
 			Type type() const noexcept;
@@ -63,6 +64,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

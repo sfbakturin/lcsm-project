@@ -24,6 +24,7 @@ namespace lcsm
 
 		  public:
 			Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
+			Clock(label_t name, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 			~Clock() noexcept;
 
 			unsigned highDuration() const noexcept;
@@ -55,6 +56,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

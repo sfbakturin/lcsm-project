@@ -30,8 +30,15 @@ std::size_t lcsm::physical::Constant::contextSize() const noexcept
 	return 1;
 }
 
+std::size_t lcsm::physical::Constant::privateContextSize() const noexcept
+{
+	return 0;
+}
+
 void lcsm::physical::Constant::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
+	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
+		throw std::logic_error("Bad context size!");
 	m_context = context;
 }
 

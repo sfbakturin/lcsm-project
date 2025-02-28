@@ -26,6 +26,7 @@ namespace lcsm
 
 		  public:
 			Pin(bool output, Width width);
+			Pin(label_t name, bool output, Width width);
 			~Pin() noexcept;
 
 			bool output() const noexcept;
@@ -53,6 +54,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

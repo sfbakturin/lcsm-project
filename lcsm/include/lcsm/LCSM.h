@@ -9,6 +9,7 @@ namespace lcsm
 	using id_t = std::uint64_t;
 	using target_t = std::int8_t;
 	using object_type_t = std::uint32_t;
+	using label_t = const char *;
 
 	/* All available model circuits. */
 	enum CircuitType : target_t

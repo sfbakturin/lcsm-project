@@ -13,6 +13,7 @@
 
 #include <deque>
 #include <memory>
+#include <vector>
 
 namespace lcsm
 {
@@ -22,16 +23,29 @@ namespace lcsm
 		static LCSMEngine fromCircuit(const LCSMCircuit &circuit);
 		LCSMState fork();
 
+		const std::vector< Identifier > &getInputIndexes() const noexcept;
+		const std::vector< Identifier > &getOutputIndexes() const noexcept;
+		const std::vector< Identifier > &getRootIndexes() const noexcept;
+
 	  private:
 		LCSMEngine() = default;
 
 		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_objects;
-		support::PointerView< const LCSMCircuit > m_circuit;
+
+		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_realInputs;
+		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_realOutputs;
+		std::unordered_map< Identifier, std::shared_ptr< EvaluatorNode > > m_realRoots;
+
+		std::vector< Identifier > m_realInputsIds;
+		std::vector< Identifier > m_realOutputsIds;
+		std::vector< Identifier > m_realRootsIds;
 
 	  private:
 		friend class LCSMState;
+
 		support::PointerView< EvaluatorNode > registered(Identifier id) const noexcept;
 		support::PointerView< EvaluatorNode > registeredWire(Identifier id);
+		support::PointerView< EvaluatorNode > registeredTunnel(Identifier id);
 
 		void buildCircuit(std::deque< support::PointerView< const Circuit > > &bfsVisit);
 		void buildCircuit(const support::PointerView< const Circuit > &circuit,

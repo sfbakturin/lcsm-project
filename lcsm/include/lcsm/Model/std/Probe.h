@@ -24,6 +24,7 @@ namespace lcsm
 
 		  public:
 			Probe() = default;
+			Probe(label_t name);
 			~Probe() noexcept;
 
 			const Wire *wire() const noexcept;
@@ -46,6 +47,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

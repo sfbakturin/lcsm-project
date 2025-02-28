@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <deque>
-#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -24,25 +23,28 @@
 
 lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 {
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = engine->m_circuit->inputs();
-	for (auto &object : engine->m_objects)
+	for (auto &object : m_enginePtr->m_objects)
 	{
 		const lcsm::Identifier &id = object.first;
 		std::shared_ptr< lcsm::EvaluatorNode > &obj = object.second;
 
-		/* Create context and setup physical object to new state. */
-		m_contexts[id] = lcsm::Context(obj->contextSize());
+		// Create context and setup physical object to new state.
+		m_contexts[id] = lcsm::Context(obj->contextSize(), obj->privateContextSize());
 		const lcsm::support::PointerView< lcsm::Context > context = std::addressof(m_contexts[id]);
 		obj->setContext(context);
+	}
 
-		/* Init all inputs and only-Roots. */
-		const lcsm::object_type_t objectType = obj->objectType();
-		if ((lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !TestObjectType(objectType, lcsm::ObjectType::Input)) ||
-			inputs.count(id))
-		{
-			lcsm::support::PointerView< lcsm::EvaluatorNode > node = obj;
-			m_roots.push_back(node);
-		}
+	// Initialize all inputs and roots.
+	for (auto &input : m_enginePtr->m_realInputs)
+	{
+		lcsm::support::PointerView< lcsm::EvaluatorNode > node = input.second;
+		m_roots.push_back(node);
+	}
+
+	for (auto &root : m_enginePtr->m_realRoots)
+	{
+		lcsm::support::PointerView< lcsm::EvaluatorNode > node = root.second;
+		m_roots.push_back(node);
 	}
 }
 
@@ -79,7 +81,15 @@ void lcsm::LCSMState::swap(lcsm::LCSMState &other) noexcept
 
 std::size_t lcsm::LCSMState::valueSize(lcsm::Identifier id) const
 {
-	const lcsm::Context &context = m_contexts.at(id);
+	/* Find value by identifier. */
+	const std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator found = m_contexts.find(id);
+
+	/* Check if exists. */
+	if (found == m_contexts.end())
+		throw std::logic_error("No such value with identifier found");
+
+	/* Return context's size. */
+	const lcsm::Context &context = found->second;
 	return context.size();
 }
 
@@ -95,12 +105,32 @@ const lcsm::DataBits &lcsm::LCSMState::valueOf(lcsm::Identifier id, std::size_t 
 	return found->second.getValue(i);
 }
 
+const std::vector< lcsm::DataBits > &lcsm::LCSMState::valuesOf(lcsm::Identifier id) const
+{
+	const std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator found = m_contexts.find(id);
+
+	/* Check if object with specified identifier exists. */
+	if (found == m_contexts.cend())
+		throw std::logic_error("LCSM State: object with specified identifier is not found.");
+
+	/* Return values from context. */
+	return found->second.values();
+}
+
 void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databits, std::size_t i)
 {
-	/* Find value by idenitifer. */
+	/* Find value by identifier. */
 	std::unordered_map< lcsm::Identifier, lcsm::Context >::iterator foundIt = m_contexts.find(id);
+
+	/* Check if exists. */
 	if (foundIt == m_contexts.end())
 		throw std::logic_error("No such value with identifier found");
+
+	/* Check if id's object is input. */
+	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::const_iterator foundInp =
+		m_enginePtr->m_realInputs.find(id);
+	if (foundInp == m_enginePtr->m_realInputs.cend())
+		throw std::logic_error("No such input with identifier found");
 
 	/* Check size of value. */
 	lcsm::Context &context = foundIt->second;
@@ -115,10 +145,18 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databi
 
 void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm::DataBits > databits)
 {
-	/* Find value by idenitifer. */
+	/* Find value by identifier. */
+
+	/* Check if exists. */
 	std::unordered_map< lcsm::Identifier, lcsm::Context >::iterator foundIt = m_contexts.find(id);
 	if (foundIt == m_contexts.end())
 		throw std::logic_error("No such value with identifier found");
+
+	/* Check if id's object is input. */
+	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::const_iterator foundInp =
+		m_enginePtr->m_realInputs.find(id);
+	if (foundInp == m_enginePtr->m_realInputs.cend())
+		throw std::logic_error("No such input with identifier found");
 
 	/* Check size of value. */
 	lcsm::Context &context = foundIt->second;

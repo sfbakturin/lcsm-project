@@ -66,9 +66,12 @@ bool lcsm::Identifier::operator>=(const lcsm::Identifier &other) const noexcept
 	return m_id >= other.m_id;
 }
 
-std::ostream &lcsm::operator<<(std::ostream &os, const lcsm::Identifier &id)
+namespace lcsm
 {
-	return os << id.m_id;
-}
+	std::ostream &operator<<(std::ostream &os, const lcsm::Identifier &id)
+	{
+		return os << id.m_id;
+	}
+}	 // namespace lcsm
 
 lcsm::Identifier::Identifier(lcsm::Identifier::value_type id) noexcept : m_id(id) {}

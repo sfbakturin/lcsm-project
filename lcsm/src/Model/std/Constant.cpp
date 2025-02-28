@@ -9,7 +9,12 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::model::Constant::Constant(lcsm::Width width, lcsm::value_t value) : m_width(width), m_value(value) {}
+lcsm::model::Constant::Constant(lcsm::Width width, lcsm::value_t value) : lcsm::model::Constant("", width, value) {}
+
+lcsm::model::Constant::Constant(lcsm::label_t name, lcsm::Width width, lcsm::value_t value) :
+	lcsm::Circuit(name), m_width(width), m_value(value)
+{
+}
 
 lcsm::model::Constant::~Constant() noexcept
 {
@@ -115,4 +120,9 @@ lcsm::portid_t lcsm::model::Constant::findPort(const lcsm::Circuit *circuit) con
 		return lcsm::model::Constant::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Constant::defaultPort() const noexcept
+{
+	return lcsm::model::Constant::Port::Wiring;
 }

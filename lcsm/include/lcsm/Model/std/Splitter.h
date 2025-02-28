@@ -89,6 +89,7 @@ namespace lcsm
 
 		  public:
 			Splitter(Width widthIn, width_t widthOut);
+			Splitter(label_t name, Width widthIn, width_t widthOut);
 			~Splitter() noexcept;
 
 			Width widthIn() const noexcept;
@@ -118,6 +119,8 @@ namespace lcsm
 
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+
+			virtual portid_t defaultPort() const noexcept override final;
 
 		  private:
 			Identifier m_id;

@@ -12,7 +12,12 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Digit::Digit(bool hasDecimalPoint) : m_hasDecimalPoint(hasDecimalPoint) {}
+lcsm::model::Digit::Digit(bool hasDecimalPoint) : lcsm::model::Digit("", hasDecimalPoint) {}
+
+lcsm::model::Digit::Digit(lcsm::label_t name, bool hasDecimalPoint) :
+	lcsm::Circuit(name), m_hasDecimalPoint(hasDecimalPoint)
+{
+}
 
 lcsm::model::Digit::~Digit() noexcept
 {
@@ -137,4 +142,9 @@ lcsm::portid_t lcsm::model::Digit::findPort(const lcsm::Circuit *circuit) const 
 		return lcsm::model::Digit::Port::WiringDecimalPoint;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Digit::defaultPort() const noexcept
+{
+	return lcsm::model::Digit::Port::WiringData;
 }

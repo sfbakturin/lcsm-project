@@ -23,6 +23,7 @@ namespace lcsm
 
 		  public:
 			Wire() = default;
+			Wire(label_t name);
 			~Wire() noexcept;
 
 			const std::vector< support::PointerView< Circuit > > &wires() const noexcept;
@@ -48,10 +49,11 @@ namespace lcsm
 			virtual Circuit *byPort(portid_t portId) noexcept override final;
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
+			virtual portid_t defaultPort() const noexcept override final;
+
 		  private:
 			std::vector< support::PointerView< Circuit > > m_wires;
 			support::PointerView< Circuit > m_connect;
-
 			Identifier m_id;
 		};
 	}	 // namespace model

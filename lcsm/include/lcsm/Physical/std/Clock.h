@@ -24,6 +24,7 @@ namespace lcsm
 			virtual NodeType nodeType() const noexcept override final;
 
 			virtual std::size_t contextSize() const noexcept override final;
+			virtual std::size_t privateContextSize() const noexcept override final;
 
 			virtual void setContext(const support::PointerView< Context > &context) override final;
 			virtual void resetContext() noexcept override final;
@@ -38,9 +39,13 @@ namespace lcsm
 		  private:
 			support::PointerView< EvaluatorNode > m_connect;
 			support::PointerView< Context > m_context;
+
 			unsigned m_highDuration;
 			unsigned m_lowDuration;
 			unsigned m_phaseOffset;
+
+			int m_timeout0;
+			int m_timeout1;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

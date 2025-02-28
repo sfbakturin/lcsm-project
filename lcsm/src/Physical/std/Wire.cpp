@@ -26,8 +26,15 @@ std::size_t lcsm::physical::Wire::contextSize() const noexcept
 	return 1;
 }
 
+std::size_t lcsm::physical::Wire::privateContextSize() const noexcept
+{
+	return 0;
+}
+
 void lcsm::physical::Wire::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
+	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
+		throw std::logic_error("Bad context size!");
 	m_context = context;
 }
 
@@ -38,7 +45,7 @@ void lcsm::physical::Wire::resetContext() noexcept
 
 void lcsm::physical::Wire::addInstant(const lcsm::Instruction &instruction)
 {
-	/* Only BroadcastValue and WriteValue instructions are available. */
+	// Only WriteValue instruction is available.
 	if (instruction.type() == lcsm::InstructionType::WriteValue)
 		m_instants.push_back(instruction);
 	else
@@ -47,7 +54,7 @@ void lcsm::physical::Wire::addInstant(const lcsm::Instruction &instruction)
 
 void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
 {
-	/* Only BroadcastValue and WriteValue instructions are available. */
+	// Only WriteValue instruction is available.
 	if (instruction.type() == lcsm::InstructionType::WriteValue)
 		m_instants.push_back(std::move(instruction));
 	else
@@ -95,7 +102,6 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	for (lcsm::Instruction &instant : m_instants)
 	{
 		value |= instant.value();
-		instant.caller();
 		callings.emplace(instant.caller());
 	}
 

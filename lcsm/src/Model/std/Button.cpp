@@ -12,7 +12,12 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Button::Button(bool activeOnPress) : m_activeOnPress(activeOnPress) {}
+lcsm::model::Button::Button(bool activeOnPress) : lcsm::model::Button("", activeOnPress) {}
+
+lcsm::model::Button::Button(lcsm::label_t name, bool activeOnPress) :
+	lcsm::Circuit(name), m_activeOnPress(activeOnPress)
+{
+}
 
 lcsm::model::Button::~Button() noexcept
 {
@@ -108,4 +113,9 @@ lcsm::portid_t lcsm::model::Button::findPort(const lcsm::Circuit *circuit) const
 		return lcsm::model::Button::Port::Wiring;
 	else
 		return -1;
+}
+
+lcsm::portid_t lcsm::model::Button::defaultPort() const noexcept
+{
+	return lcsm::model::Button::Port::Wiring;
 }
