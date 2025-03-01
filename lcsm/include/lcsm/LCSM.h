@@ -27,7 +27,7 @@ namespace lcsm
 		Digit,
 		Probe,
 		Splitter,
-		LastCircuitType = TransmissionGate + 1
+		LastCircuitType = Splitter + 1
 	};
 
 	/* All available physical node types. */

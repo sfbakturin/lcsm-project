@@ -61,6 +61,9 @@ namespace lcsm
 		void setValue(std::size_t index, const verilog::Value &newValue);
 		void setValue(std::size_t index, verilog::Value &&newValue);
 
+		DataBits subdatabits(std::size_t begin) const noexcept;
+		DataBits subdatabits(std::size_t begin, std::size_t end) const noexcept;
+
 		void reset() noexcept;
 
 		friend std::ostream &operator<<(std::ostream &os, const DataBits &db);

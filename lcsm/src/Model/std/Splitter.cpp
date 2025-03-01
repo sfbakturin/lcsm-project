@@ -7,9 +7,11 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Support/StaticArray.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) :
 	lcsm::model::Splitter("", widthIn, widthOut)
@@ -46,12 +48,12 @@ void lcsm::model::Splitter::setWidthOut(lcsm::width_t widthOut)
 	if (widthOut == 0 || widthOut > 64)
 		throw std::logic_error("Integer too big!");
 	m_widthOut = widthOut;
-	resetBitmasks();
+	resetBitsOuts();
 }
 
-lcsm::width_bitmask_t lcsm::model::Splitter::bitsOut(lcsm::portid_t portId) const noexcept
+const std::pair< std::size_t, std::size_t > &lcsm::model::Splitter::bitsOut(lcsm::portid_t portId) const noexcept
 {
-	return m_bitsOut[portId];
+	return m_bitsOuts[portId];
 }
 
 const lcsm::model::Wire *lcsm::model::Splitter::wireIn() const noexcept
@@ -61,7 +63,7 @@ const lcsm::model::Wire *lcsm::model::Splitter::wireIn() const noexcept
 
 const lcsm::model::Wire *lcsm::model::Splitter::wireOut(lcsm::portid_t portId) const noexcept
 {
-	return m_wireOut[portId].get();
+	return m_wireOuts[portId].get();
 }
 
 std::size_t lcsm::model::Splitter::numOfWires() const noexcept
@@ -73,14 +75,14 @@ void lcsm::model::Splitter::provideWires(const std::vector< std::shared_ptr< lcs
 {
 	if (wires.size() != numOfWires())
 		throw std::logic_error("Bad num of wires!");
-	for (std::size_t i = 0; i < m_wireOut.size(); i++)
+	for (std::size_t i = 0; i < numOfWires() - 1; i++)
 	{
-		m_wireOut[i] = wires[i];
-		m_wireOut[i]->connectConnect(this);
+		m_wireOuts.push_back(wires[i]);
+		m_wireOuts[i]->connectConnect(this);
 	}
-	m_wireIn = m_wireOut[numOfWires() - 1];
+	m_wireIn = m_wireOuts[numOfWires() - 1];
 	m_wireIn->connectConnect(this);
-	resetBitmasks();
+	resetBitsOuts();
 }
 
 lcsm::Identifier lcsm::model::Splitter::id() const noexcept
@@ -92,8 +94,8 @@ lcsm::Identifier lcsm::model::Splitter::identify(lcsm::Identifier id) noexcept
 {
 	m_id = std::move(id);
 	lcsm::Identifier next = m_wireIn->identify(m_id.next());
-	for (std::size_t i = 0; i < m_wireOut.size(); i++)
-		next = m_wireOut[i]->identify(next.next());
+	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
+		next = m_wireOuts[i]->identify(next.next());
 	return next;
 }
 
@@ -184,11 +186,17 @@ lcsm::Circuit *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
 	case lcsm::model::Splitter::Port::Out61:
 	case lcsm::model::Splitter::Port::Out62:
 	case lcsm::model::Splitter::Port::Out63:
+	{
 		if (p > m_widthOut)
+		{
 			return nullptr;
-		return m_wireOut[p].get();
+		}
+		return m_wireOuts[p].get();
+	}
 	case lcsm::model::Splitter::Port::Input:
+	{
 		return m_wireIn.get();
+	}
 	}
 	return nullptr;
 }
@@ -196,12 +204,18 @@ lcsm::Circuit *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
 lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Circuit *circuit) const noexcept
 {
 	if (circuit == m_wireIn.get())
+	{
 		return lcsm::model::Splitter::Port::Input;
+	}
 	else
 	{
 		for (lcsm::width_t i = 0; i < m_widthOut; i++)
-			if (circuit == m_wireOut[i].get())
+		{
+			if (circuit == m_wireOuts[i].get())
+			{
 				return static_cast< lcsm::portid_t >(i);
+			}
+		}
 		return -1;
 	}
 }
@@ -219,31 +233,34 @@ void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept
 void lcsm::model::Splitter::disconnectAll() noexcept
 {
 	m_wireIn->disconnectAll();
-	for (std::size_t i = 0; i < m_wireOut.size(); i++)
-		m_wireOut[i]->disconnectAll();
+	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
+		m_wireOuts[i]->disconnectAll();
+	m_wireOuts.clear();
 }
 
-static inline constexpr std::size_t Min(std::size_t left, std::size_t right) noexcept
+static inline constexpr std::size_t min(std::size_t left, std::size_t right) noexcept
 {
 	return left < right ? left : right;
 }
 
-void lcsm::model::Splitter::resetBitmasks() noexcept
+void lcsm::model::Splitter::resetBitsOuts() noexcept
 {
-	// TODO: Remake to bitmasks.
+	// Clear from old pairs.
+	m_bitsOuts.clear();
 
-	static constexpr lcsm::width_bitmask_t NoConnect = 0;
-	for (std::size_t i = 0; i < m_bitsOut.size(); i++)
-		m_bitsOut[i] = NoConnect;
-
-	const std::size_t dem = Min(m_widthIn, m_widthOut);
-	const std::size_t base = m_widthIn / dem;
+	// Get sizes.
+	const std::size_t dem = min(m_widthIn, m_widthOut);
+	const std::size_t base = static_cast< std::size_t >(std::floor(static_cast< float >(m_widthIn) / dem));
 	const std::size_t remain = m_widthIn % dem;
 
+	// Generate pairs.
+	lcsm::width_t prevBegin = 0;
+	lcsm::width_t prevEnd = base;
 	for (std::size_t i = 0; i < dem; i++)
 	{
-		m_bitsOut[i] = base;
-		if (i < remain)
-			m_bitsOut[i]++;
+		m_bitsOuts[i] = std::make_pair(prevBegin, prevEnd);
+		prevEnd += base;
+		prevBegin = prevEnd + 1;
+		prevEnd += (i < remain);
 	}
 }

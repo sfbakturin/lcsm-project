@@ -70,6 +70,8 @@ namespace lcsm
 		void swap(Context &other) noexcept;
 
 		std::size_t size() const noexcept;
+		std::size_t privateSize() const noexcept;
+
 		const Timestamp &lastUpdate() const noexcept;
 		const DataBits &getValue(std::size_t i = 0) const;
 		const std::vector< DataBits > &values() const noexcept;

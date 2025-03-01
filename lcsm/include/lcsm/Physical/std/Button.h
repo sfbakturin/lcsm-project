@@ -1,25 +1,20 @@
-#ifndef LCSM_PHYSICAL_STD_SPLITTER_H
-#define LCSM_PHYSICAL_STD_SPLITTER_H
+#ifndef LCSM_PHYSICAL_STD_BUTTON_H
+#define LCSM_PHYSICAL_STD_BUTTON_H
 
 #include <lcsm/LCSM.h>
-#include <lcsm/Model/Width.h>
+#include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
-
-#include <cstddef>
-#include <deque>
-#include <utility>
-#include <vector>
 
 namespace lcsm
 {
 	namespace physical
 	{
-		class Splitter : public EvaluatorNode
+		class Button : public EvaluatorNode
 		{
 		  public:
-			Splitter(object_type_t objectType);
+			Button(object_type_t objectType, bool activeOnPress);
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -34,17 +29,14 @@ namespace lcsm
 
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
-			void connectInput(const support::PointerView< EvaluatorNode > &input);
-			void connectOut(const support::PointerView< EvaluatorNode > &out, const std::pair< std::size_t, std::size_t > &index);
+			void connect(const support::PointerView< EvaluatorNode > &node);
 
 		  private:
-			std::deque< Instruction > m_instants;
+			bool m_activeOnPress;
 			support::PointerView< Context > m_context;
-			support::PointerView< EvaluatorNode > m_input;
-			std::vector< support::PointerView< EvaluatorNode > > m_outputs;
-			std::vector< std::pair< std::size_t, std::size_t > > m_indexes;
+			support::PointerView< EvaluatorNode > m_wire;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm
 
-#endif /* LCSM_PHYSICAL_STD_SPLITTER_H */
+#endif /* LCSM_PHYSICAL_STD_BUTTON_H */

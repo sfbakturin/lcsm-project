@@ -1,0 +1,4 @@
+#ifndef LCSM_VERILOG_MODULE_H
+#define LCSM_VERILOG_MODULE_H
+
+#endif /* LCSM_VERILOG_MODULE_H */

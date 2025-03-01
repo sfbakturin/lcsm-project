@@ -34,6 +34,9 @@ namespace lcsm
 			bool operator==(const PointerView &other) const noexcept;
 			bool operator!=(const PointerView &other) const noexcept;
 
+			bool operator==(const_pointer other) const noexcept;
+			bool operator!=(const_pointer other) const noexcept;
+
 			pointer operator->() noexcept;
 			const_pointer operator->() const noexcept;
 
@@ -53,6 +56,12 @@ namespace lcsm
 
 			pointer get() noexcept;
 			const_pointer get() const noexcept;
+
+			template< typename R >
+			const R *getCast() const noexcept;
+
+			template< typename R >
+			R *getCast() noexcept;
 
 			void reset() noexcept;
 
@@ -138,6 +147,18 @@ bool lcsm::support::PointerView< T >::operator!=(const PointerView< T > &other) 
 }
 
 template< typename T >
+bool lcsm::support::PointerView< T >::operator==(typename lcsm::support::PointerView< T >::const_pointer other) const noexcept
+{
+	return m_ptr == other;
+}
+
+template< typename T >
+bool lcsm::support::PointerView< T >::operator!=(typename lcsm::support::PointerView< T >::const_pointer other) const noexcept
+{
+	return m_ptr != other;
+}
+
+template< typename T >
 T *lcsm::support::PointerView< T >::operator->() noexcept
 {
 	return ptr();
@@ -213,6 +234,20 @@ template< typename T >
 typename lcsm::support::PointerView< T >::const_pointer lcsm::support::PointerView< T >::get() const noexcept
 {
 	return cptr();
+}
+
+template< typename T >
+template< typename R >
+const R *lcsm::support::PointerView< T >::getCast() const noexcept
+{
+	return static_cast< const R * >(m_ptr);
+}
+
+template< typename T >
+template< typename R >
+R *lcsm::support::PointerView< T >::getCast() noexcept
+{
+	return static_cast< R * >(m_ptr);
 }
 
 template< typename T >

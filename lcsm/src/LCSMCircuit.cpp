@@ -693,6 +693,8 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 			}
 			break;
 		}
+		case lcsm::CircuitType::LastCircuitType:
+			break;
 		}
 	}
 

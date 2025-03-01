@@ -50,6 +50,11 @@ std::size_t lcsm::Context::size() const noexcept
 	return m_databits.size();
 }
 
+std::size_t lcsm::Context::privateSize() const noexcept
+{
+	return m_private.size();
+}
+
 const lcsm::Timestamp &lcsm::Context::lastUpdate() const noexcept
 {
 	return m_timestamp;

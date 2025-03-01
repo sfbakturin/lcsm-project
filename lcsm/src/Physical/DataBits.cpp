@@ -219,6 +219,22 @@ void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value &&newValue
 	m_bits[index] = std::move(newValue);
 }
 
+lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept
+{
+	return subdatabits(begin, static_cast< std::size_t >(width()));
+}
+
+lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin, std::size_t end) const noexcept
+{
+	const lcsm::width_t size = end - begin;
+	lcsm::DataBits sub(static_cast< lcsm::Width >(size));
+	for (unsigned i = begin; i < end && i < width(); i++)
+	{
+		sub.setValue(begin - i, value(i));
+	}
+	return sub;
+}
+
 void lcsm::DataBits::reset() noexcept
 {
 	const unsigned n = static_cast< unsigned >(width());

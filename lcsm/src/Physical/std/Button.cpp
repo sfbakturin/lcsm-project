@@ -1,0 +1,90 @@
+#include <lcsm/LCSM.h>
+#include <lcsm/Physical/Context.h>
+#include <lcsm/Physical/Evaluator.h>
+#include <lcsm/Physical/Event.h>
+#include <lcsm/Physical/Instruction.h>
+#include <lcsm/Physical/std/Button.h>
+#include <lcsm/Support/PointerView.hpp>
+
+#include <stdexcept>
+#include <vector>
+
+lcsm::physical::Button::Button(lcsm::object_type_t objectType, bool activeOnPress) :
+	lcsm::EvaluatorNode(objectType), m_activeOnPress(activeOnPress)
+{
+}
+
+lcsm::NodeType lcsm::physical::Button::nodeType() const noexcept
+{
+	return lcsm::NodeType::Static;
+}
+
+std::size_t lcsm::physical::Button::contextSize() const noexcept
+{
+	return 1;
+}
+
+std::size_t lcsm::physical::Button::privateContextSize() const noexcept
+{
+	return 0;
+}
+
+void lcsm::physical::Button::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
+{
+	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
+	{
+		throw std::logic_error("Bad context size!");
+	}
+
+	// If contexed already, reset old.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set contexed.
+	m_context = context;
+}
+
+void lcsm::physical::Button::resetContext() noexcept
+{
+	m_context.reset();
+}
+
+void lcsm::physical::Button::addInstant(const lcsm::Instruction &instruction)
+{
+	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	if (target != this || m_wire != caller || type != lcsm::InstructionType::WriteValue)
+	{
+		throw std::logic_error("Bad instruction!");
+	}
+}
+
+void lcsm::physical::Button::addInstant(lcsm::Instruction &&instruction)
+{
+	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	if (target != this || m_wire != caller || type != lcsm::InstructionType::WriteValue)
+	{
+		throw std::logic_error("Bad instruction!");
+	}
+}
+
+std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Timestamp &)
+{
+	// Generated events.
+	std::vector< lcsm::Event > events;
+	// TODO: Implement Button as it's implemented in Constant.
+	(void)m_activeOnPress;
+	return events;
+}
+
+void lcsm::physical::Button::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+{
+	m_wire = node;
+}

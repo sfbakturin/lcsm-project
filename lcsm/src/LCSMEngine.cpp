@@ -8,25 +8,35 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Model/std/Constant.h>
+#include <lcsm/Model/std/Digit.h>
 #include <lcsm/Model/std/Ground.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Model/std/Power.h>
+#include <lcsm/Model/std/Probe.h>
+#include <lcsm/Model/std/Splitter.h>
 #include <lcsm/Model/std/Transistor.h>
+#include <lcsm/Model/std/TransmissionGate.h>
 #include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/std/Clock.h>
 #include <lcsm/Physical/std/Constant.h>
+#include <lcsm/Physical/std/Digit.h>
 #include <lcsm/Physical/std/Ground.h>
 #include <lcsm/Physical/std/Pin.h>
 #include <lcsm/Physical/std/Power.h>
+#include <lcsm/Physical/std/Probe.h>
+#include <lcsm/Physical/std/Splitter.h>
+#include <lcsm/Physical/std/Transistor.h>
+#include <lcsm/Physical/std/TransmissionGate.h>
 #include <lcsm/Physical/std/Tunnel.h>
 #include <lcsm/Physical/std/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
+#include <cstddef>
 #include <deque>
 #include <map>
 #include <memory>
@@ -429,9 +439,249 @@ void lcsm::LCSMEngine::buildCircuit(
 		break;
 	}
 	case lcsm::CircuitType::Transistor:
+	{
+		// Extract Transistor as model object.
+		const lcsm::model::Transistor *transistorModel = static_cast< const lcsm::model::Transistor * >(circuit.get());
+		const lcsm::model::Wire *transistorBaseModel = transistorModel->wireBase();
+		const lcsm::model::Wire *transistorSrcAModel = transistorModel->wireSrcA();
+		const lcsm::model::Wire *transistorSrcBModel = transistorModel->wireSrcB();
+		const lcsm::Identifier transistorId = transistorModel->id();
+		const lcsm::Identifier baseId = transistorBaseModel->id();
+		const lcsm::Identifier srcAId = transistorSrcAModel->id();
+		const lcsm::Identifier srcBId = transistorSrcBModel->id();
+
+		// By the algorithm, we have never create Transistor physical object before this moment.
+		const lcsm::model::Transistor::Type type = transistorModel->type();
+		const lcsm::object_type_t objectType = transistorModel->objectType();
+		std::shared_ptr< lcsm::EvaluatorNode > transistorPhysical = std::make_shared< lcsm::physical::Transistor >(objectType, type);
+		m_objects[transistorId] = transistorPhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > transistorEvaluatorNode = transistorPhysical;
+		lcsm::support::PointerView< lcsm::physical::Transistor > transistorNode =
+			transistorEvaluatorNode.staticCast< lcsm::physical::Transistor >();
+
+		// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireBaseEvaluatorNode = registeredWire(baseId);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireSrcAEvaluatorNode = registeredWire(srcAId);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireSrcBEvaluatorNode = registeredWire(srcBId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireBaseNode =
+			wireBaseEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		lcsm::support::PointerView< lcsm::physical::Wire > wireSrcANode =
+			wireSrcAEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		lcsm::support::PointerView< lcsm::physical::Wire > wireSrcBNode =
+			wireSrcBEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wires to transistor. Make them to know about each other.
+		transistorNode->connectBase(wireBaseEvaluatorNode);
+		transistorNode->connectSrcA(wireSrcAEvaluatorNode);
+		transistorNode->connectSrcB(wireSrcBEvaluatorNode);
+		wireBaseNode->connect(transistorEvaluatorNode);
+		wireSrcANode->connect(transistorEvaluatorNode);
+		wireSrcBNode->connect(transistorEvaluatorNode);
+
+		// Add wires to queue.
+		bfsVisit.emplace_back(transistorBaseModel);
+		bfsVisit.emplace_back(transistorSrcAModel);
+		bfsVisit.emplace_back(transistorSrcBModel);
+
+		// Update visited objects.
+		visited.insert(transistorId);
+
 		break;
+	}
 	case lcsm::CircuitType::TransmissionGate:
+	{
+		// Extract TransmissionGate as model object.
+		const lcsm::model::TransmissionGate *transmissionGateModel = circuit.getCast< lcsm::model::TransmissionGate >();
+		const lcsm::model::Wire *wireBaseModel = transmissionGateModel->wireBase();
+		const lcsm::model::Wire *wireSrcAModel = transmissionGateModel->wireSrcA();
+		const lcsm::model::Wire *wireSrcBModel = transmissionGateModel->wireSrcB();
+		const lcsm::model::Wire *wireSrcCModel = transmissionGateModel->wireSrcC();
+		const lcsm::Identifier id = transmissionGateModel->id();
+		const lcsm::Identifier baseId = wireBaseModel->id();
+		const lcsm::Identifier srcAId = wireSrcAModel->id();
+		const lcsm::Identifier srcBId = wireSrcBModel->id();
+		const lcsm::Identifier srcCId = wireSrcCModel->id();
+
+		// By the algorithm, we have never create TransmissionGate physical object before this moment.
+		const lcsm::object_type_t objectType = transmissionGateModel->objectType();
+		std::shared_ptr< lcsm::EvaluatorNode > transmissionGatePhysical =
+			std::make_shared< lcsm::physical::TransmissionGate >(objectType);
+		m_objects[id] = transmissionGatePhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > transmissionGateEvaluatorNode = transmissionGatePhysical;
+		lcsm::support::PointerView< lcsm::physical::TransmissionGate > transmissionGateNode =
+			transmissionGateEvaluatorNode.staticCast< lcsm::physical::TransmissionGate >();
+
+		// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireBaseEvaluatorNode = registeredWire(baseId);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireSrcAEvaluatorNode = registeredWire(srcAId);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireSrcBEvaluatorNode = registeredWire(srcBId);
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireSrcCEvaluatorNode = registeredWire(srcCId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireBaseNode =
+			wireBaseEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		lcsm::support::PointerView< lcsm::physical::Wire > wireSrcANode =
+			wireSrcAEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		lcsm::support::PointerView< lcsm::physical::Wire > wireSrcBNode =
+			wireSrcBEvaluatorNode.staticCast< lcsm::physical::Wire >();
+		lcsm::support::PointerView< lcsm::physical::Wire > wireSrcCNode =
+			wireSrcCEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wires to transistor. Make them to know about each other.
+		transmissionGateNode->connectBase(wireBaseEvaluatorNode);
+		transmissionGateNode->connectSrcA(wireSrcAEvaluatorNode);
+		transmissionGateNode->connectSrcB(wireSrcBEvaluatorNode);
+		transmissionGateNode->connectSrcC(wireSrcCEvaluatorNode);
+		wireBaseNode->connect(transmissionGateEvaluatorNode);
+		wireSrcANode->connect(transmissionGateEvaluatorNode);
+		wireSrcBNode->connect(transmissionGateEvaluatorNode);
+		wireSrcCNode->connect(transmissionGateEvaluatorNode);
+
+		// Add wires to queue.
+		bfsVisit.emplace_back(wireBaseModel);
+		bfsVisit.emplace_back(wireSrcAModel);
+		bfsVisit.emplace_back(wireSrcBModel);
+		bfsVisit.emplace_back(wireSrcCModel);
+
+		// Update visited objects.
+		visited.insert(id);
+
+		break;
+	}
+	case lcsm::CircuitType::Button:
+	{
 		throw std::logic_error("Building transmission gate is not implemented.");
+	}
+	case lcsm::CircuitType::Digit:
+	{
+		// Extract Digit as model object.
+		const lcsm::model::Digit *digitModel = static_cast< const lcsm::model::Digit * >(circuit.get());
+		const lcsm::model::Wire *wireDataModel = digitModel->wireData();
+		const lcsm::model::Wire *wireDecimalPointModel = digitModel->wireDecimalPoint();
+		const lcsm::Identifier digitId = digitModel->id();
+		const lcsm::Identifier wireDataId = wireDataModel->id();
+		const lcsm::Identifier wireDecimalPointId = wireDecimalPointModel->id();
+		const lcsm::object_type_t digitObjectType = digitModel->objectType();
+
+		// By the algorithm, we have never create Digit physical object before this moment.
+		const bool hasDecimalPoint = digitModel->hasDecimalPoint();
+		std::shared_ptr< lcsm::EvaluatorNode > digitPhysical =
+			std::make_shared< lcsm::physical::Digit >(digitObjectType, hasDecimalPoint);
+		m_objects[digitId] = digitPhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > digitEvaluatorNode = digitPhysical;
+		lcsm::support::PointerView< lcsm::physical::Digit > digitNode = digitEvaluatorNode.staticCast< lcsm::physical::Digit >();
+
+		// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireDataEvaluatorNode = registeredWire(wireDataId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireDataNode =
+			wireDataEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wire to ground. Make them to know about each other.
+		digitNode->connectToData(wireDataEvaluatorNode);
+		wireDataNode->connect(digitEvaluatorNode);
+
+		// Add Ground's wire to queue.
+		bfsVisit.emplace_back(wireDataModel);
+
+		// Ensure existence of wire for decimal point: they might be already in collection.
+		if (hasDecimalPoint)
+		{
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireDecimalPointEvaluatorNode = registeredWire(wireDecimalPointId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireDecimalPointNode =
+				wireDecimalPointEvaluatorNode.staticCast< lcsm::physical::Wire >();
+			digitNode->connectToDecimalPoint(wireDecimalPointEvaluatorNode);
+			wireDecimalPointNode->connect(digitEvaluatorNode);
+			bfsVisit.emplace_back(wireDecimalPointModel);
+		}
+
+		// Update visited objects.
+		visited.insert(digitId);
+
+		break;
+	}
+	case lcsm::CircuitType::Probe:
+	{
+		// Extract Probe as model object.
+		const lcsm::model::Probe *probeModel = static_cast< const lcsm::model::Probe * >(circuit.get());
+		const lcsm::model::Wire *probeWireModel = probeModel->wire();
+		const lcsm::Identifier probeId = probeModel->id();
+		const lcsm::Identifier probeWireId = probeWireModel->id();
+		const lcsm::object_type_t probeObjectType = probeModel->objectType();
+
+		// By the algorithm, we have never create Probe physical object before this moment.
+		std::shared_ptr< lcsm::EvaluatorNode > probePhysical = std::make_shared< lcsm::physical::Probe >(probeObjectType);
+		m_objects[probeId] = probePhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > probeEvaluatorNode = probePhysical;
+		lcsm::support::PointerView< lcsm::physical::Probe > probeNode = probeEvaluatorNode.staticCast< lcsm::physical::Probe >();
+
+		// Ensure existence of wires: they might be already in colection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(probeWireId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wire to Probe element. Make them to know about each other.
+		probeNode->connect(wireEvaluatorNode);
+		wireNode->connect(probeEvaluatorNode);
+
+		// Add Probe's wire to queue.
+		bfsVisit.emplace_back(probeWireModel);
+
+		// Update visited objects.
+		visited.insert(probeId);
+
+		break;
+	}
+	case lcsm::CircuitType::Splitter:
+	{
+		// Extract Splitter as model object.
+		const lcsm::model::Splitter *splitterModel = circuit.getCast< lcsm::model::Splitter >();
+		const lcsm::model::Wire *splitterWireInModel = splitterModel->wireIn();
+		const lcsm::Identifier splitterId = splitterModel->id();
+		const lcsm::Identifier splitterWireInId = splitterWireInModel->id();
+
+		// By the algorithm, we have never created Splitter before this moment.
+		const lcsm::object_type_t objectType = splitterModel->objectType();
+		std::shared_ptr< lcsm::EvaluatorNode > splitterPhysical = std::make_shared< lcsm::physical::Splitter >(objectType);
+		m_objects[splitterId] = splitterPhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > splitterEvaluatorNode = splitterPhysical;
+		lcsm::support::PointerView< lcsm::physical::Splitter > splitterNode =
+			splitterEvaluatorNode.staticCast< lcsm::physical::Splitter >();
+
+		// Ensure existence of input wire.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireInEvaluatorNode = registeredWire(splitterWireInId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireInNode = wireInEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wire to input. Make them to know about each other.
+		splitterNode->connectInput(wireInEvaluatorNode);
+		wireInNode->connect(splitterEvaluatorNode);
+
+		// Add Splitter's wire to queue.
+		bfsVisit.emplace_back(splitterWireInModel);
+
+		// Update visited objects.
+		visited.insert(splitterId);
+
+		// Ensure existence of outputs. Connect to output and make them to know about each other.
+		const lcsm::width_t widthOut = splitterModel->widthOut();
+		for (lcsm::width_t portId = 0; portId < widthOut; portId++)
+		{
+			// Extract model.
+			const lcsm::model::Wire *splitterWireOutModel = splitterModel->wireOut(portId);
+			const lcsm::Identifier wireOutId = splitterWireOutModel->id();
+			const std::pair< std::size_t, std::size_t > &index = splitterModel->bitsOut(portId);
+
+			// Ensure existing wire.
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireOutEvaluatorNode = registeredWire(wireOutId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireOutNode =
+				wireOutEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+			// Connect to each other.
+			splitterNode->connectOut(wireOutEvaluatorNode, index);
+			wireOutNode->connect(splitterEvaluatorNode);
+
+			// Add wire to visite.
+			bfsVisit.emplace_back(splitterWireOutModel);
+		}
+
+		break;
+	}
 	case lcsm::CircuitType::LastCircuitType:
 		throw std::logic_error("Non-targeted circuit found!");
 	default:

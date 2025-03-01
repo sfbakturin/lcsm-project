@@ -8,7 +8,9 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/StaticArray.hpp>
 
+#include <cstddef>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace lcsm
@@ -98,7 +100,7 @@ namespace lcsm
 			width_t widthOut() const noexcept;
 			void setWidthOut(width_t widthOut);
 
-			width_bitmask_t bitsOut(portid_t portId) const noexcept;
+			const std::pair< std::size_t, std::size_t > &bitsOut(portid_t portId) const noexcept;
 
 			const Wire *wireIn() const noexcept;
 			const Wire *wireOut(portid_t portId) const noexcept;
@@ -127,11 +129,11 @@ namespace lcsm
 			Width m_widthIn;
 			width_t m_widthOut;
 			std::shared_ptr< Wire > m_wireIn;
-			support::StaticArray< std::shared_ptr< Wire >, Width::LastWidth > m_wireOut;
-			support::StaticArray< width_bitmask_t, Width::LastWidth > m_bitsOut;
+			std::vector< std::shared_ptr< Wire > > m_wireOuts;
+			std::vector< std::pair< std::size_t, std::size_t > > m_bitsOuts;
 
 		  private:
-			void resetBitmasks() noexcept;
+			void resetBitsOuts() noexcept;
 		};
 	}	 // namespace model
 }	 // namespace lcsm
