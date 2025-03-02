@@ -185,7 +185,8 @@ static std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_ite
 		[c](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i) { return i.second.get() == c; });
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::portid_t port2)
+lcsm::model::Wire *
+	lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::portid_t port2, lcsm::label_t name)
 {
 	// If circuit1 or circuit2 is nullptrs, then return nullptr - as not succeeded.
 	if (circuit1 == nullptr || circuit2 == nullptr)
@@ -257,7 +258,7 @@ lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::por
 		throw std::logic_error("One of two components is not found in this circuit");
 
 	// Make connect via new wire.
-	std::shared_ptr< lcsm::model::Wire > wire = createConnectorWire();
+	std::shared_ptr< lcsm::model::Wire > wire = createConnectorWire(name);
 	circuit1->connect(port1, wire.get());
 	circuit2->connect(port2, wire.get());
 	lcsm::Circuit *wire1 = circuit1->byPort(port1);
@@ -267,28 +268,28 @@ lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::por
 	return wire.get();
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::portid_t port2)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::portid_t port2, lcsm::label_t name)
 {
 	// Use first circuit's default port, when `circuit1` is not nullptr.
 	if (circuit1 == nullptr)
 		return nullptr;
-	return connect(circuit1, circuit1->defaultPort(), circuit2, port2);
+	return connect(circuit1, circuit1->defaultPort(), circuit2, port2, name);
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::label_t name)
 {
 	// Use second circuit's default port, when `circuit2` is not nullptr.
 	if (circuit2 == nullptr)
 		return nullptr;
-	return connect(circuit1, port1, circuit2, circuit2->defaultPort());
+	return connect(circuit1, port1, circuit2, circuit2->defaultPort(), name);
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::label_t name)
 {
 	// Use default ports, when `circuit1` and `circuit2` are not nullptr.
 	if (circuit1 == nullptr || circuit2 == nullptr)
 		return nullptr;
-	return connect(circuit1, circuit1->defaultPort(), circuit2, circuit2->defaultPort());
+	return connect(circuit1, circuit1->defaultPort(), circuit2, circuit2->defaultPort(), name);
 }
 
 lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Identifier id) noexcept
@@ -702,14 +703,16 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &connector : m_connectorWires)
 	{
 		const lcsm::model::Wire *oldWire = static_cast< const lcsm::model::Wire * >(connector.second.get());
-		std::shared_ptr< lcsm::Circuit > wire = newCircuit->createConnectorWire();
+		std::shared_ptr< lcsm::Circuit > wire = newCircuit->createConnectorWire(oldWire->c_name());
 		oldToNewId[oldWire->id()] = wire->id();
 		GetEdges(edges, oldWire, false);
 	}
 
 	// Stage 2. Copy in within circuits.
 	for (const auto &circuit : m_circuits)
+	{
 		newCircuit->addCircuit(*circuit.second);
+	}
 
 	// Stage 3. Make connections.
 	for (const std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > &edge : edges)
@@ -750,21 +753,21 @@ lcsm::LCSMCircuit lcsm::LCSMCircuit::copyImpl(const lcsm::Identifier &entryId) c
 	return newCircuit;
 }
 
-std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createHeadlessWire()
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createHeadlessWire(lcsm::label_t name)
 {
-	return std::make_shared< lcsm::model::Wire >();
+	return std::make_shared< lcsm::model::Wire >(name);
 }
 
-std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createIdentifiedWire()
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createIdentifiedWire(lcsm::label_t name)
 {
-	std::shared_ptr< lcsm::model::Wire > wire = createHeadlessWire();
+	std::shared_ptr< lcsm::model::Wire > wire = createHeadlessWire(name);
 	m_globalId = wire->identify(m_globalId);
 	return wire;
 }
 
-std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createConnectorWire()
+std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createConnectorWire(lcsm::label_t name)
 {
-	std::shared_ptr< lcsm::model::Wire > wire = createIdentifiedWire();
+	std::shared_ptr< lcsm::model::Wire > wire = createIdentifiedWire(name);
 	m_connectorWires[wire->id()] = wire;
 	return wire;
 }

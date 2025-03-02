@@ -67,7 +67,9 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 {
 	// Update context ONLY ONCE to be like a real constant element.
 	if (m_context->neverUpdate())
+	{
 		m_context->updateValues(now, { m_databits });
+	}
 
 	// Resulting events for future mini-steps.
 	std::vector< lcsm::Event > events;

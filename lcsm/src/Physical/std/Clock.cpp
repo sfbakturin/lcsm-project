@@ -17,7 +17,7 @@
 
 lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration),
-	m_phaseOffset(phaseOffset), m_timeout0(0), m_timeout1(0)
+	m_phaseOffset(phaseOffset), m_counterFalse(0), m_counterTrue(0)
 {
 }
 
@@ -38,59 +38,134 @@ std::size_t lcsm::physical::Clock::privateContextSize() const noexcept
 
 void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
+	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
 		throw std::logic_error("Bad context size!");
 
+	// If already contexted, reset old.
 	if (m_context)
+	{
 		resetContext();
+	}
 
+	// Set contexted, extract counters.
 	m_context = context;
-	m_timeout0 = m_context->privateContext().asInt(0);
-	m_timeout1 = m_context->privateContext().asInt(1);
+	m_counterFalse = m_context->privateContext().asInt(0);
+	m_counterTrue = m_context->privateContext().asInt(1);
 }
 
 void lcsm::physical::Clock::resetContext() noexcept
 {
-	m_context->privateContext().putInt(0, m_timeout0);
-	m_context->privateContext().putInt(1, m_timeout1);
+	// Save counters.
+	m_context->privateContext().putInt(0, m_counterFalse);
+	m_context->privateContext().putInt(1, m_counterTrue);
 	m_context.reset();
 }
 
 void lcsm::physical::Clock::addInstant(const lcsm::Instruction &instruction)
 {
-	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
-		return;
-	throw std::logic_error("Bad instant!");
+	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check if target is this circuit.
+	if (target != this)
+	{
+		throw std::logic_error("Bad target in instruction!");
+	}
+
+	// Check if caller is known port.
+	if (m_connect != caller)
+	{
+		throw std::logic_error("Unknown caller!");
+	}
+
+	// Check if instruction is supported one.
+	if (type != lcsm::InstructionType::WriteValue)
+	{
+		throw std::logic_error("Bad instruction type!");
+	}
+
+	// Otherwise, ignore this instruction (no need for Clock element).
 }
 
 void lcsm::physical::Clock::addInstant(lcsm::Instruction &&instruction)
 {
-	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
-		return;
-	throw std::logic_error("Bad instant!");
+	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check if target is this circuit.
+	if (target != this)
+	{
+		throw std::logic_error("Bad target in instruction!");
+	}
+
+	// Check if caller is known port.
+	if (m_connect != caller)
+	{
+		throw std::logic_error("Unknown caller!");
+	}
+
+	// Check if instruction is supported one.
+	if (type != lcsm::InstructionType::WriteValue)
+	{
+		throw std::logic_error("Bad instruction type!");
+	}
+
+	// Otherwise, ignore this instruction (no need for Clock element).
 }
 
-std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Timestamp &)
+std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Timestamp &now)
 {
-	/* Resulting events at end of invoking. */
+	// Generated events.
 	std::vector< lcsm::Event > events;
 
-	/* If there is no updates, then put 1bit-Strong-False to context. Otherwise, read from context. */
+	// If there is no updates, then put 1bit-Strong-False to context. Otherwise, read from context.
 	lcsm::DataBits value;
 	if (m_context->neverUpdate())
+	{
 		value = { lcsm::Width::Bit1, lcsm::verilog::Bit::False };
+	}
 	else
+	{
 		value = m_context->getValue();
+	}
 
-	UNUSED(m_highDuration);
-	UNUSED(m_lowDuration);
 	UNUSED(m_phaseOffset);
 
-	// TODO: Implement somehow counter.
+	// Check counter of value's bit (0 - False, 1 - True), if equals zero, then change value and reset counter,
+	// otherwise, decrement and continue.
+	if (value.bit(0) == lcsm::verilog::Bit::False)
+	{
+		if (m_counterFalse == 0)
+		{
+			value.setBit(0, lcsm::verilog::Bit::True);
+			m_counterFalse = m_lowDuration;
+		}
+		else
+		{
+			m_counterFalse--;
+		}
+	}
+	else
+	{
+		if (m_counterTrue == 0)
+		{
+			value.setBit(0, lcsm::verilog::Bit::False);
+			m_counterTrue = m_highDuration;
+		}
+		else
+		{
+			m_counterTrue--;
+		}
+	}
 
-	/* Write value to Wire. */
+	// Write value to Wire.
 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
 	events.emplace_back(std::move(i));
+
+	// Save value to context.
+	m_context->updateValues(now, { value });
 
 	return events;
 }

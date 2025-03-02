@@ -44,8 +44,8 @@ namespace lcsm
 			unsigned m_lowDuration;
 			unsigned m_phaseOffset;
 
-			int m_timeout0;
-			int m_timeout1;
+			int m_counterFalse;
+			int m_counterTrue;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

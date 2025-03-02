@@ -1,0 +1,6 @@
+lcsm_add_test(PinToPin1)
+lcsm_add_test(PinToPin2)
+lcsm_add_test(PinToPin3)
+lcsm_add_test(GroundToPin)
+lcsm_add_test(PowerToPin)
+lcsm_add_test(Clock)

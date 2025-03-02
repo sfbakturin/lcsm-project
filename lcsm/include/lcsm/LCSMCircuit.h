@@ -83,10 +83,10 @@ namespace lcsm
 		bool removeCircuit(label_t name);
 		bool removeCircuit(const std::string &name);
 
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2);
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2);
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2);
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2);
+		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2, label_t name = "");
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2, label_t name = "");
+		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, label_t name = "");
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, label_t name = "");
 
 	  private:
 		Identifier m_globalId;
@@ -109,9 +109,9 @@ namespace lcsm
 		void copyImpl(LCSMCircuit *newCircuit, const Identifier &entryId) const;
 		LCSMCircuit copyImpl(const Identifier &entryId) const;
 
-		std::shared_ptr< model::Wire > createHeadlessWire();
-		std::shared_ptr< model::Wire > createIdentifiedWire();
-		std::shared_ptr< model::Wire > createConnectorWire();
+		std::shared_ptr< model::Wire > createHeadlessWire(label_t name = "");
+		std::shared_ptr< model::Wire > createIdentifiedWire(label_t name = "");
+		std::shared_ptr< model::Wire > createConnectorWire(label_t name = "");
 	};
 }	 // namespace lcsm
 
