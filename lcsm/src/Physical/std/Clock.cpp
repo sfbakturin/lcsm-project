@@ -17,7 +17,7 @@
 
 lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration),
-	m_phaseOffset(phaseOffset), m_counterFalse(0), m_counterTrue(0)
+	m_phaseOffset(phaseOffset), m_counterFalse(m_lowDuration), m_counterTrue(m_highDuration), m_counter(true)
 {
 }
 
@@ -33,7 +33,7 @@ std::size_t lcsm::physical::Clock::contextSize() const noexcept
 
 std::size_t lcsm::physical::Clock::privateContextSize() const noexcept
 {
-	return 2;
+	return 3;
 }
 
 void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
@@ -41,16 +41,20 @@ void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::C
 	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
 		throw std::logic_error("Bad context size!");
 
-	// If already contexted, reset old.
+	// If already contexted, reset old, set new context and extract counters.
+	// Otherwise, set context without extracting counters.
 	if (m_context)
 	{
 		resetContext();
+		m_context = context;
+		m_counterFalse = m_context->privateContext().asInt(0);
+		m_counterTrue = m_context->privateContext().asInt(1);
+		m_counter = m_context->privateContext().asBool(2);
 	}
-
-	// Set contexted, extract counters.
-	m_context = context;
-	m_counterFalse = m_context->privateContext().asInt(0);
-	m_counterTrue = m_context->privateContext().asInt(1);
+	else
+	{
+		m_context = context;
+	}
 }
 
 void lcsm::physical::Clock::resetContext() noexcept
@@ -58,6 +62,7 @@ void lcsm::physical::Clock::resetContext() noexcept
 	// Save counters.
 	m_context->privateContext().putInt(0, m_counterFalse);
 	m_context->privateContext().putInt(1, m_counterTrue);
+	m_context->privateContext().putBool(2, m_counter);
 	m_context.reset();
 }
 
@@ -124,7 +129,7 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 	lcsm::DataBits value;
 	if (m_context->neverUpdate())
 	{
-		value = { lcsm::Width::Bit1, lcsm::verilog::Bit::False };
+		value = { lcsm::Width::Bit1, lcsm::verilog::Bit::True };
 	}
 	else
 	{
@@ -135,12 +140,13 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 	// Check counter of value's bit (0 - False, 1 - True), if equals zero, then change value and reset counter,
 	// otherwise, decrement and continue.
-	if (value.bit(0) == lcsm::verilog::Bit::False)
+	if (!m_counter)
 	{
 		if (m_counterFalse == 0)
 		{
 			value.setBit(0, lcsm::verilog::Bit::True);
 			m_counterFalse = m_lowDuration;
+			m_counter = true;
 		}
 		else
 		{
@@ -153,6 +159,7 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 		{
 			value.setBit(0, lcsm::verilog::Bit::False);
 			m_counterTrue = m_highDuration;
+			m_counter = false;
 		}
 		else
 		{
@@ -166,6 +173,9 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 	// Save value to context.
 	m_context->updateValues(now, { value });
+	m_context->privateContext().putInt(0, m_counterFalse);
+	m_context->privateContext().putInt(1, m_counterTrue);
+	m_context->privateContext().putBool(2, m_counter);
 
 	return events;
 }

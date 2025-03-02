@@ -90,15 +90,16 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	const bool takeFirst = now > then;
 
 	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
 	if (takeFirst && !m_instants.empty())
 	{
-		const lcsm::Instruction instant = m_instants.front();
+		lcsm::Instruction instant = m_instants.front();
 		m_instants.pop_front();
 		value = instant.value();
+		callings.emplace(instant.caller());
 	}
 
 	/* Invoke all instructions. */
-	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
 	for (lcsm::Instruction &instant : m_instants)
 	{
 		value |= instant.value();

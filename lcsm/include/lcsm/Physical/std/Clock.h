@@ -46,6 +46,7 @@ namespace lcsm
 
 			int m_counterFalse;
 			int m_counterTrue;
+			bool m_counter;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

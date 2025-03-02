@@ -176,13 +176,19 @@ lcsm::model::Splitter *lcsm::LCSMCircuit::createSplitter(lcsm::label_t name, lcs
 	return circuit;
 }
 
-static std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator
-	FindCircuit(const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &m, lcsm::Circuit *c)
+static lcsm::Circuit *FindCircuit(const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &m, lcsm::Circuit *c)
 {
-	return std::find_if(
+	const auto found = std::find_if(
 		m.begin(),
 		m.end(),
 		[c](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i) { return i.second.get() == c; });
+	if (found == m.cend())
+	{
+		return nullptr;
+	}
+	{
+		return found->second.get();
+	}
 }
 
 lcsm::model::Wire *
@@ -193,68 +199,58 @@ lcsm::model::Wire *
 		return nullptr;
 
 	// Ensure, that circuit1 and circuit2 is in this circuit.
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator end = m_components.cend();
+	const lcsm::Circuit *foundAsComponent1 = FindCircuit(m_components, circuit1);
+	const lcsm::Circuit *foundAsConnectorWire1 = FindCircuit(m_connectorWires, circuit1);
 
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsComponent1 =
-		FindCircuit(m_components, circuit1);
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsConnectorWire1 =
-		FindCircuit(m_connectorWires, circuit1);
-
-	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsInputInCircuit1 = end;
+	lcsm::Circuit *foundAsInputInCircuit1 = nullptr;
 	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &lcsmCircuit : m_circuits)
 	{
 		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputsInLcsmCircuit = lcsmCircuit.second->inputs();
 		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputsInLcsmCircuit = lcsmCircuit.second->outputs();
 
-		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInInputs =
-			FindCircuit(inputsInLcsmCircuit, circuit1);
-		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInOutputs =
-			FindCircuit(outputsInLcsmCircuit, circuit1);
+		lcsm::Circuit *foundInInputs = FindCircuit(inputsInLcsmCircuit, circuit1);
+		lcsm::Circuit *foundInOutputs = FindCircuit(outputsInLcsmCircuit, circuit1);
 
-		if (foundInInputs != inputsInLcsmCircuit.end())
+		if (foundInInputs != nullptr)
 		{
 			foundAsInputInCircuit1 = foundInInputs;
 			break;
 		}
 
-		if (foundInOutputs != outputsInLcsmCircuit.end())
+		if (foundInOutputs != nullptr)
 		{
 			foundAsInputInCircuit1 = foundInOutputs;
 			break;
 		}
 	}
 
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsComponent2 =
-		FindCircuit(m_components, circuit2);
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsConnectorWire2 =
-		FindCircuit(m_connectorWires, circuit2);
+	const lcsm::Circuit *foundAsComponent2 = FindCircuit(m_components, circuit2);
+	const lcsm::Circuit *foundAsConnectorWire2 = FindCircuit(m_connectorWires, circuit2);
 
-	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundAsInputInCircuit2 = end;
+	lcsm::Circuit *foundAsInputInCircuit2 = nullptr;
 	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &lcsmCircuit : m_circuits)
 	{
 		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputsInLcsmCircuit = lcsmCircuit.second->inputs();
 		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputsInLcsmCircuit = lcsmCircuit.second->outputs();
 
-		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInInputs =
-			FindCircuit(inputsInLcsmCircuit, circuit1);
-		const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator foundInOutputs =
-			FindCircuit(outputsInLcsmCircuit, circuit1);
+		lcsm::Circuit *foundInInputs = FindCircuit(inputsInLcsmCircuit, circuit2);
+		lcsm::Circuit *foundInOutputs = FindCircuit(outputsInLcsmCircuit, circuit2);
 
-		if (foundInInputs != inputsInLcsmCircuit.end())
+		if (foundInInputs != nullptr)
 		{
 			foundAsInputInCircuit2 = foundInInputs;
 			break;
 		}
 
-		if (foundInOutputs != outputsInLcsmCircuit.end())
+		if (foundInOutputs != nullptr)
 		{
 			foundAsInputInCircuit2 = foundInOutputs;
 			break;
 		}
 	}
 
-	if ((foundAsComponent1 == end && foundAsConnectorWire1 == end && foundAsInputInCircuit1 == end) ||
-		(foundAsComponent2 == end && foundAsConnectorWire2 == end && foundAsInputInCircuit2 == end))
+	if ((foundAsComponent1 == nullptr && foundAsConnectorWire1 == nullptr && foundAsInputInCircuit1 == nullptr) ||
+		(foundAsComponent2 == nullptr && foundAsConnectorWire2 == nullptr && foundAsInputInCircuit2 == nullptr))
 		throw std::logic_error("One of two components is not found in this circuit");
 
 	// Make connect via new wire.
@@ -302,14 +298,28 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Identifier id) noexcept
 
 lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::label_t name) noexcept
 {
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = std::find_if(
+	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = std::find_if(
 		m_components.begin(),
 		m_components.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
 		{ return std::strcmp(i.second->c_name(), name) == 0; });
-	if (found == m_components.end())
-		return nullptr;
-	return found->second.get();
+	if (found != m_components.end())
+		return found->second.get();
+	found = std::find_if(
+		m_connectorWires.begin(),
+		m_connectorWires.end(),
+		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return std::strcmp(i.second->c_name(), name) == 0; });
+	if (found != m_connectorWires.end())
+		return found->second.get();
+	found = std::find_if(
+		m_componentWires.begin(),
+		m_componentWires.end(),
+		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return std::strcmp(i.second->c_name(), name) == 0; });
+	if (found != m_componentWires.end())
+		return found->second.get();
+	return nullptr;
 }
 
 lcsm::Circuit *lcsm::LCSMCircuit::find(const std::string &name) noexcept
@@ -380,14 +390,14 @@ bool lcsm::LCSMCircuit::remove(const std::string &name)
 	return remove(name.c_str());
 }
 
-const lcsm::LCSMCircuit *lcsm::LCSMCircuit::addCircuit(const lcsm::LCSMCircuit &other)
+lcsm::LCSMCircuitView lcsm::LCSMCircuit::addCircuit(const lcsm::LCSMCircuit &other)
 {
 	std::shared_ptr< lcsm::LCSMCircuit > circuit = std::make_shared< lcsm::LCSMCircuit >();
 	const lcsm::Identifier circuitId = m_globalId;
 	other.copyImpl(circuit.get(), m_globalId);
 	m_circuits[circuitId] = circuit;
 	m_globalId = circuit->globalId().next();
-	return circuit.get();
+	return { circuit.get() };
 }
 
 const lcsm::LCSMCircuit *lcsm::LCSMCircuit::findCircuit(lcsm::Identifier circuitId) noexcept

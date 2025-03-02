@@ -367,7 +367,9 @@ void lcsm::LCSMState::tick()
 
 			/* Invoke all instants. */
 			for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : nodes)
+			{
 				node->invokeInstants(m_globalTimer);
+			}
 
 			/* Compare contexts. */
 			bool equals = true;
@@ -386,13 +388,13 @@ void lcsm::LCSMState::tick()
 			}
 
 			/* Fixup contexts. */
-			m_contexts = std::move(copyContexts);
-			for (auto &context : m_contexts)
+			for (auto &context : copyContexts)
 			{
 				const lcsm::Identifier &id = context.first;
 				lcsm::Context &ctx = context.second;
 				m_enginePtr->m_objects[id]->setContext({ ctx });
 			}
+			m_contexts = std::move(copyContexts);
 
 			/* If contexts are equals to each other, then circuit is now stabilized: need to clear current scheduler and
 			 * stop this step. Otherwise, fixup scheduled and continue this loop. */

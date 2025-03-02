@@ -2,47 +2,53 @@
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Physical/DataBits.h>
+#include <lcsm/Verilog/Bit.h>
 
 #include <iostream>
+#include <vector>
 
-static lcsm::LCSMCircuit GetDummy()
+using namespace lcsm;
+
+static LCSMCircuit getCircuit()
 {
-	lcsm::LCSMCircuit circuit;
-	lcsm::model::Pin *i0 = circuit.createPin(false);
-	lcsm::model::Pin *o0 = circuit.createPin(true);
-	circuit.connect(i0, lcsm::model::Pin::Port::Internal, o0, lcsm::model::Pin::Port::Internal);
+	LCSMCircuit circuit;
+
+	model::Pin *input = circuit.createPin(false, "circ0_input");
+	model::Pin *output = circuit.createPin(true, "circ0_output");
+
+	circuit.connect(input, model::Pin::Port::Internal, output, model::Pin::Port::Internal);
+
 	return circuit;
 }
 
 int main()
 {
-	lcsm::LCSMCircuit circuit;
+	LCSMCircuit circuit;
 
-	lcsm::model::Pin *i0 = circuit.createPin(false);
-	lcsm::model::Pin *o0 = circuit.createPin(true);
-	const lcsm::LCSMCircuit *c0 = circuit.addCircuit(GetDummy());
-	lcsm::Circuit *c0i0 = c0->inputs().begin()->second.get();
-	lcsm::Circuit *c0o0 = c0->outputs().begin()->second.get();
+	model::Pin *input = circuit.createPin(false, "circ1_input");
+	model::Pin *output = circuit.createPin(true, "circ1_output");
 
-	circuit.connect(i0, lcsm::model::Pin::Port::Internal, c0i0, lcsm::model::Pin::Port::External);
-	circuit.connect(c0o0, lcsm::model::Pin::Port::External, o0, lcsm::model::Pin::Port::Internal);
+	LCSMCircuitView view = circuit.addCircuit(getCircuit());
 
-	lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(circuit);
+	lcsm::Circuit *input0 = view.find("circ0_input");
+	lcsm::Circuit *output0 = view.find("circ0_output");
 
-	lcsm::LCSMState state = engine.fork();
+	circuit.connect(input, model::Pin::Port::Internal, input0, model::Pin::Port::External);
+	circuit.connect(output0, model::Pin::Port::External, output, model::Pin::Port::Internal);
 
-	const std::vector< lcsm::DataBits > values = {
-		{ lcsm::Width::Bit1, lcsm::verilog::Bit::False },
-		{ lcsm::Width::Bit1, lcsm::verilog::Bit::True }
-	};
+	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
 
-	for (const lcsm::DataBits &value : values)
+	LCSMState state = engine.fork();
+
+	const std::vector< DataBits > values = { { Width::Bit1, verilog::Bit::False }, { Width::Bit1, verilog::Bit::True } };
+
+	for (const DataBits &value : values)
 	{
-		state.putValue(i0->id(), value);
+		state.putValue(input->id(), value);
 		state.tick();
-		const lcsm::DataBits &out = state.valueOf(c0o0->id());
-		std::cout << "in = " << value << " =>  out = " << out << '\n';
+		std::cout << "in = " << value << " =>  out = " << state.valueOf(output0->id()) << '\n';
 	}
 }

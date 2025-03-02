@@ -27,6 +27,37 @@
 
 namespace lcsm
 {
+	class LCSMCircuit;
+
+	class LCSMCircuitView
+	{
+	  public:
+		LCSMCircuitView(LCSMCircuit *circuit) noexcept;
+
+		LCSMCircuitView(const LCSMCircuitView &other) noexcept;
+		LCSMCircuitView(LCSMCircuitView &&other) noexcept;
+
+		LCSMCircuitView &operator=(const LCSMCircuitView &other) noexcept;
+		LCSMCircuitView &operator=(LCSMCircuitView &&other) noexcept;
+
+		void swap(LCSMCircuitView &other) noexcept;
+
+		Identifier globalId() const noexcept;
+		const std::string &name() const noexcept;
+		label_t c_name() const noexcept;
+
+		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
+
+		Circuit *find(Identifier id) noexcept;
+		Circuit *find(label_t name) noexcept;
+		Circuit *find(const std::string &name) noexcept;
+
+	  private:
+		LCSMCircuit *m_circuit;
+	};
+
 	class LCSMCircuit
 	{
 	  public:
@@ -72,7 +103,7 @@ namespace lcsm
 		bool remove(label_t name);
 		bool remove(const std::string &name);
 
-		const LCSMCircuit *addCircuit(const LCSMCircuit &other);
+		LCSMCircuitView addCircuit(const LCSMCircuit &other);
 
 		const LCSMCircuit *findCircuit(Identifier id) noexcept;
 		const LCSMCircuit *findCircuit(label_t name) noexcept;
