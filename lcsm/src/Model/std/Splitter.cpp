@@ -80,7 +80,7 @@ void lcsm::model::Splitter::provideWires(const std::vector< std::shared_ptr< lcs
 		m_wireOuts.push_back(wires[i]);
 		m_wireOuts[i]->connectConnect(this);
 	}
-	m_wireIn = m_wireOuts[numOfWires() - 1];
+	m_wireIn = wires[numOfWires() - 1];
 	m_wireIn->connectConnect(this);
 	resetBitsOuts();
 }
@@ -258,7 +258,7 @@ void lcsm::model::Splitter::resetBitsOuts() noexcept
 	lcsm::width_t prevEnd = base;
 	for (std::size_t i = 0; i < dem; i++)
 	{
-		m_bitsOuts[i] = std::make_pair(prevBegin, prevEnd);
+		m_bitsOuts.emplace_back(prevBegin, prevEnd);
 		prevEnd += base;
 		prevBegin = prevEnd + 1;
 		prevEnd += (i < remain);
