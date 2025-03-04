@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <ostream>
+#include <string>
 #include <utility>
 
 lcsm::verilog::Value::Value() noexcept : Value(lcsm::verilog::Strength::StrongDrive, lcsm::verilog::Bit::False) {}
@@ -154,9 +155,9 @@ lcsm::verilog::Bit lcsm::verilog::Value::bit() const noexcept
 	return m_bit;
 }
 
-void lcsm::verilog::Value::setBit(lcsm::verilog::Bit newBit) noexcept
+void lcsm::verilog::Value::setBit(lcsm::verilog::Bit bit) noexcept
 {
-	m_bit = newBit;
+	m_bit = bit;
 }
 
 void lcsm::verilog::Value::flip() noexcept
@@ -177,3 +178,13 @@ namespace lcsm
 		}
 	}	 // namespace verilog
 }	 // namespace lcsm
+
+std::string lcsm::verilog::Value::toString() const
+{
+	std::string s = "{";
+	s.push_back(lcsm::verilog::BitPretty(m_bit));
+	s.append(", ");
+	s.append(lcsm::verilog::StrengthPretty(m_strength));
+	s.push_back('}');
+	return s;
+}

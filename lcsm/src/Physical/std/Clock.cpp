@@ -15,6 +15,9 @@
 
 #define UNUSED(X) ((void)(X))
 
+static const lcsm::DataBits T{ lcsm::Width::Bit1, lcsm::verilog::Bit::True };
+static const lcsm::DataBits F{ lcsm::Width::Bit1, lcsm::verilog::Bit::False };
+
 lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
 	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration),
 	m_phaseOffset(phaseOffset), m_counterFalse(m_lowDuration), m_counterTrue(m_highDuration), m_counter(true)
@@ -38,15 +41,13 @@ std::size_t lcsm::physical::Clock::privateContextSize() const noexcept
 
 void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
-		throw std::logic_error("Bad context size!");
-
-	// If already contexted, reset old, set new context and extract counters.
-	// Otherwise, set context without extracting counters.
+	// If already context exists, reset old, set and verify new context and extract counters.
+	// Otherwise, set and verify context without extracting counters.
 	if (m_context)
 	{
 		resetContext();
 		m_context = context;
+		verifyContext();
 		m_counterFalse = m_context->privateContext().asInt(0);
 		m_counterTrue = m_context->privateContext().asInt(1);
 		m_counter = m_context->privateContext().asBool(2);
@@ -54,6 +55,7 @@ void lcsm::physical::Clock::setContext(const lcsm::support::PointerView< lcsm::C
 	else
 	{
 		m_context = context;
+		verifyContext();
 	}
 }
 
@@ -64,6 +66,30 @@ void lcsm::physical::Clock::resetContext() noexcept
 	m_context->privateContext().putInt(1, m_counterTrue);
 	m_context->privateContext().putBool(2, m_counter);
 	m_context.reset();
+}
+
+void lcsm::physical::Clock::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	// Check value.
+	const lcsm::DataBits &value = m_context->getValue();
+	if (value.width() != lcsm::Width::Bit1)
+	{
+		resetContext();
+		throw std::logic_error("Bad value width!");
+	}
 }
 
 void lcsm::physical::Clock::addInstant(const lcsm::Instruction &instruction)
@@ -127,46 +153,54 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 	// If there is no updates, then put 1bit-Strong-False to context. Otherwise, read from context.
 	lcsm::DataBits value;
-	if (m_context->neverUpdate())
-	{
-		value = { lcsm::Width::Bit1, lcsm::verilog::Bit::True };
-	}
-	else
-	{
-		value = m_context->getValue();
-	}
-
 	UNUSED(m_phaseOffset);
+
+	// Special case: when any of counters equals zero always.
+	if (m_highDuration == 0)
+	{
+		value = F;
+		goto l_write;
+	}
+	else if (m_lowDuration == 0)
+	{
+		value = T;
+		goto l_write;
+	}
 
 	// Check counter of value's bit (0 - False, 1 - True), if equals zero, then change value and reset counter,
 	// otherwise, decrement and continue.
-	if (!m_counter)
-	{
-		if (m_counterFalse == 0)
-		{
-			value.setBit(0, lcsm::verilog::Bit::True);
-			m_counterFalse = m_lowDuration;
-			m_counter = true;
-		}
-		else
-		{
-			m_counterFalse--;
-		}
-	}
-	else
+	if (m_counter)
 	{
 		if (m_counterTrue == 0)
 		{
-			value.setBit(0, lcsm::verilog::Bit::False);
+			value = F;
 			m_counterTrue = m_highDuration;
+			m_counterFalse--;
 			m_counter = false;
 		}
 		else
 		{
 			m_counterTrue--;
+			value = T;
+		}
+	}
+	else
+	{
+		if (m_counterFalse == 0)
+		{
+			value = T;
+			m_counterFalse = m_lowDuration;
+			m_counterTrue--;
+			m_counter = true;
+		}
+		else
+		{
+			m_counterFalse--;
+			value = F;
 		}
 	}
 
+l_write:
 	// Write value to Wire.
 	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
 	events.emplace_back(std::move(i));

@@ -1,5 +1,7 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Physical/Context.h>
+#include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Physical/Instruction.h>
@@ -31,24 +33,43 @@ std::size_t lcsm::physical::Button::privateContextSize() const noexcept
 
 void lcsm::physical::Button::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
-	{
-		throw std::logic_error("Bad context size!");
-	}
-
-	// If contexed already, reset old.
+	// If context already exists, then reset it.
 	if (m_context)
 	{
 		resetContext();
 	}
 
-	// Set contexed.
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Button::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Button::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	const lcsm::DataBits &value = m_context->getValue();
+	if (value.width() != lcsm::Width::Bit1)
+	{
+		resetContext();
+		throw std::logic_error("Bad value's width!");
+	}
 }
 
 void lcsm::physical::Button::addInstant(const lcsm::Instruction &instruction)

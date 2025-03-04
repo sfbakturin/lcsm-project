@@ -34,24 +34,30 @@ std::size_t lcsm::physical::Splitter::privateContextSize() const noexcept
 
 void lcsm::physical::Splitter::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
-	{
-		throw std::logic_error("Bad context size!");
-	}
-
-	// If contexted, reset previous one.
+	// If context already exists, reset it.
 	if (m_context)
 	{
 		resetContext();
 	}
 
-	// Set contexted.
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Splitter::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Splitter::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
 }
 
 void lcsm::physical::Splitter::addInstant(const lcsm::Instruction &instruction)
@@ -140,6 +146,7 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::
 	if (now > then && !m_instants.empty())
 	{
 		const lcsm::Instruction instant = m_instants.front();
+		m_instants.pop_front();
 		value = instant.value();
 	}
 
@@ -163,6 +170,9 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::
 		lcsm::Instruction instruction{ type, this, m_outputs[i].get(), value.subdatabits(begin, end) };
 		events.emplace_back(std::move(instruction));
 	}
+
+	// Save value to context.
+	m_context->updateValues(now, { value });
 
 	return events;
 }

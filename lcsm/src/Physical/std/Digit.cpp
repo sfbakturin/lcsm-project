@@ -24,7 +24,7 @@ lcsm::NodeType lcsm::physical::Digit::nodeType() const noexcept
 
 std::size_t lcsm::physical::Digit::contextSize() const noexcept
 {
-	return 1;
+	return 2;
 }
 
 std::size_t lcsm::physical::Digit::privateContextSize() const noexcept
@@ -34,14 +34,45 @@ std::size_t lcsm::physical::Digit::privateContextSize() const noexcept
 
 void lcsm::physical::Digit::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
-		throw std::logic_error("Bad context size!");
+	// If context already exists, then reset it.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Digit::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Digit::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	// Check value.
+	const lcsm::DataBits &data = m_context->getValue(0);
+	const lcsm::DataBits &decimalPoint = m_context->getValue(1);
+	if ((data.width() != lcsm::Width::Bit4) || (m_hasDecimalPoint && decimalPoint.width() != lcsm::Width::Bit1))
+	{
+		resetContext();
+		throw std::logic_error("Bad value width!");
+	}
 }
 
 void lcsm::physical::Digit::addInstant(const lcsm::Instruction &instruction)
@@ -50,13 +81,21 @@ void lcsm::physical::Digit::addInstant(const lcsm::Instruction &instruction)
 	const lcsm::EvaluatorNode *target = instruction.target();
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	if (target != this)
+	{
 		throw std::logic_error("Target is not this element");
+	}
 	if (type == lcsm::InstructionType::WriteValue && caller == m_data)
+	{
 		m_instantsData.push_back(instruction);
+	}
 	else if (type == lcsm::InstructionType::WriteValue && caller == m_decimalPoint && m_hasDecimalPoint)
+	{
 		m_instantsDecimalPoint.push_back(instruction);
+	}
 	else
+	{
 		throw std::logic_error("Bad instant!");
+	}
 }
 
 void lcsm::physical::Digit::addInstant(lcsm::Instruction &&instruction)
@@ -65,24 +104,32 @@ void lcsm::physical::Digit::addInstant(lcsm::Instruction &&instruction)
 	const lcsm::EvaluatorNode *target = instruction.target();
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	if (target != this)
+	{
 		throw std::logic_error("Target is not this element");
+	}
 	if (type == lcsm::InstructionType::WriteValue && caller == m_data)
+	{
 		m_instantsData.push_back(std::move(instruction));
+	}
 	else if (type == lcsm::InstructionType::WriteValue && caller == m_decimalPoint && m_hasDecimalPoint)
+	{
 		m_instantsDecimalPoint.push_back(std::move(instruction));
+	}
 	else
+	{
 		throw std::logic_error("Bad instant!");
+	}
 }
 
 std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Timestamp &now)
 {
-	/* Extract values from context. */
+	// Extract values from context.
 	lcsm::DataBits valueData = m_context->getValue(0);
 	lcsm::DataBits valueDecimalPoint = m_context->getValue(1);
 	const lcsm::Timestamp &then = m_context->lastUpdate();
 	const bool takeFirst = now > then;
 
-	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	// If NOW is later, then THEN, then we should take first value as not-dirty.
 	if (takeFirst)
 	{
 		if (!m_instantsData.empty())
@@ -99,21 +146,25 @@ std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Tim
 		}
 	}
 
-	/* Invoke all instructions. */
+	// Invoke all instructions.
 	for (const lcsm::Instruction &instant : m_instantsData)
+	{
 		valueData |= instant.value();
+	}
 	for (const lcsm::Instruction &instant : m_instantsDecimalPoint)
+	{
 		valueDecimalPoint |= instant.value();
+	}
 
-	/* Clean instants. */
+	// Clean instants.
 	m_instantsData.clear();
 	m_instantsDecimalPoint.clear();
 
-	/* Update context. */
-	/* MAYBE, valueData must be exactly 4 bits and valueDecimalPoint must be exactly 1 bit... */
+	// Update context.
 	m_context->updateValues(now, { valueData, valueDecimalPoint });
+	verifyContext();
 
-	/* No events from Digit. */
+	// No events from Digit.
 	return {};
 }
 

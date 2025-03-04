@@ -5,6 +5,7 @@
 #include <lcsm/Verilog/Strength.h>
 
 #include <ostream>
+#include <string>
 
 namespace lcsm
 {
@@ -49,10 +50,12 @@ namespace lcsm
 			void setStrength(Strength newStrength) noexcept;
 
 			Bit bit() const noexcept;
-			void setBit(Bit newBit) noexcept;
+			void setBit(Bit bit) noexcept;
 			void flip() noexcept;
 
 			friend std::ostream &operator<<(std::ostream &os, const Value &v);
+
+			std::string toString() const;
 
 		  private:
 			Strength m_strength;

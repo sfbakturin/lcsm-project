@@ -88,13 +88,17 @@ void lcsm::model::Digit::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	switch (p)
 	{
 	case lcsm::model::Digit::Port::WiringData:
+	{
 		m_wireData->connectToWire(circuit);
 		break;
+	}
 	case lcsm::model::Digit::Port::WiringDecimalPoint:
+	{
 		if (!m_hasDecimalPoint)
 			throw std::logic_error("Digit doesn't have port for decimal point!");
 		m_wireDecimalPoint->connectToWire(circuit);
 		break;
+	}
 	default:
 		throw std::logic_error("Bad port!");
 	}

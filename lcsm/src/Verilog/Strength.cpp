@@ -4,18 +4,28 @@
 
 std::ostream &lcsm::verilog::operator<<(std::ostream &os, const lcsm::verilog::Strength &s)
 {
+	const char *pretty = lcsm::verilog::StrengthPretty(s);
+	if (pretty != nullptr)
+	{
+		os << pretty;
+	}
+	return os;
+}
+
+const char *lcsm::verilog::StrengthPretty(const lcsm::verilog::Strength &s) noexcept
+{
 	switch (s)
 	{
 	case lcsm::verilog::Strength::HighImpedance:
-		return os << "highz";
+		return "highz";
 	case lcsm::verilog::Strength::WeakDrive:
-		return os << "weak";
+		return "weak";
 	case lcsm::verilog::Strength::PullDrive:
-		return os << "pull";
+		return "pull";
 	case lcsm::verilog::Strength::StrongDrive:
-		return os << "strong";
+		return "strong";
 	case lcsm::verilog::Strength::SupplyDrive:
-		return os << "supply";
+		return "supply";
 	}
-	return os;
+	return nullptr;
 }

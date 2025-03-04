@@ -94,6 +94,7 @@ namespace lcsm
 		model::Probe *createProbe(label_t name = "");
 		model::Splitter *createSplitter(label_t name = "", Width widthIn = Width::Bit2, width_t widthOut = 2);
 
+		Circuit *find(Circuit *circuit) noexcept;
 		Circuit *find(Identifier id) noexcept;
 		Circuit *find(label_t name) noexcept;
 		Circuit *find(const std::string &name) noexcept;

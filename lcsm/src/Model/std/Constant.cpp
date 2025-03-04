@@ -5,6 +5,7 @@
 #include <lcsm/Model/std/Constant.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -26,9 +27,15 @@ lcsm::Width lcsm::model::Constant::width() const noexcept
 	return m_width;
 }
 
+static constexpr lcsm::value_t GetValue(lcsm::Width width) noexcept
+{
+	return (std::numeric_limits< lcsm::value_t >::max() >> (63 - (width - 1)));
+}
+
 void lcsm::model::Constant::setWidth(lcsm::Width width) noexcept
 {
 	m_width = width;
+	m_value = GetValue(width);
 }
 
 lcsm::value_t lcsm::model::Constant::value() const noexcept

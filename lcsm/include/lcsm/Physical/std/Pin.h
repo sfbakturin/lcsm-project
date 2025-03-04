@@ -2,6 +2,7 @@
 #define LCSM_PHYSICAL_STD_PIN_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -15,7 +16,7 @@ namespace lcsm
 		class Pin : public EvaluatorNode
 		{
 		  public:
-			Pin(object_type_t objectType, bool output);
+			Pin(object_type_t objectType, bool output, Width width);
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -24,6 +25,7 @@ namespace lcsm
 
 			virtual void setContext(const support::PointerView< Context > &context) override final;
 			virtual void resetContext() noexcept override final;
+			virtual void verifyContext() override final;
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;
@@ -35,6 +37,7 @@ namespace lcsm
 
 		  private:
 			bool m_output;
+			Width m_width;
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_internalConnect;

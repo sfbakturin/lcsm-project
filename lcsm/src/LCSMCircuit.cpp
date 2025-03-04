@@ -288,6 +288,38 @@ lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Cir
 	return connect(circuit1, circuit1->defaultPort(), circuit2, circuit2->defaultPort(), name);
 }
 
+lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Circuit *circuit) noexcept
+{
+	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = std::find_if(
+		m_components.begin(),
+		m_components.end(),
+		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return i.second.get() == circuit; });
+	if (found != m_components.end())
+	{
+		return found->second.get();
+	}
+	found = std::find_if(
+		m_connectorWires.begin(),
+		m_connectorWires.end(),
+		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return i.second.get() == circuit; });
+	if (found != m_connectorWires.end())
+	{
+		return found->second.get();
+	}
+	found = std::find_if(
+		m_componentWires.begin(),
+		m_componentWires.end(),
+		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return i.second.get() == circuit; });
+	if (found != m_componentWires.end())
+	{
+		return found->second.get();
+	}
+	return circuit;
+}
+
 lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Identifier id) noexcept
 {
 	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found = m_components.find(id);
@@ -304,21 +336,27 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::label_t name) noexcept
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
 		{ return std::strcmp(i.second->c_name(), name) == 0; });
 	if (found != m_components.end())
+	{
 		return found->second.get();
+	}
 	found = std::find_if(
 		m_connectorWires.begin(),
 		m_connectorWires.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
 		{ return std::strcmp(i.second->c_name(), name) == 0; });
 	if (found != m_connectorWires.end())
+	{
 		return found->second.get();
+	}
 	found = std::find_if(
 		m_componentWires.begin(),
 		m_componentWires.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
 		{ return std::strcmp(i.second->c_name(), name) == 0; });
 	if (found != m_componentWires.end())
+	{
 		return found->second.get();
+	}
 	return nullptr;
 }
 
@@ -336,40 +374,18 @@ bool lcsm::LCSMCircuit::remove(lcsm::Circuit *circuit)
 	}
 
 	// Find this circuit, if not found - exit.
-	std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found = m_components.begin();
-	for (; found != m_components.end(); found++)
-	{
-		if (found->second.get() == circuit)
-		{
-			break;
-		}
-	}
-	if (found == m_components.end())
+	if (find(circuit) == nullptr)
 	{
 		return false;
 	}
 
-	// Remove from helpers.
-	const lcsm::object_type_t objectType = circuit->objectType();
+	// Remove by identifier.
 	const lcsm::Identifier id = circuit->id();
-
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
-	{
-		m_inputs.erase(id);
-	}
-
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Output))
-	{
-		m_outputs.erase(id);
-	}
-
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Wiring))
-	{
-		m_connectorWires.erase(id);
-	}
-
-	// Disconnect and remove.
-	m_components.erase(found);
+	m_inputs.erase(id);
+	m_outputs.erase(id);
+	m_components.erase(id);
+	m_connectorWires.erase(id);
+	m_componentWires.erase(id);
 
 	// As it was naturally erased, so then it's now really erased from circuit.
 	return true;
@@ -574,7 +590,7 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 		{
 			const lcsm::model::Power *oldPower = static_cast< const lcsm::model::Power * >(oldCircuit.get());
 			const lcsm::model::Wire *oldWire = oldPower->wire();
-			const lcsm::label_t name = oldWire->c_name();
+			const lcsm::label_t name = oldPower->c_name();
 			const lcsm::Width width = oldPower->width();
 			const lcsm::model::Power *power = newCircuit->createPower(name, width);
 			oldToNewId[oldPower->id()] = power->id();

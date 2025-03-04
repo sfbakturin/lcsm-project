@@ -18,6 +18,7 @@ namespace lcsm
 		};
 
 		std::ostream &operator<<(std::ostream &os, const Strength &s);
+		const char *StrengthPretty(const Strength &s) noexcept;
 	}	 // namespace verilog
 }	 // namespace lcsm
 

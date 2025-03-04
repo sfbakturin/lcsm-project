@@ -37,14 +37,44 @@ std::size_t lcsm::physical::Constant::privateContextSize() const noexcept
 
 void lcsm::physical::Constant::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
-		throw std::logic_error("Bad context size!");
+	// If context already exists, then reset it.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Constant::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Constant::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	// Check value.
+	const lcsm::DataBits &value = m_context->getValue();
+	if (value.width() != m_databits.width())
+	{
+		resetContext();
+		throw std::logic_error("Bad value width!");
+	}
 }
 
 void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)

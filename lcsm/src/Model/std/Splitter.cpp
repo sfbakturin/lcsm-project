@@ -36,6 +36,7 @@ lcsm::Width lcsm::model::Splitter::widthIn() const noexcept
 void lcsm::model::Splitter::setWidthIn(lcsm::Width widthIn) noexcept
 {
 	m_widthIn = widthIn;
+	resetBitsOuts();
 }
 
 lcsm::width_t lcsm::model::Splitter::widthOut() const noexcept
@@ -258,9 +259,9 @@ void lcsm::model::Splitter::resetBitsOuts() noexcept
 	lcsm::width_t prevEnd = base;
 	for (std::size_t i = 0; i < dem; i++)
 	{
-		m_bitsOuts.emplace_back(prevBegin, prevEnd);
-		prevEnd += base;
-		prevBegin = prevEnd + 1;
 		prevEnd += (i < remain);
+		m_bitsOuts.emplace_back(prevBegin, prevEnd);
+		prevBegin = prevEnd;
+		prevEnd += base;
 	}
 }

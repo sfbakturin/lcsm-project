@@ -16,6 +16,7 @@ namespace lcsm
 		};
 
 		std::ostream &operator<<(std::ostream &os, const Bit &b);
+		char BitPretty(const Bit &b) noexcept;
 	}	 // namespace verilog
 }	 // namespace lcsm
 

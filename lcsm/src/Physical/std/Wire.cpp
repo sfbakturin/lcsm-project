@@ -33,14 +33,30 @@ std::size_t lcsm::physical::Wire::privateContextSize() const noexcept
 
 void lcsm::physical::Wire::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
-		throw std::logic_error("Bad context size!");
+	// If context already exists, then reset it.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Wire::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Wire::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
 }
 
 void lcsm::physical::Wire::addInstant(const lcsm::Instruction &instruction)

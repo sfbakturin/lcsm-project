@@ -30,6 +30,7 @@ namespace lcsm
 
 		virtual void setContext(const support::PointerView< Context > &context) = 0;
 		virtual void resetContext() noexcept = 0;
+		virtual void verifyContext() = 0;
 
 		virtual void addInstant(const Instruction &instruction) = 0;
 		virtual void addInstant(Instruction &&instruction) = 0;

@@ -160,7 +160,7 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm:
 
 	/* Check size of value. */
 	lcsm::Context &context = foundIt->second;
-	if (databits.size() >= context.size())
+	if (databits.size() != context.size())
 		throw std::out_of_range("Context: Index out of bound");
 
 	/* Update values. */
@@ -278,8 +278,8 @@ void lcsm::LCSMState::tick()
 
 					/* Check event's target's type - if it's the one, then put instruction and remember, otherwise
 					 * put it to scheduler back. */
-					const lcsm::target_t callerNodeType = caller->nodeType();
-					if (callerNodeType == nodeType)
+					const lcsm::target_t targetNodeType = target->nodeType();
+					if (targetNodeType == nodeType)
 					{
 						/* Push instruction to object's node. */
 						target->addInstant(instruction);

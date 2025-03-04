@@ -11,6 +11,7 @@
 #include <memory>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 lcsm::DataBits::DataBits() noexcept : lcsm::DataBits(lcsm::Width::Bit1) {}
@@ -20,14 +21,7 @@ lcsm::DataBits::DataBits(lcsm::Width width) noexcept :
 {
 }
 
-lcsm::DataBits::DataBits(lcsm::Width width, const lcsm::verilog::Value &value) noexcept : m_width(width), m_bits(value)
-{
-}
-
-lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Value &&value) noexcept :
-	m_width(width), m_bits(std::move(value))
-{
-}
+lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Value value) noexcept : m_width(width), m_bits(value) {}
 
 lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Bit bit) noexcept :
 	lcsm::DataBits(width, lcsm::verilog::Strength::StrongDrive, bit)
@@ -39,49 +33,80 @@ lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Strength strength, lc
 {
 }
 
-static std::size_t CheckBitsSize(std::size_t width)
+lcsm::DataBits::DataBits(lcsm::width_t width) noexcept :
+	lcsm::DataBits(width, lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Undefined)
 {
-	/* Check compatible size via switch-case optimizations. */
-	switch (width)
+}
+
+lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Value value) noexcept
+{
+	m_width = std::min(width, lcsm::DataBits::MaxWidth);
+	for (lcsm::width_t i = 0; i < m_width; i++)
 	{
-	case lcsm::Width::Bit1:
-	case lcsm::Width::Bit2:
-	case lcsm::Width::Bit3:
-	case lcsm::Width::Bit4:
-	case lcsm::Width::Bit5:
-	case lcsm::Width::Bit6:
-	case lcsm::Width::Bit7:
-	case lcsm::Width::Byte:
-	case lcsm::Width::Word:
-	case lcsm::Width::ShortWord:
-	case lcsm::Width::DoubleWord:
-	case lcsm::Width::QuadWord:
-		return width;
-	default:
-		throw std::logic_error("Incompatible size for DataBits");
+		m_bits[i] = value;
 	}
 }
 
-lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits)
+lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Bit bit) noexcept :
+	lcsm::DataBits(width, lcsm::verilog::Strength::StrongDrive, bit)
 {
-	const std::size_t width = CheckBitsSize(bits.size());
-
-	std::size_t i = 0;
-	for (lcsm::verilog::Bit b : bits)
-		m_bits[i++] = { b };
-
-	m_width = static_cast< lcsm::Width >(width);
 }
 
-lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values)
+lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept
 {
-	const std::size_t width = CheckBitsSize(values.size());
+	m_width = std::min(width, lcsm::DataBits::MaxWidth);
+	for (lcsm::width_t i = 0; i < m_width; i++)
+	{
+		lcsm::verilog::Value value{ strength, bit };
+		m_bits[i] = value;
+	}
+}
 
-	std::size_t i = 0;
-	for (const lcsm::verilog::Value &v : values)
-		m_bits[i++] = v;
+lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits) noexcept
+{
+	m_width = std::min(static_cast< lcsm::width_t >(bits.size()), lcsm::DataBits::MaxWidth);
+	lcsm::width_t i = 0;
+	for (lcsm::verilog::Bit bit : bits)
+	{
+		if (i >= m_width)
+		{
+			break;
+		}
+		lcsm::verilog::Value value{ bit };
+		m_bits[i] = bit;
+		i++;
+	}
+}
 
-	m_width = static_cast< lcsm::Width >(width);
+lcsm::DataBits::DataBits(std::initializer_list< std::pair< lcsm::verilog::Strength, lcsm::verilog::Bit > > strengthBits) noexcept
+{
+	m_width = std::min(static_cast< lcsm::width_t >(strengthBits.size()), lcsm::DataBits::MaxWidth);
+	lcsm::width_t i = 0;
+	for (std::pair< lcsm::verilog::Strength, lcsm::verilog::Bit > strengthBit : strengthBits)
+	{
+		if (i >= m_width)
+		{
+			break;
+		}
+		lcsm::verilog::Value value{ strengthBit.first, strengthBit.second };
+		m_bits[i] = value;
+		i++;
+	}
+}
+
+lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values) noexcept
+{
+	m_width = std::min(static_cast< lcsm::width_t >(values.size()), lcsm::DataBits::MaxWidth);
+	lcsm::width_t i = 0;
+	for (lcsm::verilog::Value value : values)
+	{
+		if (i >= m_width)
+		{
+			break;
+		}
+		m_bits[i] = value;
+		i++;
+	}
 }
 
 lcsm::DataBits::DataBits(const DataBits &other) noexcept : m_width(other.m_width), m_bits(other.m_bits) {}
@@ -146,32 +171,38 @@ void lcsm::DataBits::swap(lcsm::DataBits &other) noexcept
 	std::swap(m_bits, other.m_bits);
 }
 
-lcsm::DataBits lcsm::DataBits::fromModel(lcsm::Width width, lcsm::value_t value) noexcept
+lcsm::DataBits lcsm::DataBits::fromModel(lcsm::Width width, lcsm::value_t v) noexcept
 {
 	lcsm::DataBits databits(width);
 	unsigned w = static_cast< unsigned >(width);
-	std::size_t index = 0;
+	std::ptrdiff_t index = w - 1;
 
 	while (w != 0)
 	{
-		const lcsm::verilog::Bit bit = static_cast< lcsm::verilog::Bit >(value & 1);
-		databits.setValue(index, { bit });
-		index++;
+		const lcsm::verilog::Bit bit{ static_cast< lcsm::verilog::Bit >(v & 1) };
+		const lcsm::verilog::Value value{ bit };
+		databits.setValue(index, value);
+		index--;
 		w--;
-		value >>= 1;
+		v >>= 1;
 	}
 
 	return databits;
 }
 
-lcsm::Width lcsm::DataBits::width() const noexcept
+lcsm::DataBits lcsm::DataBits::fromModel(lcsm::value_t value) noexcept
+{
+	return lcsm::DataBits::fromModel(lcsm::Width::QuadWord, value);
+}
+
+lcsm::width_t lcsm::DataBits::width() const noexcept
 {
 	return m_width;
 }
 
-void lcsm::DataBits::setWidth(lcsm::Width newWidth) noexcept
+void lcsm::DataBits::setWidth(lcsm::width_t newWidth) noexcept
 {
-	m_width = newWidth;
+	m_width = std::min(newWidth, lcsm::DataBits::MaxWidth);
 }
 
 bool lcsm::DataBits::checkWidth(const lcsm::DataBits &other) const noexcept
@@ -204,19 +235,14 @@ const lcsm::verilog::Value &lcsm::DataBits::operator[](std::size_t index) const
 	return value(index);
 }
 
-void lcsm::DataBits::setBit(std::size_t index, lcsm::verilog::Bit newBit)
+void lcsm::DataBits::setBit(std::size_t index, lcsm::verilog::Bit bit)
 {
-	value(index).setBit(newBit);
+	m_bits[index].setBit(bit);
 }
 
-void lcsm::DataBits::setValue(std::size_t index, const lcsm::verilog::Value &newValue)
+void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value value)
 {
-	m_bits[index] = newValue;
-}
-
-void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value &&newValue)
-{
-	m_bits[index] = std::move(newValue);
+	m_bits[index] = value;
 }
 
 lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept
@@ -227,10 +253,12 @@ lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept
 lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin, std::size_t end) const noexcept
 {
 	const lcsm::width_t size = end - begin;
-	lcsm::DataBits sub(static_cast< lcsm::Width >(size));
+	lcsm::DataBits sub(size);
+	unsigned j = 0;
 	for (unsigned i = begin; i < end && i < width(); i++)
 	{
-		sub.setValue(begin - i, value(i));
+		sub.setValue(j, value(i));
+		j++;
 	}
 	return sub;
 }
@@ -260,3 +288,22 @@ namespace lcsm
 		return os << ']';
 	}
 }	 // namespace lcsm
+
+std::string lcsm::DataBits::toString() const
+{
+	std::string s = "[";
+	const unsigned n = static_cast< unsigned >(m_width);
+	bool needsComma = false;
+	for (unsigned i = 0; i < n; i++)
+	{
+		if (needsComma)
+		{
+			s.push_back(',');
+		}
+		const std::string bitStr = m_bits[i].toString();
+		s.append(bitStr);
+		needsComma = true;
+	}
+	s.push_back(']');
+	return s;
+}

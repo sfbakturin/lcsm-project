@@ -53,51 +53,78 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > visit;
 
 	// Components.
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
 	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &components = circuit.components();
 
 	// Find all *In*/*Out* circuits and add them to BFS queue.
-	for (auto it = inputs.begin(); it != inputs.end(); it++)
-	{
-		lcsm::support::PointerView< lcsm::Circuit > circ = lcsm::support::PointerView< lcsm::Circuit >::fromSharedPtr(it->second);
-		visit.emplace_back(circ.get());
-	}
-
-	for (auto it = outputs.begin(); it != outputs.end(); it++)
-	{
-		lcsm::support::PointerView< lcsm::Circuit > circ = lcsm::support::PointerView< lcsm::Circuit >::fromSharedPtr(it->second);
-		visit.emplace_back(circ.get());
-	}
-
-	engine.buildCircuit(visit);
-
-	// Find all *In*/*Out*/*Root* circuit and add them to helpers.
-	for (auto it = inputs.begin(); it != inputs.end(); it++)
-	{
-		const lcsm::Identifier &id = it->first;
-		engine.m_realInputs[id] = engine.m_objects[id];
-		engine.m_realInputsIds.push_back(id);
-	}
-
-	for (auto it = outputs.begin(); it != outputs.end(); it++)
-	{
-		const lcsm::Identifier &id = it->first;
-		engine.m_realOutputs[id] = engine.m_objects[id];
-		engine.m_realOutputsIds.push_back(id);
-	}
-
 	for (auto it = components.begin(); it != components.end(); it++)
 	{
-		const lcsm::Identifier &id = it->first;
-		const lcsm::object_type_t objectType = it->second->objectType();
-		// Circuit must be *pure* root to add to helpers.
-		if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
+		lcsm::Circuit *circ = it->second.get();
+		if (lcsm::TestObjectType(circ->objectType(), lcsm::ObjectType::Root))
 		{
-			engine.m_realRoots[id] = engine.m_objects[id];
-			engine.m_realOutputsIds.push_back(id);
+			visit.emplace_back(circ);
 		}
 	}
+
+	// Build it!
+	engine.buildCircuit(visit);
+
+	// Components helpers.
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
+
+	// Find all *In*/*Out*/*Root* circuit and add them to helpers.
+	for (auto it = engine.m_objects.begin(); it != engine.m_objects.end(); it++)
+	{
+		const lcsm::Identifier id = it->first;
+		// Add to real inputs, if id is presented in inputs.
+		if (inputs.find(id) != inputs.end())
+		{
+			engine.m_realInputs[id] = engine.m_objects[id];
+			engine.m_realInputsIds.push_back(id);
+		}
+		else	// Add to real outputs, if id is presented in outputs.
+			if (outputs.find(id) != outputs.end())
+			{
+				engine.m_realOutputs[id] = engine.m_objects[id];
+				engine.m_realOutputsIds.push_back(id);
+			}
+			else
+			{
+				// Add to real roots, if id is *pure* root.
+				const lcsm::object_type_t objectType = it->second->objectType();
+				if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
+				{
+					engine.m_realRoots[id] = engine.m_objects[id];
+					engine.m_realOutputsIds.push_back(id);
+				}
+			}
+	}
+	// for (auto it = inputs.begin(); it != inputs.end(); it++)
+	// {
+	// 	const lcsm::Identifier &id = it->first;
+	// 	engine.m_realInputs[id] = engine.m_objects[id];
+	// 	engine.m_realInputsIds.push_back(id);
+	// }
+
+	// for (auto it = outputs.begin(); it != outputs.end(); it++)
+	// {
+	// 	const lcsm::Identifier &id = it->first;
+	// 	engine.m_realOutputs[id] = engine.m_objects[id];
+	// 	engine.m_realOutputsIds.push_back(id);
+	// }
+
+	// for (auto it = components.begin(); it != components.end(); it++)
+	// {
+	// 	const lcsm::Identifier &id = it->first;
+	// 	const lcsm::object_type_t objectType = it->second->objectType();
+	// 	// Circuit must be *pure* root to add to helpers.
+	// 	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !lcsm::TestObjectType(objectType,
+	// lcsm::ObjectType::Input))
+	// 	{
+	// 		engine.m_realRoots[id] = engine.m_objects[id];
+	// 		engine.m_realOutputsIds.push_back(id);
+	// 	}
+	// }
 
 	return engine;
 }
@@ -284,7 +311,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		const lcsm::object_type_t pinObjectType = pin->objectType();
 
 		// By the algorithm, we have never created Pin before this moment.
-		m_objects[idPin] = std::make_shared< lcsm::physical::Pin >(pinObjectType, pin->output());
+		m_objects[idPin] = std::make_shared< lcsm::physical::Pin >(pinObjectType, pin->output(), pin->width());
 		lcsm::physical::Pin *pinPhysical = static_cast< lcsm::physical::Pin * >(m_objects[idPin].get());
 
 		// 	// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.

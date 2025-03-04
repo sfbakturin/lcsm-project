@@ -31,14 +31,30 @@ std::size_t lcsm::physical::Probe::privateContextSize() const noexcept
 
 void lcsm::physical::Probe::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
-		throw std::logic_error("Bad context size!");
+	// If context already exists, then reset it.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Probe::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Probe::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
 }
 
 void lcsm::physical::Probe::addInstant(const lcsm::Instruction &instruction)

@@ -11,6 +11,8 @@
 
 #include <cstddef>
 #include <ostream>
+#include <string>
+#include <utility>
 
 namespace lcsm
 {
@@ -20,13 +22,18 @@ namespace lcsm
 		DataBits() noexcept;
 
 		DataBits(Width width) noexcept;
-		DataBits(Width width, const verilog::Value &value) noexcept;
-		DataBits(Width width, verilog::Value &&value) noexcept;
+		DataBits(Width width, verilog::Value value) noexcept;
 		DataBits(Width width, verilog::Bit bit) noexcept;
 		DataBits(Width width, verilog::Strength strength, verilog::Bit bit) noexcept;
 
-		DataBits(std::initializer_list< verilog::Bit > bits);
-		DataBits(std::initializer_list< verilog::Value > values);
+		DataBits(width_t width) noexcept;
+		DataBits(width_t width, verilog::Value value) noexcept;
+		DataBits(width_t width, verilog::Bit bit) noexcept;
+		DataBits(width_t width, verilog::Strength strength, verilog::Bit bit) noexcept;
+
+		DataBits(std::initializer_list< verilog::Bit > bits) noexcept;
+		DataBits(std::initializer_list< std::pair< verilog::Strength, verilog::Bit > > strengthBits) noexcept;
+		DataBits(std::initializer_list< verilog::Value > values) noexcept;
 
 		DataBits(const DataBits &other) noexcept;
 		DataBits(DataBits &&other) noexcept;
@@ -43,9 +50,10 @@ namespace lcsm
 		void swap(DataBits &other) noexcept;
 
 		static DataBits fromModel(Width width, value_t value) noexcept;
+		static DataBits fromModel(value_t value) noexcept;
 
-		Width width() const noexcept;
-		void setWidth(Width newWidth) noexcept;
+		width_t width() const noexcept;
+		void setWidth(width_t newWidth) noexcept;
 		bool checkWidth(const DataBits &other) const noexcept;
 
 		verilog::Bit bit(std::size_t index) const;
@@ -56,10 +64,8 @@ namespace lcsm
 		verilog::Value &operator[](std::size_t index);
 		const verilog::Value &operator[](std::size_t index) const;
 
-		void setBit(std::size_t index, verilog::Bit newBit);
-
-		void setValue(std::size_t index, const verilog::Value &newValue);
-		void setValue(std::size_t index, verilog::Value &&newValue);
+		void setBit(std::size_t index, verilog::Bit bit);
+		void setValue(std::size_t index, verilog::Value value);
 
 		DataBits subdatabits(std::size_t begin) const noexcept;
 		DataBits subdatabits(std::size_t begin, std::size_t end) const noexcept;
@@ -68,10 +74,12 @@ namespace lcsm
 
 		friend std::ostream &operator<<(std::ostream &os, const DataBits &db);
 
-		static constexpr std::size_t MaxWidth = Width::LastWidth;
+		std::string toString() const;
+
+		static constexpr lcsm::width_t MaxWidth = Width::LastWidth;
 
 	  private:
-		Width m_width;
+		width_t m_width;
 		support::StaticArray< verilog::Value, MaxWidth > m_bits;
 	};
 }	 // namespace lcsm

@@ -14,8 +14,8 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output) :
-	lcsm::EvaluatorNode(objectType), m_output(output)
+lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output, Width width) :
+	lcsm::EvaluatorNode(objectType), m_output(output), m_width(width)
 {
 }
 
@@ -36,14 +36,43 @@ std::size_t lcsm::physical::Pin::privateContextSize() const noexcept
 
 void lcsm::physical::Pin::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateContext().size() != privateContextSize())
-		throw std::logic_error("Bad context size!");
+	// If context already exists, then reset it.
+	if (m_context)
+	{
+		resetContext();
+	}
+
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::Pin::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::Pin::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	const lcsm::DataBits &value = m_context->getValue();
+	if (value.width() != m_width)
+	{
+		resetContext();
+		throw std::logic_error("Bad value width!");
+	}
 }
 
 void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)

@@ -29,6 +29,7 @@ namespace lcsm
 
 			virtual void setContext(const support::PointerView< Context > &context) override final;
 			virtual void resetContext() noexcept override final;
+			virtual void verifyContext() override final;
 
 			virtual void addInstant(const Instruction &instruction) override final;
 			virtual void addInstant(Instruction &&instruction) override final;

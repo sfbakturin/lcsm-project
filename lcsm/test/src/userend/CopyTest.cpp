@@ -11,24 +11,26 @@
 #include <iostream>
 #include <vector>
 
+using namespace lcsm;
+
 int main()
 {
 	// Main circuit.
-	lcsm::LCSMCircuit circuit;
+	LCSMCircuit circuit;
 
 	// Create input and output pins.
-	lcsm::model::Pin *i0 = circuit.createPin(false);
-	lcsm::model::Pin *o0 = circuit.createPin(true);
+	model::Pin *i0 = circuit.createPin(false);
+	model::Pin *o0 = circuit.createPin(true);
 
 	// Connect pins.
-	circuit.connect(i0, lcsm::model::Pin::Port::Internal, o0, lcsm::model::Pin::Port::Internal);
+	circuit.connect(i0, o0);
 
 	// Make a copy of main circuit.
-	lcsm::LCSMCircuit copyCircuit = circuit.copy();
+	LCSMCircuit copyCircuit = circuit.copy();
 
 	// Find those input and output.
-	lcsm::Circuit *input = circuit.find(i0->id());
-	lcsm::Circuit *output = circuit.find(o0->id());
+	Circuit *input = circuit.find(i0->id());
+	Circuit *output = circuit.find(o0->id());
 
 	// Values to put to pin.
 	const std::vector< lcsm::DataBits > values = {

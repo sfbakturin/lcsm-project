@@ -30,24 +30,47 @@ std::size_t lcsm::physical::TransmissionGate::privateContextSize() const noexcep
 
 void lcsm::physical::TransmissionGate::setContext(const lcsm::support::PointerView< lcsm::Context > &context)
 {
-	if (context->size() != contextSize() || context->privateSize() != privateContextSize())
-	{
-		throw std::logic_error("Bad context size!");
-	}
-
-	// If already contexted, reset old.
+	// If context already exists, reset it.
 	if (m_context)
 	{
 		resetContext();
 	}
 
-	// Set contexted.
+	// Set and verify context.
 	m_context = context;
+	verifyContext();
 }
 
 void lcsm::physical::TransmissionGate::resetContext() noexcept
 {
 	m_context.reset();
+}
+
+void lcsm::physical::TransmissionGate::verifyContext()
+{
+	// Check global sizes.
+	if (m_context->size() != contextSize() || m_context->privateSize() != privateContextSize())
+	{
+		resetContext();
+		throw std::logic_error("Bad context size!");
+	}
+
+	// Check value width, only when there was an update at once.
+	if (m_context->neverUpdate())
+	{
+		return;
+	}
+
+	const lcsm::DataBits &base = m_context->getValue(0);
+	const lcsm::DataBits &srcA = m_context->getValue(1);
+	const lcsm::DataBits &srcB = m_context->getValue(2);
+	const lcsm::DataBits &srcC = m_context->getValue(3);
+	const lcsm::Width desired = lcsm::Width::Bit1;
+	if (base.width() != desired || srcA.width() != desired || srcB.width() != desired || srcC.width() != desired)
+	{
+		resetContext();
+		throw std::logic_error("Bad value width!");
+	}
 }
 
 void lcsm::physical::TransmissionGate::addInstant(const lcsm::Instruction &instruction)
