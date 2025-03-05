@@ -21,6 +21,9 @@ namespace lcsm
 		void assertEquals(std::size_t actual, std::size_t expected);
 
 		void assertType(const Circuit *circuit, CircuitType type);
+
+		void assertTrue(bool actual);
+		void assertFalse(bool actual);
 	}	 // namespace testing
 }	 // namespace lcsm
 

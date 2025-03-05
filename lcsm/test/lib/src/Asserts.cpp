@@ -60,3 +60,21 @@ void lcsm::testing::assertType(const lcsm::Circuit *circuit, lcsm::CircuitType t
 		assertError("Assertion", additional);
 	}
 }
+
+void lcsm::testing::assertTrue(bool actual)
+{
+	if (!actual)
+	{
+		const std::string additional = "expected true, but found false";
+		assertError("Assertion", additional);
+	}
+}
+
+void lcsm::testing::assertFalse(bool actual)
+{
+	if (actual)
+	{
+		const std::string additional = "expected false, but found true";
+		assertError("Assertion", additional);
+	}
+}
