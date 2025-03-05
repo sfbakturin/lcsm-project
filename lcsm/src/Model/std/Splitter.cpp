@@ -52,7 +52,7 @@ void lcsm::model::Splitter::setWidthOut(lcsm::width_t widthOut)
 	resetBitsOuts();
 }
 
-const std::pair< std::size_t, std::size_t > &lcsm::model::Splitter::bitsOut(lcsm::portid_t portId) const noexcept
+const std::pair< lcsm::width_t, lcsm::width_t > &lcsm::model::Splitter::bitsOut(lcsm::portid_t portId) const noexcept
 {
 	return m_bitsOuts[portId];
 }
@@ -239,7 +239,7 @@ void lcsm::model::Splitter::disconnectAll() noexcept
 	m_wireOuts.clear();
 }
 
-static inline constexpr std::size_t min(std::size_t left, std::size_t right) noexcept
+static inline constexpr lcsm::width_t min(lcsm::width_t left, lcsm::width_t right) noexcept
 {
 	return left < right ? left : right;
 }
@@ -250,14 +250,14 @@ void lcsm::model::Splitter::resetBitsOuts() noexcept
 	m_bitsOuts.clear();
 
 	// Get sizes.
-	const std::size_t dem = min(m_widthIn, m_widthOut);
-	const std::size_t base = static_cast< std::size_t >(std::floor(static_cast< float >(m_widthIn) / dem));
-	const std::size_t remain = m_widthIn % dem;
+	const lcsm::width_t dem = min(m_widthIn, m_widthOut);
+	const lcsm::width_t base = static_cast< lcsm::width_t >(std::floor(static_cast< float >(m_widthIn) / dem));
+	const lcsm::width_t remain = m_widthIn % dem;
 
 	// Generate pairs.
 	lcsm::width_t prevBegin = 0;
 	lcsm::width_t prevEnd = base;
-	for (std::size_t i = 0; i < dem; i++)
+	for (lcsm::width_t i = 0; i < dem; i++)
 	{
 		prevEnd += (i < remain);
 		m_bitsOuts.emplace_back(prevBegin, prevEnd);

@@ -252,10 +252,10 @@ lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept
 
 lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin, std::size_t end) const noexcept
 {
-	const lcsm::width_t size = end - begin;
+	const lcsm::width_t size = static_cast< lcsm::width_t >(end - begin);
 	lcsm::DataBits sub(size);
-	unsigned j = 0;
-	for (unsigned i = begin; i < end && i < width(); i++)
+	lcsm::width_t j = 0;
+	for (lcsm::width_t i = static_cast< lcsm::width_t >(begin); i < static_cast< lcsm::width_t >(end) && i < width(); i++)
 	{
 		sub.setValue(j, value(i));
 		j++;

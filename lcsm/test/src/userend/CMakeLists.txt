@@ -1,3 +1,3 @@
-lcsm_add_test(CircuitInCircuit)
-lcsm_add_test(Copy)
-lcsm_add_test(Remove)
+LCSM_ADD_TEST(CircuitInCircuit)
+LCSM_ADD_TEST(Copy)
+LCSM_ADD_TEST(Remove)

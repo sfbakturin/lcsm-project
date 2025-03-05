@@ -100,7 +100,7 @@ namespace lcsm
 			width_t widthOut() const noexcept;
 			void setWidthOut(width_t widthOut);
 
-			const std::pair< std::size_t, std::size_t > &bitsOut(portid_t portId) const noexcept;
+			const std::pair< lcsm::width_t, lcsm::width_t > &bitsOut(portid_t portId) const noexcept;
 
 			const Wire *wireIn() const noexcept;
 			const Wire *wireOut(portid_t portId) const noexcept;
@@ -130,7 +130,7 @@ namespace lcsm
 			width_t m_widthOut;
 			std::shared_ptr< Wire > m_wireIn;
 			std::vector< std::shared_ptr< Wire > > m_wireOuts;
-			std::vector< std::pair< std::size_t, std::size_t > > m_bitsOuts;
+			std::vector< std::pair< lcsm::width_t, lcsm::width_t > > m_bitsOuts;
 
 		  private:
 			void resetBitsOuts() noexcept;

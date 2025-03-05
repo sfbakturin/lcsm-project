@@ -36,14 +36,14 @@ namespace lcsm
 			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
 
 			void connectInput(const support::PointerView< EvaluatorNode > &input);
-			void connectOut(const support::PointerView< EvaluatorNode > &out, const std::pair< std::size_t, std::size_t > &index);
+			void connectOut(const support::PointerView< EvaluatorNode > &out, const std::pair< lcsm::width_t, lcsm::width_t > &index);
 
 		  private:
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_input;
 			std::vector< support::PointerView< EvaluatorNode > > m_outputs;
-			std::vector< std::pair< std::size_t, std::size_t > > m_indexes;
+			std::vector< std::pair< lcsm::width_t, lcsm::width_t > > m_indexes;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

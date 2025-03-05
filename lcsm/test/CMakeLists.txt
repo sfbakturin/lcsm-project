@@ -1,6 +1,7 @@
-FUNCTION(lcsm_add_test testName)
+FUNCTION(LCSM_ADD_TEST testName)
     SET(testFileName "${testName}Test.cpp")
     ADD_EXECUTABLE(${testName}Test "${CMAKE_CURRENT_SOURCE_DIR}/${testFileName}")
+    LCSM_BASE_SETUP_TARGET(${testName}Test)
     TARGET_LINK_LIBRARIES(${testName}Test PRIVATE LCSM LCSMTesting)
     ADD_TEST(NAME ${testName} COMMAND ${testName}Test)
     SOURCE_GROUP("Source files/LCSM Tests" FILES "${testFileName}")

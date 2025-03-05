@@ -1,24 +1,95 @@
 PROJECT(LCSM LANGUAGES CXX VERSION 1.0.0)
 
 ADD_LIBRARY(LCSM)
+LCSM_BASE_SETUP_TARGET(LCSM)
 
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src              LCSM_SOURCES)
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src/Model        LCSM_SOURCES)
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src/Model/std    LCSM_SOURCES)
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src/Physical     LCSM_SOURCES)
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src/Physical/std LCSM_SOURCES)
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src/Verilog      LCSM_SOURCES)
+# Helper to add list of sources.
+FUNCTION(LCSM_ADD_SOURCE)
+    SET(options)
+    SET(oneValueArgs LIST)
+    SET(multiValueArgs SOURCES)
+    CMAKE_PARSE_ARGUMENTS(ARG
+        "${options}" "${oneValueArgs}" "${multiValueArgs}"
+        ${ARGN}
+    )
+    SET(sourceAbsolutes "")
+    FOREACH(source ${ARG_SOURCES})
+        GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
+        LIST(APPEND "${ARG_LIST}" "${sourceAbsolute}")
+        LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
+    ENDFOREACH()
+    SET(${ARG_LIST} "${${ARG_LIST}}" PARENT_SCOPE)
+ENDFUNCTION()
 
-SET(LCSM_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/LCSM.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/LCSMCircuit.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/LCSMEngine.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/LCSMState.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/Model/Circuit.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/Model/Identifier.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/Model/Width.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lcsm/Model/Wire.h
-)
+# Helper to add list of headers.
+FUNCTION(LCSM_ADD_HEADER)
+    SET(options)
+    SET(oneValueArgs LIST)
+    SET(multiValueArgs HEADERS)
+    CMAKE_PARSE_ARGUMENTS(ARG
+        "${options}" "${oneValueArgs}" "${multiValueArgs}"
+        ${ARGN}
+    )
+    SET(headerAbsolutes "")
+    FOREACH(header ${ARG_HEADERS})
+        GET_FILENAME_COMPONENT(headerAbsolute "${header}" ABSOLUTE)
+        LIST(APPEND "${ARG_LIST}" "${headerAbsolute}")
+        LIST(APPEND headerAbsolutes "${headerAbsolute}")
+    ENDFOREACH()
+    SET(${ARG_LIST} "${${ARG_LIST}}" PARENT_SCOPE)
+ENDFUNCTION()
+
+# Helper to add to source group.
+FUNCTION(LCSM_ADD_GROUP_SOURCE_FILES group)
+    SET(foundSources "")
+    FOREACH(source ${LCSM_SOURCES})
+        IF (group STREQUAL "")
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src/[^/]*\.cpp" "" replacedTemp "${source}")
+        ELSE()
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src/${group}/[^/]*\.cpp" "" replacedTemp "${source}")
+        ENDIF()
+        IF (replacedTemp STREQUAL "")
+            LIST(APPEND foundSources "${source}")
+        ENDIF()
+    ENDFOREACH()
+    SOURCE_GROUP("Source files/${group}" FILES ${foundSources})
+ENDFUNCTION()
+
+# Helper to add to header group.
+FUNCTION(LCSM_ADD_GROUP_HEADER_FILES group)
+    SET(foundHeaders "")
+    FOREACH(header ${LCSM_HEADERS})
+        IF (group STREQUAL "")
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/include/[^/]*" "" replacedTemp "${header}")
+        ELSE()
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/include/${group}/[^/]*" "" replacedTemp "${header}")
+        ENDIF()
+        IF (replacedTemp STREQUAL "")
+            # MESSAGE(STATUS "${header} from ${group}")
+            LIST(APPEND foundHeaders "${header}")
+        ENDIF()
+    ENDFOREACH()
+    SOURCE_GROUP("Header files/${group}" FILES ${foundHeaders})
+ENDFUNCTION()
+
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(include)
+
+LCSM_ADD_GROUP_SOURCE_FILES("")
+LCSM_ADD_GROUP_SOURCE_FILES("Model")
+LCSM_ADD_GROUP_SOURCE_FILES("Model/std")
+LCSM_ADD_GROUP_SOURCE_FILES("Physical")
+LCSM_ADD_GROUP_SOURCE_FILES("Physical/std")
+LCSM_ADD_GROUP_SOURCE_FILES("Verilog")
+
+LCSM_ADD_GROUP_HEADER_FILES("lcsm")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Model")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Model/std")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Physical")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Physical/std")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Support")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Verilog")
+
 
 TARGET_INCLUDE_DIRECTORIES(LCSM
     PUBLIC
@@ -29,33 +100,15 @@ TARGET_INCLUDE_DIRECTORIES(LCSM
 TARGET_SOURCES(LCSM
     PRIVATE
         ${LCSM_SOURCES}
+        ${LCSM_HEADERS}
 )
 
-IF(BUILD_USE_SANITIZER)
-    IF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        TARGET_COMPILE_OPTIONS(LCSM PUBLIC /fsanitize=address)
-        TARGET_COMPILE_DEFINITIONS(LCSM PUBLIC _DISABLE_STRING_ANNOTATION=1 _DISABLE_VECTOR_ANNOTATION=1)
-    ELSE()
-        TARGET_COMPILE_OPTIONS(LCSM PUBLIC -fsanitize=undefined,address)
-        TARGET_LINK_OPTIONS(LCSM PUBLIC -fsanitize=undefined,address)
-        TARGET_COMPILE_OPTIONS(LCSM PUBLIC -fno-sanitize-recover=all -fno-optimize-sibling-calls -fno-omit-frame-pointer)
-    ENDIF()
-ENDIF()
-
-IF(MSVC)
-    TARGET_COMPILE_OPTIONS(LCSM PRIVATE /W4)
-    IF(BUILD_ENABLE_WERROR)
-        TARGET_COMPILE_OPTIONS(LCSM PRIVATE /WX)
-    ENDIF()
-ELSE()
-    TARGET_COMPILE_OPTIONS(LCSM PRIVATE -Wall -Wextra -Wpedantic)
-    IF(BUILD_ENABLE_WERROR)
-        TARGET_COMPILE_OPTIONS(LCSM PRIVATE -Werror)
-    ENDIF()
-ENDIF()
-
 SET(LCSM_PUBLIC_HEADERS "${LCSM_HEADERS}")
-SET_TARGET_PROPERTIES(LCSM PROPERTIES PUBLIC_HEADER "${LCSM_PUBLIC_HEADERS}")
+SET_TARGET_PROPERTIES(LCSM PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSON ${PROJECT_VERSION_MAJOR}
+    PUBLIC_HEADER "${LCSM_PUBLIC_HEADERS}"
+)
 
 FOREACH(header ${LCSM_PUBLIC_HEADERS})
     FILE(RELATIVE_PATH header_file_path "${CMAKE_CURRENT_SOURCE_DIR}/lcsm" "${header}")

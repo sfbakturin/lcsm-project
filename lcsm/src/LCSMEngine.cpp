@@ -692,7 +692,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			// Extract model.
 			const lcsm::model::Wire *splitterWireOutModel = splitterModel->wireOut(portId);
 			const lcsm::Identifier wireOutId = splitterWireOutModel->id();
-			const std::pair< std::size_t, std::size_t > &index = splitterModel->bitsOut(portId);
+			const std::pair< lcsm::width_t, lcsm::width_t > &index = splitterModel->bitsOut(portId);
 
 			// Ensure existing wire.
 			lcsm::support::PointerView< lcsm::EvaluatorNode > wireOutEvaluatorNode = registeredWire(wireOutId);
@@ -703,7 +703,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			splitterNode->connectOut(wireOutEvaluatorNode, index);
 			wireOutNode->connect(splitterEvaluatorNode);
 
-			// Add wire to visite.
+			// Add wire to visit.
 			bfsVisit.emplace_back(splitterWireOutModel);
 		}
 

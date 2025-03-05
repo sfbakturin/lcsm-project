@@ -164,7 +164,7 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::
 	const lcsm::InstructionType type = lcsm::InstructionType::WriteValue;
 	for (std::size_t i = 0; i < m_indexes.size(); i++)
 	{
-		const std::pair< std::size_t, std::size_t > &index = m_indexes[i];
+		const std::pair< lcsm::width_t, lcsm::width_t > &index = m_indexes[i];
 		const lcsm::width_t begin = index.first;
 		const lcsm::width_t end = index.second;
 		lcsm::Instruction instruction{ type, this, m_outputs[i].get(), value.subdatabits(begin, end) };
@@ -182,7 +182,8 @@ void lcsm::physical::Splitter::connectInput(const lcsm::support::PointerView< lc
 	m_input = input;
 }
 
-void lcsm::physical::Splitter::connectOut(const lcsm::support::PointerView< lcsm::EvaluatorNode > &out, const std::pair< std::size_t, std::size_t > &index)
+void lcsm::physical::Splitter::connectOut(const lcsm::support::PointerView< lcsm::EvaluatorNode > &out,
+										  const std::pair< lcsm::width_t, lcsm::width_t > &index)
 {
 	m_outputs.push_back(out);
 	m_indexes.push_back(index);
