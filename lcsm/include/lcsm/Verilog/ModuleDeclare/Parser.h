@@ -2,7 +2,9 @@
 #define LCSM_VERILOG_MODULEDECLARE_PARSER_H
 
 #include <lcsm/Support/Parser/CharSource.h>
+#include <lcsm/Verilog/ModuleDeclare/Context.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
+#include <lcsm/Verilog/Port.h>
 
 #include <memory>
 
@@ -24,7 +26,7 @@ namespace lcsm
 
 			void swap(ModuleDeclareParser &other);
 
-			void parse();
+			void parse(ModuleDeclareContext &context);
 
 		  private:
 			ModuleDeclareLexer m_lex;

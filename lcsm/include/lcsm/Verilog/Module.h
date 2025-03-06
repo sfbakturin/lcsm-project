@@ -1,9 +1,13 @@
 #ifndef LCSM_VERILOG_MODULE_H
 #define LCSM_VERILOG_MODULE_H
 
+#include <lcsm/Support/Parser/CharSource.h>
+#include <lcsm/Verilog/Port.h>
+
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <vector>
 
 namespace lcsm
 {
@@ -21,7 +25,13 @@ namespace lcsm
 			static Module fromString(std::string &&string);
 
 		  private:
+			std::string m_identifier;
+			std::vector< Port > m_ports;
+
+		  private:
 			Module() noexcept = default;
+
+			static Module parse(const std::shared_ptr< support::CharSource > &source);
 		};
 	}	 // namespace verilog
 }	 // namespace lcsm

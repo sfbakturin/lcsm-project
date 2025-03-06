@@ -1,7 +1,7 @@
 # Add sources.
 LCSM_ADD_SOURCE(
     LIST LCSM_SOURCES
-    SOURCES Kind.cpp Token.cpp Lexer.cpp Parser.cpp
+    SOURCES Kind.cpp Token.cpp Lexer.cpp Parser.cpp Context.cpp
 )
 
 # Cache variable for parent scope.
