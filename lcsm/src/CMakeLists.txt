@@ -9,6 +9,7 @@ LCSM_ADD_SOURCE(
 # Add subdirectory sources.
 ADD_SUBDIRECTORY(Model)
 ADD_SUBDIRECTORY(Physical)
+ADD_SUBDIRECTORY(Support)
 ADD_SUBDIRECTORY(Verilog)
 
 # Cache variable for parent scope.

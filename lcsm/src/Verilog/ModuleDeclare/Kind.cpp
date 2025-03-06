@@ -1,5 +1,6 @@
 #include <lcsm/Verilog/ModuleDeclare/Token.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -179,4 +180,25 @@ lcsm::verilog::ModuleDeclareKind lcsm::verilog::IsKeyword(char c) noexcept
 		return lcsm::verilog::ModuleDeclareKind::UnknownKind;
 	}
 	return lcsm::verilog::ModuleDeclareKind::UnknownKind;
+}
+
+bool lcsm::verilog::IsStartOfKeyword(const char *s) noexcept
+{
+	const std::size_t len = std::strlen(s);
+	for (std::int8_t it = lcsm::verilog::KindKeywordStart; it <= lcsm::verilog::KindKeywordEnd; it++)
+	{
+		const lcsm::verilog::ModuleDeclareKind kind = static_cast< lcsm::verilog::ModuleDeclareKind >(it);
+		const char *keyword = KindToKeyword(kind);
+		const std::size_t lenKeyword = std::strlen(keyword);
+		if (len != lenKeyword && std::strncmp(keyword, s, len) == 0)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool lcsm::verilog::IsStartOfKeyword(const std::string &s) noexcept
+{
+	return lcsm::verilog::IsStartOfKeyword(s.c_str());
 }

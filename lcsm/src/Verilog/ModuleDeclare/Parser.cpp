@@ -1,19 +1,22 @@
 #include <lcsm/Support/Algorithm.hpp>
+#include <lcsm/Support/Parser/CharSource.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
 #include <lcsm/Verilog/ModuleDeclare/Parser.h>
 #include <lcsm/Verilog/ModuleDeclare/Token.h>
 
-#include <fstream>
-#include <ios>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(const char *filename) :
-	m_lex(std::ifstream{ filename, std::ios::in })
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(const std::shared_ptr< lcsm::support::CharSource > &source) :
+	m_lex(source)
 {
 }
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::ifstream &&stream) : m_lex(std::move(stream)) {}
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::shared_ptr< lcsm::support::CharSource > &&source) :
+	m_lex(std::move(source))
+{
+}
 
 lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(lcsm::verilog::ModuleDeclareParser &&other) :
 	m_lex(std::move(other.m_lex))
@@ -81,12 +84,23 @@ static void ruleListOfPortIdentifiers(lcsm::verilog::ModuleDeclareLexer &lex, bo
 
 	while (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
 	{
-		if (!lex.nextToken().isIdentifier())
+		lex.nextToken();
+
+		// This is port_identifier.
+		if (lex.token().isIdentifier())
 		{
-			// throw std::logic_error("Parser error at trying to parse inout_declaration!");
+			continue;
+		}
+		else
+		{
+			// Otherwise, return back.
+			lex.backToken();
 			return;
 		}
 	}
+
+	// Return back for other rules.
+	lex.backToken();
 }
 
 static void ruleInoutDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool needToParseNextToken = true)
@@ -120,28 +134,44 @@ static void ruleInoutDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool ne
 	case lcsm::verilog::KW_WAND:
 	case lcsm::verilog::KW_WOR:
 	{
-		lex.nextToken();
 		break;
 	}
 	default:
+	{
+		// Return back.
+		lex.backToken();
 		break;
+	}
 	}
 
 	// Check SIGNED
+	lex.nextToken();
 	if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
 	{
-		lex.nextToken();
+	}
+	else
+	{
+		// Return back.
+		lex.backToken();
 	}
 
 	// Check range.
+	lex.nextToken();
 	if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
 	{
-		ruleRange(lex, false);
-		lex.nextToken();
+		// Return back token for range rule.
+		lex.backToken();
+		// Parse range.
+		ruleRange(lex);
+	}
+	else
+	{
+		// Return back.
+		lex.backToken();
 	}
 
 	// Parse list_of_port_identifiers.
-	ruleListOfPortIdentifiers(lex, false);
+	ruleListOfPortIdentifiers(lex);
 }
 
 static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool needToParseNextToken = true)
@@ -175,28 +205,37 @@ static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool ne
 	case lcsm::verilog::KW_WAND:
 	case lcsm::verilog::KW_WOR:
 	{
-		lex.nextToken();
 		break;
 	}
 	default:
+	{
+		lex.backToken();
 		break;
+	}
 	}
 
 	// Check SIGNED
-	if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
+	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
 	{
-		lex.nextToken();
+	}
+	else
+	{
+		lex.backToken();
 	}
 
 	// Check range.
-	if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
+	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
 	{
-		ruleRange(lex, false);
-		lex.nextToken();
+		lex.backToken();
+		ruleRange(lex);
+	}
+	else
+	{
+		lex.backToken();
 	}
 
 	// Parse list_of_port_identifiers.
-	ruleListOfPortIdentifiers(lex, false);
+	ruleListOfPortIdentifiers(lex);
 }
 
 static void ruleOutputVariableType(lcsm::verilog::ModuleDeclareLexer &lex, bool needToParseNextToken = true)
@@ -229,37 +268,54 @@ static void ruleListOfVariablePortIdentifiers(lcsm::verilog::ModuleDeclareLexer 
 	}
 
 	// (EQUAL constant_expression)?
-	lex.nextToken();
-	if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
+	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
 	{
-		lex.nextToken();
-		if (!lex.token().isInteger())
+		if (!lex.nextToken().isInteger())
 		{
 			throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
 		}
 	}
+	else
+	{
+		// Return back.
+		lex.backToken();
+	}
 
 	// (COMMA port_identifier (EQUAL constant_expression)?)*
-	while (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
+	// FIXME: Might fail at ", input"
+	while (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
 	{
 		// port_identifier
 		lex.nextToken();
-		if (!lex.token().isIdentifier())
+		if (lex.token().isIdentifier())
 		{
-			throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
+			goto l_parse_constant_expression;
+		}
+		else
+		{
+			// Otherwise, return back.
+			lex.backToken();
+			return;
 		}
 
 		// (EQUAL constant_expression)?
-		lex.nextToken();
-		if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
+l_parse_constant_expression:
+		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
 		{
-			lex.nextToken();
-			if (!lex.token().isInteger())
+			if (!lex.nextToken().isInteger())
 			{
 				throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
 			}
 		}
+		else
+		{
+			// Return back.
+			lex.backToken();
+		}
 	}
+
+	// Return back for other rules.
+	lex.backToken();
 }
 
 static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool needToParseNextToken = true)
@@ -315,36 +371,51 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool n
 			return;
 		}
 		default:
+		{
+			lex.backToken();
 			break;
+		}
 		}
 
 		// Check SIGNED.
-		if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
+		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
 		{
-			lex.nextToken();
+		}
+		else
+		{
+			lex.backToken();
 		}
 
 		// Check range.
-		if (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
+		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
 		{
-			ruleRange(lex, false);
-			lex.nextToken();
+			lex.backToken();
+			ruleRange(lex);
+		}
+		else
+		{
+			lex.backToken();
 		}
 
 		// Choose between list_of_port_identifiers | output_variable_type.
 		// Check output_variable_type.
+		lex.nextToken();
 		if (lex.token().kind() != lcsm::verilog::ModuleDeclareKind::KW_INTEGER &&
 			lex.token().kind() != lcsm::verilog::ModuleDeclareKind::KW_TIME)
 		{
+			// Return back for list_of_port_identifiers.
+			lex.backToken();
 			// Parse list_of_port_identifiers.
-			ruleListOfPortIdentifiers(lex, false);
-
+			ruleListOfPortIdentifiers(lex);
 			return;
 		}
 		else
 		{
+			// Return back for output_variable_type.
+			lex.backToken();
+
 			// Parse output_variable_type.
-			ruleOutputVariableType(lex, false);
+			ruleOutputVariableType(lex);
 
 			// Parse list_of_variable_port_identifiers
 			ruleListOfVariablePortIdentifiers(lex);
@@ -356,7 +427,33 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool n
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
 	{
-		break;
+		// Check SIGNED.
+		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
+		{
+		}
+		else
+		{
+			lex.backToken();
+		}
+
+		// Check range.
+		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
+		{
+			// Return back for range.
+			lex.backToken();
+			// Parse range.
+			ruleRange(lex);
+		}
+		else
+		{
+			// Return back.
+			lex.backToken();
+		}
+
+		// Parse list_of_port_identifiers.
+		ruleListOfPortIdentifiers(lex);
+
+		return;
 	}
 	default:
 		break;
@@ -381,18 +478,21 @@ static void rulePortDeclaration(lcsm::verilog::ModuleDeclareLexer &lex, bool nee
 	{
 	case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
 	{
-		ruleInoutDeclaration(lex, false);
+		lex.backToken();
+		ruleInoutDeclaration(lex);
 		return;
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_INPUT:
 	{
-		ruleInputDeclaration(lex, false);
+		lex.backToken();
+		ruleInputDeclaration(lex);
 		return;
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
 	{
-		ruleOutputDeclaration(lex, false);
+		lex.backToken();
+		ruleOutputDeclaration(lex);
 		return;
 	}
 	default:
@@ -417,35 +517,35 @@ static void ruleListOfPortDeclarations(lcsm::verilog::ModuleDeclareLexer &lex)
 	{
 		return;
 	}
+	{
+		// If this is not RPAREN, then return token.
+		lex.backToken();
+	}
 
 	// 2.2.1. (port_declaration (COMMA port_declaration)*)?
-	rulePortDeclaration(lex, false);
+	rulePortDeclaration(lex);
 	// while (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
-	bool loop = true;
-	while (loop)
+	while (true)
 	{
-		switch (lex.token().kind())
+		switch (lex.nextToken().kind())
 		{
-		case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
-		case lcsm::verilog::ModuleDeclareKind::KW_INPUT:
-		case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
-		case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
-		{
-			rulePortDeclaration(lex, false);
-			break;
-		}
 		case lcsm::verilog::ModuleDeclareKind::KW_RPAREN:
 		{
-			loop = false;
-			break;
+			lex.backToken();
+			goto l_finish;
 		}
 		default:
-			throw std::logic_error("Parser error at trying to parse list_of_port_declarations!");
+		{
+			lex.backToken();
+			rulePortDeclaration(lex);
+			break;
+		}
 		}
 	}
 
 	// 2.2.2. RPAREN
-	if (lex.token().kind() != lcsm::verilog::ModuleDeclareKind::KW_RPAREN)
+l_finish:
+	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_RPAREN)
 	{
 		throw std::logic_error("Parser error at trying to parse list_of_port_declarations!");
 	}

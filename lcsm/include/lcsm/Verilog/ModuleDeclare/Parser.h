@@ -1,9 +1,10 @@
 #ifndef LCSM_VERILOG_MODULEDECLARE_PARSER_H
 #define LCSM_VERILOG_MODULEDECLARE_PARSER_H
 
+#include <lcsm/Support/Parser/CharSource.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
 
-#include <fstream>
+#include <memory>
 
 namespace lcsm
 {
@@ -12,8 +13,8 @@ namespace lcsm
 		class ModuleDeclareParser
 		{
 		  public:
-			ModuleDeclareParser(const char *filename);
-			ModuleDeclareParser(std::ifstream &&stream);
+			ModuleDeclareParser(const std::shared_ptr< support::CharSource > &source);
+			ModuleDeclareParser(std::shared_ptr< support::CharSource > &&source);
 
 			ModuleDeclareParser(const ModuleDeclareParser &other) = delete;
 			ModuleDeclareParser(ModuleDeclareParser &&other);

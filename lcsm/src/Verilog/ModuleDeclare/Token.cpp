@@ -86,6 +86,13 @@ void lcsm::verilog::ModuleDeclareToken::setToken(std::string &&s) noexcept
 	m_s = std::move(s);
 }
 
+void lcsm::verilog::ModuleDeclareToken::setEof() noexcept
+{
+	m_kind = lcsm::verilog::ModuleDeclareKind::TK_EOF;
+	m_i = 0;
+	m_s.clear();
+}
+
 bool lcsm::verilog::ModuleDeclareToken::isKeyword() const noexcept
 {
 	const std::int8_t kind = static_cast< std::int8_t >(m_kind);
@@ -100,6 +107,11 @@ bool lcsm::verilog::ModuleDeclareToken::isInteger() const noexcept
 bool lcsm::verilog::ModuleDeclareToken::isIdentifier() const noexcept
 {
 	return m_kind == lcsm::verilog::ModuleDeclareKind::TK_IDENTIFIER;
+}
+
+bool lcsm::verilog::ModuleDeclareToken::isEof() const noexcept
+{
+	return m_kind == lcsm::verilog::ModuleDeclareKind::TK_EOF;
 }
 
 int lcsm::verilog::ModuleDeclareToken::asInteger() const noexcept

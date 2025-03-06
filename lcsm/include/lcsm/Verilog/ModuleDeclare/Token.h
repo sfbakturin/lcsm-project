@@ -42,6 +42,7 @@ namespace lcsm
 			KW_TIME,
 			TK_INTEGER,
 			TK_IDENTIFIER,
+			TK_EOF
 		};
 
 		static constexpr std::int8_t KindKeywordStart = ModuleDeclareKind::KW_EQUAL;
@@ -51,6 +52,8 @@ namespace lcsm
 		ModuleDeclareKind IsKeyword(const char *s) noexcept;
 		ModuleDeclareKind IsKeyword(const std::string &s) noexcept;
 		ModuleDeclareKind IsKeyword(char c) noexcept;
+		bool IsStartOfKeyword(const char *s) noexcept;
+		bool IsStartOfKeyword(const std::string &s) noexcept;
 
 		class ModuleDeclareToken
 		{
@@ -76,9 +79,12 @@ namespace lcsm
 			void setToken(const std::string &s);
 			void setToken(std::string &&s) noexcept;
 
+			void setEof() noexcept;
+
 			bool isKeyword() const noexcept;
 			bool isInteger() const noexcept;
 			bool isIdentifier() const noexcept;
+			bool isEof() const noexcept;
 
 			int asInteger() const noexcept;
 			const std::string &asIdentifier() const noexcept;
