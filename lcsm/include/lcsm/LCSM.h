@@ -27,7 +27,8 @@ namespace lcsm
 		Digit,
 		Probe,
 		Splitter,
-		LastCircuitType = Splitter + 1
+		VerilogModule,
+		LastCircuitType = VerilogModule + 1
 	};
 
 	/* All available physical node types. */

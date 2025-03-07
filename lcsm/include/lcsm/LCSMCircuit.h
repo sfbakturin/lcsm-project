@@ -4,6 +4,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Button.h>
@@ -19,6 +20,7 @@
 #include <lcsm/Model/std/TransmissionGate.h>
 #include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/Verilog/Module.h>
 #include <unordered_map>
 
 #include <map>
@@ -115,6 +117,8 @@ namespace lcsm
 		bool removeCircuit(label_t name);
 		bool removeCircuit(const std::string &name);
 
+		model::VerilogModule *addVerilogModule(const verilog::Module &module);
+
 		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2, label_t name = "");
 		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2, label_t name = "");
 		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, label_t name = "");
@@ -132,6 +136,7 @@ namespace lcsm
 		std::map< Identifier, std::shared_ptr< Circuit > > m_connectorWires;
 
 		std::unordered_map< Identifier, std::shared_ptr< LCSMCircuit > > m_circuits;
+		std::unordered_map< Identifier, std::shared_ptr< verilog::Module > > m_verilogModules;
 
 		std::string m_name;
 

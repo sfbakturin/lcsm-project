@@ -96,7 +96,9 @@ lcsm::Identifier lcsm::model::Splitter::identify(lcsm::Identifier id) noexcept
 	m_id = std::move(id);
 	lcsm::Identifier next = m_wireIn->identify(m_id.next());
 	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
+	{
 		next = m_wireOuts[i]->identify(next.next());
+	}
 	return next;
 }
 

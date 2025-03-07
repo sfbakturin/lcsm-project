@@ -36,7 +36,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <cstddef>
 #include <deque>
 #include <map>
 #include <memory>
@@ -707,6 +706,11 @@ void lcsm::LCSMEngine::buildCircuit(
 			bfsVisit.emplace_back(splitterWireOutModel);
 		}
 
+		break;
+	}
+	case lcsm::CircuitType::VerilogModule:
+	{
+		// TODO: Implement me.
 		break;
 	}
 	case lcsm::CircuitType::LastCircuitType:

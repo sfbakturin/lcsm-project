@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_HEADER(
     LIST LCSM_HEADERS
-    HEADERS Button.h Clock.h Constant.h Digit.h Ground.h Pin.h Power.h Probe.h Splitter.h Transistor.h TransmissionGate.h Tunnel.h
+    HEADERS Button.h Clock.h Constant.h Digit.h Ground.h Pin.h Power.h Probe.h Splitter.h Transistor.h TransmissionGate.h Tunnel.h Verilog.h
 )
 
 # Cache variable for parent scope.

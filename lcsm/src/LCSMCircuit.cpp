@@ -484,6 +484,12 @@ bool lcsm::LCSMCircuit::removeCircuit(const std::string &name)
 	return removeCircuit(findCircuit(name));
 }
 
+lcsm::model::VerilogModule *lcsm::LCSMCircuit::addVerilogModule(const lcsm::verilog::Module &)
+{
+	// TODO: Implement me.
+	return nullptr;
+}
+
 lcsm::Circuit *lcsm::LCSMCircuit::registerElement(std::shared_ptr< lcsm::Circuit > &&circuit)
 {
 	const std::size_t numOfWires = circuit->numOfWires();
