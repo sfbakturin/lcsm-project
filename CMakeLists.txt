@@ -21,6 +21,12 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CMakePackageConfigHelpers)
 INCLUDE(CTest)
 
+IF(UNIX AND NOT APPLE)
+    SET(LINUX TRUE)
+ELSE()
+    SET(LINUX FALSE)
+ENDIF()
+
 FUNCTION(LCSM_BASE_SETUP_TARGET targetName)
     # Setup sanitizers.
     IF(BUILD_USE_SANITIZER)

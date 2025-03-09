@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_HEADER(
     LIST LCSM_HEADERS
-    HEADERS Algorithm.hpp Meta.hpp Numbers.hpp PointerView.hpp StaticArray.hpp
+    HEADERS Algorithm.hpp Meta.hpp Numbers.hpp PointerView.hpp StaticArray.hpp Subprocesses.h Files.h
 )
 
 # Add subdirectories headers.

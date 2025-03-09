@@ -1,10 +1,12 @@
-#include "lcsm/Model/Width.h"
+#include <lcsm/Model/Width.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Support/Algorithm.hpp>
+#include <lcsm/Support/Files.h>
 #include <lcsm/Support/Parser/CStringSource.h>
 #include <lcsm/Support/Parser/CharSource.h>
 #include <lcsm/Support/Parser/FileSource.h>
 #include <lcsm/Support/Parser/StringSource.h>
+#include <lcsm/Support/Subprocesses.h>
 #include <lcsm/Verilog/Module.h>
 #include <lcsm/Verilog/ModuleDeclare/Context.h>
 #include <lcsm/Verilog/ModuleDeclare/Parser.h>
@@ -12,6 +14,9 @@
 #include <unordered_map>
 
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -20,6 +25,189 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+enum TestBenchOutKind : signed
+{
+	UnknownKind = -1,
+	InputKind,
+	InoutKind,
+	OutputKind,
+	OutputRegKind,
+	IntegerKind,
+	EofKind
+};
+
+static const char *AsKeyword(TestBenchOutKind kind) noexcept
+{
+	switch (kind)
+	{
+	case TestBenchOutKind::InputKind:
+		return "input";
+	case TestBenchOutKind::InoutKind:
+		return "inout";
+	case TestBenchOutKind::OutputKind:
+		return "output";
+	case TestBenchOutKind::OutputRegKind:
+		return "outputreg";
+	default:
+		return nullptr;
+	}
+	return nullptr;
+}
+
+static TestBenchOutKind IsKeyword(const char *str) noexcept
+{
+	for (unsigned i = TestBenchOutKind::InputKind; i <= TestBenchOutKind::OutputRegKind; i++)
+	{
+		const TestBenchOutKind kind = static_cast< TestBenchOutKind >(i);
+		const char *keyword = AsKeyword(kind);
+		if (std::strcmp(str, keyword) == 0)
+		{
+			return kind;
+		}
+	}
+	return TestBenchOutKind::UnknownKind;
+}
+
+static TestBenchOutKind IsKeyword(const std::string &str) noexcept
+{
+	return IsKeyword(str.c_str());
+}
+
+class TestBenchOutToken
+{
+  public:
+	TestBenchOutToken() noexcept;
+	TestBenchOutToken(TestBenchOutKind kind) noexcept;
+	TestBenchOutToken(int i) noexcept;
+
+	TestBenchOutToken(const TestBenchOutToken &other) noexcept = default;
+	TestBenchOutToken(TestBenchOutToken &&other) noexcept = default;
+
+	TestBenchOutToken &operator=(const TestBenchOutToken &other) noexcept;
+	TestBenchOutToken &operator=(TestBenchOutToken &&other) noexcept;
+
+	void swap(TestBenchOutToken &other) noexcept;
+
+	TestBenchOutKind kind() const noexcept;
+
+	void setToken(TestBenchOutKind kind) noexcept;
+	void setToken(int i) noexcept;
+	void setEof() noexcept;
+
+	bool isKeyword() const noexcept;
+	bool isInteger() const noexcept;
+	bool isEof() const noexcept;
+
+	int asInteger() const noexcept;
+
+  private:
+	TestBenchOutKind m_kind;
+	int m_i;
+};
+
+class TestBenchOutLexer
+{
+  public:
+	TestBenchOutLexer(const std::shared_ptr< lcsm::support::CharSource > &source) noexcept;
+
+	TestBenchOutToken token() const noexcept;
+	TestBenchOutToken nextToken();
+
+  private:
+	std::shared_ptr< lcsm::support::CharSource > m_source;
+	char m_char;
+	TestBenchOutToken m_token;
+
+  private:
+	void nextChar();
+};
+
+TestBenchOutToken::TestBenchOutToken() noexcept : m_kind(TestBenchOutKind::UnknownKind), m_i(0) {}
+
+TestBenchOutToken::TestBenchOutToken(TestBenchOutKind kind) noexcept : m_kind(kind), m_i(0) {}
+
+TestBenchOutToken::TestBenchOutToken(int i) noexcept : m_kind(TestBenchOutKind::IntegerKind), m_i(i) {}
+
+TestBenchOutToken &TestBenchOutToken::operator=(const TestBenchOutToken &other) noexcept
+{
+	return lcsm::support::CopyAssign< TestBenchOutToken >(this, other);
+}
+
+TestBenchOutToken &TestBenchOutToken::operator=(TestBenchOutToken &&other) noexcept
+{
+	return lcsm::support::MoveAssign< TestBenchOutToken >(this, std::move(other));
+}
+
+void TestBenchOutToken::swap(TestBenchOutToken &other) noexcept
+{
+	std::swap(m_kind, other.m_kind);
+	std::swap(m_i, other.m_i);
+}
+
+TestBenchOutKind TestBenchOutToken::kind() const noexcept
+{
+	return m_kind;
+}
+
+void TestBenchOutToken::setToken(TestBenchOutKind kind) noexcept
+{
+	m_kind = kind;
+	m_i = 0;
+}
+
+void TestBenchOutToken::setToken(int i) noexcept
+{
+	m_kind = TestBenchOutKind::IntegerKind;
+	m_i = i;
+}
+
+void TestBenchOutToken::setEof() noexcept
+{
+	m_kind = TestBenchOutKind::EofKind;
+	m_i = 0;
+}
+
+bool TestBenchOutToken::isKeyword() const noexcept
+{
+	return TestBenchOutKind::InputKind <= m_kind && m_kind <= TestBenchOutKind::OutputRegKind;
+}
+
+bool TestBenchOutToken::isInteger() const noexcept
+{
+	return m_kind == TestBenchOutKind::IntegerKind;
+}
+
+bool TestBenchOutToken::isEof() const noexcept
+{
+	return m_kind == TestBenchOutKind::EofKind;
+}
+
+int TestBenchOutToken::asInteger() const noexcept
+{
+	return m_i;
+}
+
+TestBenchOutLexer::TestBenchOutLexer(const std::shared_ptr< lcsm::support::CharSource > &source) noexcept :
+	m_source(source)
+{
+	nextChar();
+}
+
+TestBenchOutToken TestBenchOutLexer::token() const noexcept
+{
+	return m_token;
+}
+
+TestBenchOutToken TestBenchOutLexer::nextToken()
+{
+	return m_token;
+}
+
+void TestBenchOutLexer::nextChar()
+{
+	m_char = lcsm::support::CharSource::EndOfSource;
+}
 
 lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::support::CharSource > &source)
 {
@@ -335,17 +523,43 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	// 1.6. Endmodule.
 	testBenchSource += "endmodule";
 
-	// DEBUG ONLY
-	std::cout << testBenchSource << '\n';
-
 	// Step 2. Save test bench source to temporary file.
-	// TODO: Implement me.
+	const std::string tempTestBenchSourceFilename = std::tmpnam(nullptr);
+	const std::string tempTestBenchOutputFilename = std::tmpnam(nullptr);
+
+	if (tempTestBenchSourceFilename.empty() || tempTestBenchOutputFilename.empty())
+	{
+		throw std::runtime_error("Can't generate random temporary filename!");
+	}
+
+	std::ofstream tempTestBenchSourceFile(tempTestBenchSourceFilename);
+	if (!tempTestBenchSourceFile.is_open())
+	{
+		throw std::runtime_error("Can't create temporary file to write!");
+	}
+
+	tempTestBenchSourceFile << testBenchSource;
+	tempTestBenchSourceFile.close();
 
 	// Step 3. Run Icarus Verilog compiler and VM and get standard output/error and return code.
-	// TODO: Implement me.
+	const char *outputFilename = tempTestBenchOutputFilename.c_str();
+	const char *sourceFilename = tempTestBenchSourceFilename.c_str();
 
-	// Step 4. Parse standard output and return as output data.
-	// TODO: Implement me.
+	const lcsm::support::CompletedProcess iVerilogCompilerProcCompleted =
+		lcsm::support::subprocessRun("iverilog", { "-g2012", "-o", outputFilename, sourceFilename });
+	iVerilogCompilerProcCompleted.checkReturnCode();
+
+	const lcsm::support::CompletedProcess vppVMCompleted = lcsm::support::subprocessRun("vvp", { outputFilename });
+	vppVMCompleted.checkReturnCode();
+
+	// Step 4. Remove temporary files.
+	lcsm::support::removeFile(tempTestBenchSourceFilename);
+	lcsm::support::removeFile(tempTestBenchOutputFilename);
+
+	// Step 5. Parse standard output and return as output data.
+	std::shared_ptr< lcsm::support::CharSource > source =
+		std::make_shared< lcsm::support::CStringSource >(vppVMCompleted.cOut());
+	TestBenchOutLexer lex = source;
 
 	return testBenchData;
 }
