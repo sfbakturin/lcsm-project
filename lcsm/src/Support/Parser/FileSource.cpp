@@ -17,11 +17,6 @@ lcsm::support::FileSource::FileSource(const std::string &filename) :
 {
 }
 
-lcsm::support::FileSource::FileSource(std::ifstream &&source) :
-	m_source(std::move(source)), m_character(lcsm::support::CharSource::EndOfSource)
-{
-}
-
 lcsm::support::FileSource::FileSource(FileSource &&other) :
 	m_source(std::move(other.m_source)), m_character(lcsm::support::CharSource::EndOfSource)
 {

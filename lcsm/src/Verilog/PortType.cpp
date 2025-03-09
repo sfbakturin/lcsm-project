@@ -1,11 +1,13 @@
+#include <lcsm/Model/Width.h>
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Verilog/Port.h>
 
+#include <string>
 #include <utility>
 
 lcsm::verilog::PortType::PortType() noexcept :
 	m_ioType(lcsm::verilog::IOType::UnknowPortType), m_netType(lcsm::verilog::NetType::UnknownPortType),
-	m_isSigned(false), m_outputVariableType(lcsm::verilog::UnknownOutputVariableType), m_rangeValid(false)
+	m_isSigned(false), m_outputVariableType(lcsm::verilog::UnknownOutputVariableType), m_range(0, 0), m_rangeValid(false)
 {
 }
 
@@ -17,7 +19,7 @@ lcsm::verilog::PortType::PortType(const lcsm::verilog::PortType &other) noexcept
 
 lcsm::verilog::PortType::PortType(lcsm::verilog::PortType &&other) noexcept :
 	m_ioType(other.m_ioType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
-	m_outputVariableType(other.m_outputVariableType), m_range(other.m_range), m_rangeValid(other.m_rangeValid)
+	m_outputVariableType(other.m_outputVariableType), m_range(std::move(other.m_range)), m_rangeValid(other.m_rangeValid)
 {
 }
 
@@ -101,4 +103,23 @@ void lcsm::verilog::PortType::setRange(lcsm::verilog::Range &&range) noexcept
 {
 	m_range = std::move(range);
 	m_rangeValid = true;
+}
+
+lcsm::width_t lcsm::verilog::PortType::rangeWidth() const noexcept
+{
+	const int lhs = std::min(m_range.first, m_range.second);
+	const int rhs = std::max(m_range.first, m_range.second);
+	return static_cast< lcsm::width_t >(rhs - lhs + 1);
+}
+
+bool lcsm::verilog::PortType::rangeLeftToRight() const noexcept
+{
+	return m_range.first <= m_range.second;
+}
+
+std::string lcsm::verilog::PortType::toVerilogString() const
+{
+	// Generated string:
+	// wire [<range_f>:<rangle_s>]
+	return "wire [" + std::to_string(m_range.first) + ":" + std::to_string(m_range.second) + "]";
 }

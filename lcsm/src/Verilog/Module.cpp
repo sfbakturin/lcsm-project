@@ -1,6 +1,6 @@
+#include "lcsm/Model/Width.h"
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Support/Algorithm.hpp>
-#include <lcsm/Support/Parser/CFileSource.h>
 #include <lcsm/Support/Parser/CStringSource.h>
 #include <lcsm/Support/Parser/CharSource.h>
 #include <lcsm/Support/Parser/FileSource.h>
@@ -11,8 +11,9 @@
 #include <lcsm/Verilog/Port.h>
 #include <unordered_map>
 
-#include <cstdio>
+#include <cstddef>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -31,12 +32,16 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 	{
 		const lcsm::verilog::PortType portType = portDeclaration.first;
 		const lcsm::verilog::IOType ioType = portType.ioType();
+		std::size_t i = 0;
 		for (std::string &identifier : portDeclaration.second)
 		{
+			m.m_ports.emplace_back(ioType, i++);
 			switch (ioType)
 			{
 			case lcsm::verilog::IOType::UnknowPortType:
+			{
 				break;
+			}
 			case lcsm::verilog::IOType::Input:
 			{
 				m.m_inputPorts.emplace_back(portType, std::move(identifier));
@@ -45,7 +50,6 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 			case lcsm::verilog::IOType::Inout:
 			{
 				m.m_inoutPorts.emplace_back(portType, std::move(identifier));
-
 				break;
 			}
 			case lcsm::verilog::IOType::Output:
@@ -66,15 +70,17 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 }
 
 lcsm::verilog::Module::Module(const lcsm::verilog::Module &other) :
-	m_identifier(other.m_identifier), m_inputPorts(other.m_inputPorts), m_inoutPorts(other.m_inoutPorts),
-	m_outputPorts(other.m_outputPorts), m_outputRegPorts(other.m_outputRegPorts)
+	m_identifier(other.m_identifier), m_sourceModule(other.m_sourceModule), m_inputPorts(other.m_inputPorts),
+	m_inoutPorts(other.m_inoutPorts), m_outputPorts(other.m_outputPorts), m_outputRegPorts(other.m_outputRegPorts),
+	m_ports(other.m_ports)
 {
 }
 
 lcsm::verilog::Module::Module(lcsm::verilog::Module &&other) noexcept :
-	m_identifier(std::move(other.m_identifier)), m_inputPorts(std::move(other.m_inputPorts)),
-	m_inoutPorts(std::move(other.m_inoutPorts)), m_outputPorts(std::move(other.m_outputPorts)),
-	m_outputRegPorts(std::move(other.m_outputRegPorts))
+	m_identifier(std::move(other.m_identifier)), m_sourceModule(std::move(other.m_sourceModule)),
+	m_inputPorts(std::move(other.m_inputPorts)), m_inoutPorts(std::move(other.m_inoutPorts)),
+	m_outputPorts(std::move(other.m_outputPorts)), m_outputRegPorts(std::move(other.m_outputRegPorts)),
+	m_ports(std::move(other.m_ports))
 {
 }
 
@@ -91,17 +97,12 @@ lcsm::verilog::Module &lcsm::verilog::Module::operator=(lcsm::verilog::Module &&
 void lcsm::verilog::Module::swap(lcsm::verilog::Module &other) noexcept
 {
 	std::swap(m_identifier, other.m_identifier);
+	std::swap(m_sourceModule, other.m_sourceModule);
 	std::swap(m_inputPorts, other.m_inputPorts);
 	std::swap(m_inoutPorts, other.m_inoutPorts);
 	std::swap(m_outputPorts, other.m_outputPorts);
 	std::swap(m_outputRegPorts, other.m_outputRegPorts);
-}
-
-lcsm::verilog::Module lcsm::verilog::Module::fromFile(std::FILE *stream)
-{
-	// TODO: Implement me.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::CFileSource >(stream);
-	return parse(source);
+	std::swap(m_ports, other.m_ports);
 }
 
 lcsm::verilog::Module lcsm::verilog::Module::fromFile(const char *filename)
@@ -127,17 +128,10 @@ lcsm::verilog::Module lcsm::verilog::Module::fromFile(const char *filename)
 	return module;
 }
 
-lcsm::verilog::Module lcsm::verilog::Module::fromFile(std::ifstream &stream)
+lcsm::verilog::Module lcsm::verilog::Module::fromFile(const std::string &filename)
 {
-	// Create source-iterator.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::FileSource >(std::move(stream));
-
-	// Make a module.
-	lcsm::verilog::Module module = parse(source);
-
-	// TODO: Implement me.
-
-	return module;
+	// Re-use existing method.
+	return lcsm::verilog::Module::fromFile(filename.c_str());
 }
 
 lcsm::verilog::Module lcsm::verilog::Module::fromString(const char *string)
@@ -202,9 +196,156 @@ const std::vector< lcsm::verilog::Port > &lcsm::verilog::Module::outputRegPorts(
 	return m_outputRegPorts;
 }
 
+static void SourcePortDeclaration(const std::vector< lcsm::verilog::Port > &ports, std::string &source)
+{
+	for (const lcsm::verilog::Port &port : ports)
+	{
+		source += port.verilogPortDeclaration() + ";\n";
+	}
+}
+
+static void SourcePortAssignment(
+	const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &datas,
+	const std::vector< lcsm::verilog::Port > &ports,
+	lcsm::verilog::IOType type,
+	std::string &source)
+{
+	const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >::const_iterator found = datas.find(type);
+	if (found == datas.end())
+	{
+		return;
+	}
+
+	const std::vector< lcsm::DataBits > &data = found->second;
+
+	// Ensures, that databits.size() == ports.size() by construction from LCSMEngine/LCSMCircuit.
+	for (std::size_t i = 0; i < ports.size(); i++)
+	{
+		const lcsm::DataBits &databits = data[i];
+		const lcsm::verilog::Port &port = ports[i];
+		std::vector< std::string > assignments = port.verilogPortAssignment(databits);
+		for (std::string &assignment : assignments)
+		{
+			source += std::move(assignment) + '\n';
+		}
+	}
+}
+
 std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	lcsm::verilog::Module::invoke(const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &testBenchData)
 {
+	// Step 1. Generate testbench module.
+	std::string testBenchSource = m_sourceModule;
+
+	// 1.1. Module declaration.
+	testBenchSource += "\nmodule " + m_identifier + "_tb;\n";
+
+	// 1.2. Port declaration.
+	SourcePortDeclaration(m_inputPorts, testBenchSource);
+	SourcePortDeclaration(m_inoutPorts, testBenchSource);
+	SourcePortDeclaration(m_outputPorts, testBenchSource);
+	SourcePortDeclaration(m_outputRegPorts, testBenchSource);
+
+	// 1.3. Assignment.
+	SourcePortAssignment(testBenchData, m_inputPorts, lcsm::verilog::IOType::Input, testBenchSource);
+	SourcePortAssignment(testBenchData, m_inoutPorts, lcsm::verilog::IOType::Inout, testBenchSource);
+
+	// 1.4. Module declare.
+	testBenchSource += m_identifier + " tb(";
+	bool needsComma = false;
+	for (const std::pair< lcsm::verilog::IOType, std::size_t > &port : m_ports)
+	{
+		if (needsComma)
+		{
+			testBenchSource.push_back(',');
+		}
+		switch (port.first)
+		{
+		case lcsm::verilog::IOType::UnknowPortType:
+		{
+			throw std::logic_error("Found unknown port type, impossible!");
+		}
+		case lcsm::verilog::IOType::Input:
+		{
+			testBenchSource += m_inputPorts[port.second].identifier();
+			break;
+		}
+		case lcsm::verilog::IOType::Inout:
+		{
+			testBenchSource += m_inoutPorts[port.second].identifier();
+			break;
+		}
+		case lcsm::verilog::IOType::Output:
+		{
+			testBenchSource += m_outputPorts[port.second].identifier();
+			break;
+		}
+		case lcsm::verilog::IOType::OutputReg:
+		{
+			testBenchSource += m_outputRegPorts[port.second].identifier();
+			break;
+		}
+		}
+		needsComma = true;
+	}
+	testBenchSource += ");\n";
+
+	// 1.5. Monitor.
+	testBenchSource += "initial begin\n";
+	std::size_t t = 1;
+	for (const std::pair< lcsm::verilog::IOType, std::size_t > &port : m_ports)
+	{
+		lcsm::verilog::Port *p = nullptr;
+		switch (port.first)
+		{
+		case lcsm::verilog::IOType::UnknowPortType:
+		{
+			throw std::logic_error("Found unknown port type, impossible!");
+		}
+		case lcsm::verilog::IOType::Input:
+		{
+			p = std::addressof(m_inputPorts[port.second]);
+			break;
+		}
+		case lcsm::verilog::IOType::Inout:
+		{
+			p = std::addressof(m_inoutPorts[port.second]);
+			break;
+		}
+		case lcsm::verilog::IOType::Output:
+		{
+			p = std::addressof(m_outputPorts[port.second]);
+			break;
+		}
+		case lcsm::verilog::IOType::OutputReg:
+		{
+			p = std::addressof(m_outputRegPorts[port.second]);
+			break;
+		}
+		}
+		for (lcsm::width_t w = 0; w < p->width(); w++)
+		{
+			testBenchSource += '#' + std::to_string(t) + ' ';
+			testBenchSource += p->verilogPortMonitorCall(port.second, w) + ";\n";
+			t++;
+		}
+	}
+	testBenchSource += "end\n";
+
+	// 1.6. Endmodule.
+	testBenchSource += "endmodule";
+
+	// DEBUG ONLY
+	std::cout << testBenchSource << '\n';
+
+	// Step 2. Save test bench source to temporary file.
 	// TODO: Implement me.
+
+	// Step 3. Run Icarus Verilog compiler and VM and get standard output/error and return code.
+	// TODO: Implement me.
+
+	// Step 4. Parse standard output and return as output data.
+	// TODO: Implement me.
+
 	return testBenchData;
 }

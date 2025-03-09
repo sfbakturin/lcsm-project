@@ -107,7 +107,6 @@ static std::vector< std::string > ruleListOfPortIdentifiers(lcsm::verilog::Modul
 			// Otherwise, return back.
 			lex.backToken();
 			return identifiers;
-			;
 		}
 	}
 
@@ -321,7 +320,7 @@ static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	}
 
 	// Check range.
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
+	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
 	{
 		lex.backToken();
 		ruleRange(portType, lex);
@@ -458,7 +457,7 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareContext &context, 
 			}
 
 			// Check range.
-			if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
+			if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
 			{
 				lex.backToken();
 				ruleRange(portType, lex);

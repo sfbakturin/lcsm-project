@@ -17,7 +17,7 @@ char lcsm::verilog::BitPretty(const lcsm::verilog::Bit &b) noexcept
 	switch (b)
 	{
 	case lcsm::verilog::Bit::Undefined:
-		return 'X';
+		return 'x';
 	case lcsm::verilog::Bit::False:
 		return '0';
 	case lcsm::verilog::Bit::True:

@@ -15,7 +15,6 @@ namespace lcsm
 		  public:
 			FileSource(const char *filename);
 			FileSource(const std::string &filename);
-			FileSource(std::ifstream &&source);
 
 			FileSource(const FileSource &other) = delete;
 			FileSource(FileSource &&other);

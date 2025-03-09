@@ -1,9 +1,14 @@
 #ifndef LCSM_VERILOG_PORT_H
 #define LCSM_VERILOG_PORT_H
 
+#include <lcsm/Model/Width.h>
+#include <lcsm/Physical/DataBits.h>
+
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace lcsm
 {
@@ -17,6 +22,8 @@ namespace lcsm
 			Output,
 			OutputReg
 		};
+
+		const char *IOTypePretty(IOType ioType) noexcept;
 
 		enum NetType : std::int8_t
 		{
@@ -72,6 +79,10 @@ namespace lcsm
 			const Range &range() const noexcept;
 			void setRange(const Range &range) noexcept;
 			void setRange(Range &&range) noexcept;
+			width_t rangeWidth() const noexcept;
+			bool rangeLeftToRight() const noexcept;
+
+			std::string toVerilogString() const;
 
 		  private:
 			IOType m_ioType;
@@ -105,6 +116,12 @@ namespace lcsm
 			const std::string &identifier() const noexcept;
 			void setIdentifier(const std::string &identifier);
 			void setIdentifier(std::string &&identifier) noexcept;
+
+			width_t width() const noexcept;
+
+			std::string verilogPortDeclaration() const;
+			std::vector< std::string > verilogPortAssignment(const DataBits &databits) const;
+			std::string verilogPortMonitorCall(std::size_t globalPortIndex, std::size_t localPortIndex) const;
 
 		  private:
 			PortType m_portType;

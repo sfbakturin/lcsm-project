@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_HEADER(
     LIST LCSM_HEADERS
-    HEADERS CharSource.h StringSource.h FileSource.h CFileSource.h CStringSource.h
+    HEADERS CharSource.h StringSource.h FileSource.h CStringSource.h
 )
 
 # Cache variable for parent scope.

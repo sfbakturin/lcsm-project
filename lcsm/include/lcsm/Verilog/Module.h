@@ -6,10 +6,11 @@
 #include <lcsm/Verilog/Port.h>
 #include <unordered_map>
 
+#include <cstddef>
 #include <cstdio>
-#include <fstream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace lcsm
@@ -27,9 +28,8 @@ namespace lcsm
 
 			void swap(Module &other) noexcept;
 
-			static Module fromFile(std::FILE *stream);
 			static Module fromFile(const char *filename);
-			static Module fromFile(std::ifstream &stream);
+			static Module fromFile(const std::string &filename);
 
 			static Module fromString(const char *string);
 			static Module fromString(const std::string &string);
@@ -51,6 +51,8 @@ namespace lcsm
 			std::vector< Port > m_inoutPorts;
 			std::vector< Port > m_outputPorts;
 			std::vector< Port > m_outputRegPorts;
+
+			std::vector< std::pair< IOType, std::size_t > > m_ports;
 
 		  private:
 			Module() noexcept = default;
