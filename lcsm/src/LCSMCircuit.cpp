@@ -2,6 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Button.h>
@@ -18,6 +19,7 @@
 #include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/Verilog/Module.h>
 #include <unordered_map>
 
 #include <algorithm>
@@ -173,6 +175,39 @@ lcsm::model::Splitter *lcsm::LCSMCircuit::createSplitter(lcsm::label_t name, lcs
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Splitter >(name, widthIn, widthOut);
 	lcsm::model::Splitter *circuit = static_cast< lcsm::model::Splitter * >(registerElement(std::move(element)));
+	return circuit;
+}
+
+lcsm::model::VerilogModule *lcsm::LCSMCircuit::createVerilogModule(const lcsm::verilog::Module &module)
+{
+	// Indexes.
+	const lcsm::Identifier moduleId = m_globalId;
+
+	// Create a copy of Verilog's abstract module to this circuit.
+	std::shared_ptr< lcsm::verilog::Module > circuitModule = std::make_shared< lcsm::verilog::Module >(module);
+	m_verilogModules[moduleId] = circuitModule;
+
+	// Create element.
+	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::VerilogModule >(circuitModule);
+	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerElement(std::move(element)));
+
+	return circuit;
+}
+
+lcsm::model::VerilogModule *lcsm::LCSMCircuit::createVerilogModule(lcsm::verilog::Module &&module)
+{
+	// Indexes.
+	const lcsm::Identifier moduleId = m_globalId;
+	m_globalId = m_globalId.next();
+
+	// Move Verilog's abstract module to this circuit.
+	std::shared_ptr< lcsm::verilog::Module > circuitModule = std::make_shared< lcsm::verilog::Module >(std::move(module));
+	m_verilogModules[moduleId] = circuitModule;
+
+	// Create element.
+	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::VerilogModule >(circuitModule);
+	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerElement(std::move(element)));
+
 	return circuit;
 }
 
@@ -416,17 +451,32 @@ lcsm::LCSMCircuitView lcsm::LCSMCircuit::addCircuit(const lcsm::LCSMCircuit &oth
 	return { circuit.get() };
 }
 
-const lcsm::LCSMCircuit *lcsm::LCSMCircuit::findCircuit(lcsm::Identifier circuitId) noexcept
+lcsm::LCSMCircuitView lcsm::LCSMCircuit::findCircuit(const lcsm::LCSMCircuitView &circuit) noexcept
+{
+	// Find this circuit, if not found - exit.
+	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > >::const_iterator found = std::find_if(
+		m_circuits.begin(),
+		m_circuits.end(),
+		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &i)
+		{ return i.second.get() == circuit.get(); });
+	if (found == m_circuits.end())
+	{
+		return {};
+	}
+	return circuit;
+}
+
+lcsm::LCSMCircuitView lcsm::LCSMCircuit::findCircuit(lcsm::Identifier circuitId) noexcept
 {
 	std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > >::iterator found = m_circuits.find(circuitId);
 	if (found == m_circuits.end())
 	{
-		return nullptr;
+		return {};
 	}
-	return found->second.get();
+	return { found->second.get() };
 }
 
-const lcsm::LCSMCircuit *lcsm::LCSMCircuit::findCircuit(lcsm::label_t name) noexcept
+lcsm::LCSMCircuitView lcsm::LCSMCircuit::findCircuit(lcsm::label_t name) noexcept
 {
 	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > >::const_iterator found = std::find_if(
 		m_circuits.begin(),
@@ -435,20 +485,20 @@ const lcsm::LCSMCircuit *lcsm::LCSMCircuit::findCircuit(lcsm::label_t name) noex
 		{ return std::strcmp(i.second->c_name(), name) == 0; });
 	if (found == m_circuits.end())
 	{
-		return nullptr;
+		return {};
 	}
-	return found->second.get();
+	return { found->second.get() };
 }
 
-const lcsm::LCSMCircuit *lcsm::LCSMCircuit::findCircuit(const std::string &name) noexcept
+lcsm::LCSMCircuitView lcsm::LCSMCircuit::findCircuit(const std::string &name) noexcept
 {
 	return findCircuit(name.c_str());
 }
 
-bool lcsm::LCSMCircuit::removeCircuit(const lcsm::LCSMCircuit *circuit)
+bool lcsm::LCSMCircuit::removeCircuit(const lcsm::LCSMCircuitView &circuit)
 {
-	// If `circuit` is nullptr, do nothing.
-	if (circuit == nullptr)
+	// If circuit is not presented, no need to waste your time.
+	if (!circuit.present())
 	{
 		return false;
 	}
@@ -458,7 +508,7 @@ bool lcsm::LCSMCircuit::removeCircuit(const lcsm::LCSMCircuit *circuit)
 		m_circuits.begin(),
 		m_circuits.end(),
 		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &i)
-		{ return i.second.get() == circuit; });
+		{ return i.second.get() == circuit.get(); });
 	if (found == m_circuits.end())
 	{
 		return false;
@@ -471,23 +521,20 @@ bool lcsm::LCSMCircuit::removeCircuit(const lcsm::LCSMCircuit *circuit)
 
 bool lcsm::LCSMCircuit::removeCircuit(lcsm::Identifier id)
 {
-	return removeCircuit(findCircuit(id));
+	const lcsm::LCSMCircuitView circuit = findCircuit(id);
+	return removeCircuit(circuit);
 }
 
 bool lcsm::LCSMCircuit::removeCircuit(lcsm::label_t name)
 {
-	return removeCircuit(findCircuit(name));
+	const lcsm::LCSMCircuitView circuit = findCircuit(name);
+	return removeCircuit(circuit);
 }
 
 bool lcsm::LCSMCircuit::removeCircuit(const std::string &name)
 {
-	return removeCircuit(findCircuit(name));
-}
-
-lcsm::model::VerilogModule *lcsm::LCSMCircuit::addVerilogModule(const lcsm::verilog::Module &)
-{
-	// TODO: Implement me.
-	return nullptr;
+	const lcsm::LCSMCircuitView circuit = findCircuit(name);
+	return removeCircuit(circuit);
 }
 
 lcsm::Circuit *lcsm::LCSMCircuit::registerElement(std::shared_ptr< lcsm::Circuit > &&circuit)
@@ -722,12 +769,31 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier
 			{
 				const lcsm::model::Wire *oldWireOut = oldSplitter->wireOut(i);
 				oldToNewId[oldWireOut->id()] = newSplitter->wireOut(i)->id();
-				GetEdges(edges, oldSplitter->wireOut(i), true);
+				GetEdges(edges, oldWireOut, true);
+			}
+			break;
+		}
+		case lcsm::CircuitType::VerilogModule:
+		{
+			const lcsm::model::VerilogModule *oldVerilogModule =
+				static_cast< const lcsm::model::VerilogModule * >(oldCircuit.get());
+			const std::shared_ptr< lcsm::verilog::Module > &oldModule = m_verilogModules.at(oldVerilogModule->id());
+			const lcsm::model::VerilogModule *newVerilogModule = newCircuit->createVerilogModule(*oldModule);
+			oldToNewId[oldVerilogModule->id()] = newVerilogModule->id();
+			for (std::size_t i = 0; i < oldVerilogModule->numOfWires(); i++)
+			{
+				const lcsm::portid_t portId = static_cast< lcsm::portid_t >(i);
+				const lcsm::model::Wire *oldWire = oldVerilogModule->wire(portId);
+				const lcsm::model::Wire *newWire = newVerilogModule->wire(portId);
+				oldToNewId[oldWire->id()] = newWire->id();
+				GetEdges(edges, oldWire, true);
 			}
 			break;
 		}
 		case lcsm::CircuitType::LastCircuitType:
-			break;
+		{
+			throw std::logic_error("Found unexpected circuit type in copy-function!");
+		}
 		}
 	}
 

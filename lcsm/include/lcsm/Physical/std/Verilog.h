@@ -10,7 +10,6 @@
 #include <lcsm/Verilog/Module.h>
 
 #include <deque>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -21,7 +20,7 @@ namespace lcsm
 		class VerilogModule : public EvaluatorNode
 		{
 		  public:
-			VerilogModule(const std::shared_ptr< verilog::Module > &module, object_type_t objectType);
+			VerilogModule(const verilog::Module *module, object_type_t objectType);
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -48,7 +47,7 @@ namespace lcsm
 			std::vector< support::PointerView< EvaluatorNode > > m_inouts;
 			std::vector< support::PointerView< EvaluatorNode > > m_outputs;
 			std::vector< support::PointerView< EvaluatorNode > > m_outputRegs;
-			std::shared_ptr< verilog::Module > m_module;
+			support::PointerView< const verilog::Module > m_module;
 			support::PointerView< Context > m_context;
 		};
 	}	 // namespace physical

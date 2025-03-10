@@ -34,6 +34,7 @@ namespace lcsm
 	class LCSMCircuitView
 	{
 	  public:
+		LCSMCircuitView() noexcept;
 		LCSMCircuitView(LCSMCircuit *circuit) noexcept;
 
 		LCSMCircuitView(const LCSMCircuitView &other) noexcept;
@@ -44,6 +45,9 @@ namespace lcsm
 
 		void swap(LCSMCircuitView &other) noexcept;
 
+		bool present() const noexcept;
+		const LCSMCircuit *get() const noexcept;
+
 		Identifier globalId() const noexcept;
 		const std::string &name() const noexcept;
 		label_t c_name() const noexcept;
@@ -52,6 +56,7 @@ namespace lcsm
 		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
 
+		Circuit *find(Circuit *circuit) noexcept;
 		Circuit *find(Identifier id) noexcept;
 		Circuit *find(label_t name) noexcept;
 		Circuit *find(const std::string &name) noexcept;
@@ -96,6 +101,9 @@ namespace lcsm
 		model::Probe *createProbe(label_t name = "");
 		model::Splitter *createSplitter(label_t name = "", Width widthIn = Width::Bit2, width_t widthOut = 2);
 
+		model::VerilogModule *createVerilogModule(const verilog::Module &module);
+		model::VerilogModule *createVerilogModule(verilog::Module &&module);
+
 		Circuit *find(Circuit *circuit) noexcept;
 		Circuit *find(Identifier id) noexcept;
 		Circuit *find(label_t name) noexcept;
@@ -107,17 +115,17 @@ namespace lcsm
 		bool remove(const std::string &name);
 
 		LCSMCircuitView addCircuit(const LCSMCircuit &other);
+		// LCSMCircuitView addCircuit(LCSMCircuit &&other); // Maybe, should implement this...
 
-		const LCSMCircuit *findCircuit(Identifier id) noexcept;
-		const LCSMCircuit *findCircuit(label_t name) noexcept;
-		const LCSMCircuit *findCircuit(const std::string &name) noexcept;
+		LCSMCircuitView findCircuit(const LCSMCircuitView &circuit) noexcept;
+		LCSMCircuitView findCircuit(Identifier id) noexcept;
+		LCSMCircuitView findCircuit(label_t name) noexcept;
+		LCSMCircuitView findCircuit(const std::string &name) noexcept;
 
-		bool removeCircuit(const LCSMCircuit *circuit);
+		bool removeCircuit(const LCSMCircuitView &circuit);
 		bool removeCircuit(Identifier id);
 		bool removeCircuit(label_t name);
 		bool removeCircuit(const std::string &name);
-
-		model::VerilogModule *addVerilogModule(const verilog::Module &module);
 
 		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2, label_t name = "");
 		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2, label_t name = "");

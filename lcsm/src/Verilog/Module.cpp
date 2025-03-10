@@ -7,12 +7,15 @@
 #include <lcsm/Support/Parser/FileSource.h>
 #include <lcsm/Support/Parser/StringSource.h>
 #include <lcsm/Support/Subprocesses.h>
+#include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Module.h>
 #include <lcsm/Verilog/ModuleDeclare/Context.h>
 #include <lcsm/Verilog/ModuleDeclare/Parser.h>
 #include <lcsm/Verilog/Port.h>
+#include <lcsm/Verilog/Strength.h>
 #include <unordered_map>
 
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -29,10 +32,18 @@
 enum TestBenchOutKind : signed
 {
 	UnknownKind = -1,
-	InputKind,
 	InoutKind,
 	OutputKind,
 	OutputRegKind,
+	HiZKind,
+	We0Kind,
+	We1Kind,
+	Pu0Kind,
+	Pu1Kind,
+	St0Kind,
+	St1Kind,
+	Su0Kind,
+	Su1Kind,
 	IntegerKind,
 	EofKind
 };
@@ -41,14 +52,30 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 {
 	switch (kind)
 	{
-	case TestBenchOutKind::InputKind:
-		return "input";
 	case TestBenchOutKind::InoutKind:
 		return "inout";
 	case TestBenchOutKind::OutputKind:
 		return "output";
 	case TestBenchOutKind::OutputRegKind:
 		return "outputreg";
+	case TestBenchOutKind::HiZKind:
+		return "HiZ";
+	case TestBenchOutKind::We0Kind:
+		return "We0";
+	case TestBenchOutKind::We1Kind:
+		return "We1";
+	case TestBenchOutKind::Pu0Kind:
+		return "Pu0";
+	case TestBenchOutKind::Pu1Kind:
+		return "Pu1";
+	case TestBenchOutKind::St0Kind:
+		return "St0";
+	case TestBenchOutKind::St1Kind:
+		return "St1";
+	case TestBenchOutKind::Su0Kind:
+		return "Su0";
+	case TestBenchOutKind::Su1Kind:
+		return "Su1";
 	default:
 		return nullptr;
 	}
@@ -57,7 +84,7 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 
 static TestBenchOutKind IsKeyword(const char *str) noexcept
 {
-	for (unsigned i = TestBenchOutKind::InputKind; i <= TestBenchOutKind::OutputRegKind; i++)
+	for (signed i = TestBenchOutKind::InoutKind; i <= TestBenchOutKind::Su1Kind; i++)
 	{
 		const TestBenchOutKind kind = static_cast< TestBenchOutKind >(i);
 		const char *keyword = AsKeyword(kind);
@@ -91,6 +118,8 @@ class TestBenchOutToken
 
 	TestBenchOutKind kind() const noexcept;
 
+	void reset() noexcept;
+
 	void setToken(TestBenchOutKind kind) noexcept;
 	void setToken(int i) noexcept;
 	void setEof() noexcept;
@@ -121,6 +150,8 @@ class TestBenchOutLexer
 
   private:
 	void nextChar();
+	void skipBlanks();
+	void buildString(std::string &builder);
 };
 
 TestBenchOutToken::TestBenchOutToken() noexcept : m_kind(TestBenchOutKind::UnknownKind), m_i(0) {}
@@ -150,6 +181,11 @@ TestBenchOutKind TestBenchOutToken::kind() const noexcept
 	return m_kind;
 }
 
+void TestBenchOutToken::reset() noexcept
+{
+	setToken(TestBenchOutKind::UnknownKind);
+}
+
 void TestBenchOutToken::setToken(TestBenchOutKind kind) noexcept
 {
 	m_kind = kind;
@@ -170,7 +206,7 @@ void TestBenchOutToken::setEof() noexcept
 
 bool TestBenchOutToken::isKeyword() const noexcept
 {
-	return TestBenchOutKind::InputKind <= m_kind && m_kind <= TestBenchOutKind::OutputRegKind;
+	return TestBenchOutKind::InoutKind <= m_kind && m_kind <= TestBenchOutKind::OutputRegKind;
 }
 
 bool TestBenchOutToken::isInteger() const noexcept
@@ -199,14 +235,81 @@ TestBenchOutToken TestBenchOutLexer::token() const noexcept
 	return m_token;
 }
 
+static bool IsNumber(const std::string &s) noexcept
+{
+	for (char c : s)
+	{
+		if (!('0' <= c && c <= '9'))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 TestBenchOutToken TestBenchOutLexer::nextToken()
 {
+	// Builder for strings.
+	std::string builder;
+
+	// Future kind.
+	TestBenchOutKind kind;
+
+	// Skip all blank chars.
+	skipBlanks();
+
+	// Check if, EOF.
+	if (m_char == lcsm::support::CharSource::EndOfSource)
+	{
+		m_token.setEof();
+		goto l_finish;
+	}
+
+	// Continue parsing to blank character (non valid).
+	buildString(builder);
+
+	// Check, if keyword.
+	kind = IsKeyword(builder);
+	if (kind >= 0)
+	{
+		m_token.setToken(kind);
+		goto l_finish;
+	}
+
+	// Check, if number.
+	if (IsNumber(builder))
+	{
+		m_token.setToken(std::stoi(builder));
+		goto l_finish;
+	}
+
+	// Otherwise, we've got an unknown token.
+	m_token.reset();
+
+l_finish:
 	return m_token;
 }
 
 void TestBenchOutLexer::nextChar()
 {
-	m_char = lcsm::support::CharSource::EndOfSource;
+	m_char = m_source->next();
+}
+
+void TestBenchOutLexer::skipBlanks()
+{
+	while (std::isspace(m_char))
+	{
+		nextChar();
+	}
+}
+
+void TestBenchOutLexer::buildString(std::string &builder)
+{
+	while (std::isalnum(m_char) || m_char == '_')
+	{
+		builder.push_back(m_char);
+		nextChar();
+	}
 }
 
 lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::support::CharSource > &source)
@@ -419,8 +522,25 @@ static void SourcePortAssignment(
 	}
 }
 
+static void InitializeOutData(
+	const std::vector< lcsm::verilog::Port > &ports,
+	std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &out,
+	lcsm::verilog::IOType type)
+{
+	if (!ports.empty())
+	{
+		out[type] = std::vector< lcsm::DataBits >(ports.size());
+		std::vector< lcsm::DataBits > &databits = out[type];
+		for (std::size_t i = 0; i < ports.size(); i++)
+		{
+			const lcsm::width_t width = ports[i].width();
+			databits[i].setWidth(width);
+		}
+	}
+}
+
 std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
-	lcsm::verilog::Module::invoke(const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &testBenchData)
+	lcsm::verilog::Module::invoke(const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &testBenchInData) const
 {
 	// Step 1. Generate testbench module.
 	std::string testBenchSource = m_sourceModule;
@@ -435,8 +555,8 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	SourcePortDeclaration(m_outputRegPorts, testBenchSource);
 
 	// 1.3. Assignment.
-	SourcePortAssignment(testBenchData, m_inputPorts, lcsm::verilog::IOType::Input, testBenchSource);
-	SourcePortAssignment(testBenchData, m_inoutPorts, lcsm::verilog::IOType::Inout, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inputPorts, lcsm::verilog::IOType::Input, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inoutPorts, lcsm::verilog::IOType::Inout, testBenchSource);
 
 	// 1.4. Module declare.
 	testBenchSource += m_identifier + " tb(";
@@ -483,7 +603,7 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	std::size_t t = 1;
 	for (const std::pair< lcsm::verilog::IOType, std::size_t > &port : m_ports)
 	{
-		lcsm::verilog::Port *p = nullptr;
+		const lcsm::verilog::Port *p = nullptr;
 		switch (port.first)
 		{
 		case lcsm::verilog::IOType::UnknowPortType:
@@ -492,8 +612,8 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 		}
 		case lcsm::verilog::IOType::Input:
 		{
-			p = std::addressof(m_inputPorts[port.second]);
-			break;
+			// Skip INPUT, as there is no any thoughts to parse input's value.
+			continue;
 		}
 		case lcsm::verilog::IOType::Inout:
 		{
@@ -545,21 +665,165 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	const char *outputFilename = tempTestBenchOutputFilename.c_str();
 	const char *sourceFilename = tempTestBenchSourceFilename.c_str();
 
-	const lcsm::support::CompletedProcess iVerilogCompilerProcCompleted =
+	const lcsm::support::CompletedProcess iVerilogProcCompleted =
 		lcsm::support::subprocessRun("iverilog", { "-g2012", "-o", outputFilename, sourceFilename });
-	iVerilogCompilerProcCompleted.checkReturnCode();
+	iVerilogProcCompleted.checkReturnCode();
 
-	const lcsm::support::CompletedProcess vppVMCompleted = lcsm::support::subprocessRun("vvp", { outputFilename });
-	vppVMCompleted.checkReturnCode();
+	const lcsm::support::CompletedProcess vppProcCompleted = lcsm::support::subprocessRun("vvp", { outputFilename });
+	vppProcCompleted.checkReturnCode();
 
 	// Step 4. Remove temporary files.
-	lcsm::support::removeFile(tempTestBenchSourceFilename);
-	lcsm::support::removeFile(tempTestBenchOutputFilename);
+	lcsm::support::removeFile(outputFilename);
+	lcsm::support::removeFile(sourceFilename);
 
 	// Step 5. Parse standard output and return as output data.
 	std::shared_ptr< lcsm::support::CharSource > source =
-		std::make_shared< lcsm::support::CStringSource >(vppVMCompleted.cOut());
+		std::make_shared< lcsm::support::CStringSource >(vppProcCompleted.cOut());
 	TestBenchOutLexer lex = source;
 
-	return testBenchData;
+	// Output data for physical model.
+	std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > testBenchOutData;
+
+	// Initialize output data.
+	InitializeOutData(m_inoutPorts, testBenchOutData, lcsm::verilog::IOType::Inout);
+	InitializeOutData(m_outputPorts, testBenchOutData, lcsm::verilog::IOType::Output);
+	InitializeOutData(m_outputRegPorts, testBenchOutData, lcsm::verilog::IOType::OutputReg);
+
+	// Generated output will be like this:
+	// <type> <global index> <local index> <value>, where:
+	// <type>                           --> 'input' | 'inout' | 'output' | 'outputreg'
+	// <global index> and <local index> --> INTEGER
+	// <value>                          --> 'HiZ' | 'We0' | 'We1' | 'Pu0' | 'Pu1' | 'St0' | 'St1' | 'Su0' | 'Su1'
+	// end is --> EndOfSource.
+	while (!lex.nextToken().isEof())
+	{
+		// All parsed things.
+		std::size_t globalIndex;
+		std::size_t localIndex;
+		lcsm::verilog::Bit bit;
+		lcsm::verilog::Strength strength;
+		lcsm::verilog::IOType type;
+
+		// <type> --> 'inout' | 'output' | 'outputreg'
+		switch (lex.token().kind())
+		{
+		case TestBenchOutKind::InoutKind:
+		{
+			type = lcsm::verilog::IOType::Inout;
+			break;
+		}
+		case TestBenchOutKind::OutputKind:
+		{
+			type = lcsm::verilog::IOType::Output;
+			break;
+		}
+		case TestBenchOutKind::OutputRegKind:
+		{
+			type = lcsm::verilog::IOType::OutputReg;
+			break;
+		}
+		default:
+			throw std::logic_error(
+				"Expected 'inout' | 'output' | 'outputreg' in generated test bench as first entity "
+				"in line!");
+		}
+
+		// <global index> --> INTEGER
+		if (!lex.nextToken().isInteger())
+		{
+			throw std::logic_error(
+				"Expected integer value in generated test bench as second entity "
+				"in line!");
+		}
+		else
+		{
+			globalIndex = static_cast< std::size_t >(lex.token().asInteger());
+		}
+
+		// <local index> --> INTEGER
+		if (!lex.nextToken().isInteger())
+		{
+			throw std::logic_error(
+				"Expected integer value in generated test bench as third entity "
+				"in line!");
+		}
+		else
+		{
+			localIndex = static_cast< std::size_t >(lex.token().asInteger());
+		}
+
+		// <value> --> 'HiZ' | 'We0' | 'We1' | 'Pu0' | 'Pu1' | 'St0' | 'St1' | 'Su0' | 'Su1'
+		switch (lex.nextToken().kind())
+		{
+		case TestBenchOutKind::HiZKind:
+		{
+			strength = lcsm::verilog::Strength::HighImpedance;
+			bit = lcsm::verilog::Bit::Undefined;
+			break;
+		}
+		case TestBenchOutKind::We0Kind:
+		{
+			strength = lcsm::verilog::Strength::WeakDrive;
+			bit = lcsm::verilog::Bit::False;
+			break;
+		}
+		case TestBenchOutKind::We1Kind:
+		{
+			strength = lcsm::verilog::Strength::WeakDrive;
+			bit = lcsm::verilog::Bit::True;
+			break;
+		}
+		case TestBenchOutKind::Pu0Kind:
+		{
+			strength = lcsm::verilog::Strength::PullDrive;
+			bit = lcsm::verilog::Bit::False;
+			break;
+		}
+		case TestBenchOutKind::Pu1Kind:
+		{
+			strength = lcsm::verilog::Strength::PullDrive;
+			bit = lcsm::verilog::Bit::True;
+			break;
+		}
+		case TestBenchOutKind::St0Kind:
+		{
+			strength = lcsm::verilog::Strength::StrongDrive;
+			bit = lcsm::verilog::Bit::False;
+			break;
+		}
+		case TestBenchOutKind::St1Kind:
+		{
+			strength = lcsm::verilog::Strength::StrongDrive;
+			bit = lcsm::verilog::Bit::True;
+			break;
+		}
+		case TestBenchOutKind::Su0Kind:
+		{
+			strength = lcsm::verilog::Strength::SupplyDrive;
+			bit = lcsm::verilog::Bit::False;
+			break;
+		}
+		case TestBenchOutKind::Su1Kind:
+		{
+			strength = lcsm::verilog::Strength::SupplyDrive;
+			bit = lcsm::verilog::Bit::True;
+			break;
+		}
+		default:
+			throw std::logic_error(
+				"Expected 'HiZ' | 'We0' | 'We1' | 'Pu0' | 'Pu1' | 'St0' | 'St1' | 'Su0' | 'Su1' in generated test "
+				"bench as fourth entity "
+				"in line!");
+		}
+
+		// Set.
+		testBenchOutData[type][globalIndex].set(localIndex, bit, strength);
+	}
+
+	return testBenchOutData;
+}
+
+const std::string &lcsm::verilog::Module::identifier() const noexcept
+{
+	return m_identifier;
 }

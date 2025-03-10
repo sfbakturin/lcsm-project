@@ -200,9 +200,9 @@ lcsm::width_t lcsm::DataBits::width() const noexcept
 	return m_width;
 }
 
-void lcsm::DataBits::setWidth(lcsm::width_t newWidth) noexcept
+void lcsm::DataBits::setWidth(lcsm::width_t width) noexcept
 {
-	m_width = std::min(newWidth, lcsm::DataBits::MaxWidth);
+	m_width = std::min(width, lcsm::DataBits::MaxWidth);
 }
 
 bool lcsm::DataBits::checkWidth(const lcsm::DataBits &other) const noexcept
@@ -243,6 +243,12 @@ void lcsm::DataBits::setBit(std::size_t index, lcsm::verilog::Bit bit)
 void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value value)
 {
 	m_bits[index] = value;
+}
+
+void lcsm::DataBits::set(std::size_t index, verilog::Bit bit, verilog::Strength strength)
+{
+	m_bits[index].setBit(bit);
+	m_bits[index].setStrength(strength);
 }
 
 lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept

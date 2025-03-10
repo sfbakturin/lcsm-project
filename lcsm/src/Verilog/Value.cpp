@@ -145,9 +145,9 @@ lcsm::verilog::Strength lcsm::verilog::Value::strength() const noexcept
 	return m_strength;
 }
 
-void lcsm::verilog::Value::setStrength(lcsm::verilog::Strength newStrength) noexcept
+void lcsm::verilog::Value::setStrength(lcsm::verilog::Strength strength) noexcept
 {
-	m_strength = newStrength;
+	m_strength = strength;
 }
 
 lcsm::verilog::Bit lcsm::verilog::Value::bit() const noexcept

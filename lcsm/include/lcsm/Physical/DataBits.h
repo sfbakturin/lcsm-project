@@ -53,7 +53,7 @@ namespace lcsm
 		static DataBits fromModel(value_t value) noexcept;
 
 		width_t width() const noexcept;
-		void setWidth(width_t newWidth) noexcept;
+		void setWidth(width_t width) noexcept;
 		bool checkWidth(const DataBits &other) const noexcept;
 
 		verilog::Bit bit(std::size_t index) const;
@@ -66,6 +66,7 @@ namespace lcsm
 
 		void setBit(std::size_t index, verilog::Bit bit);
 		void setValue(std::size_t index, verilog::Value value);
+		void set(std::size_t index, verilog::Bit bit, verilog::Strength strength);
 
 		DataBits subdatabits(std::size_t begin) const noexcept;
 		DataBits subdatabits(std::size_t begin, std::size_t end) const noexcept;

@@ -1,5 +1,5 @@
-#ifndef LCSM_MODEL_VERILOGMODULE_H
-#define LCSM_MODEL_VERILOGMODULE_H
+#ifndef LCSM_MODEL_VERILOG_H
+#define LCSM_MODEL_VERILOG_H
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
@@ -32,10 +32,19 @@ namespace lcsm
 			VerilogModule(const std::shared_ptr< verilog::Module > &module, label_t name);
 			~VerilogModule() noexcept;
 
+			const Wire *wire(portid_t portId) const noexcept;
+
+			const Wire *input(portid_t portId) const noexcept;
+			const Wire *inout(portid_t portId) const noexcept;
+			const Wire *output(portid_t portId) const noexcept;
+			const Wire *outputReg(portid_t portId) const noexcept;
+
 			std::size_t numOfInputs() const noexcept;
 			std::size_t numOfInouts() const noexcept;
 			std::size_t numOfOutputs() const noexcept;
 			std::size_t numOfOutputRegs() const noexcept;
+
+			const verilog::Module *module() const noexcept;
 
 			virtual std::size_t numOfWires() const noexcept override final;
 			virtual void provideWires(const std::vector< std::shared_ptr< model::Wire > > &wires) override final;
@@ -69,4 +78,4 @@ namespace lcsm
 	}	 // namespace model
 }	 // namespace lcsm
 
-#endif /* LCSM_MODEL_VERILOGMODULE_H */
+#endif /* LCSM_MODEL_VERILOG_H */

@@ -1,10 +1,11 @@
-#include "lcsm/Physical/Context.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Physical/Instruction.h>
+#include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Physical/std/Verilog.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
@@ -13,12 +14,11 @@
 #include <unordered_set>
 
 #include <deque>
-#include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-lcsm::physical::VerilogModule::VerilogModule(const std::shared_ptr< lcsm::verilog::Module > &module, lcsm::object_type_t objectType) :
+lcsm::physical::VerilogModule::VerilogModule(const lcsm::verilog::Module *module, lcsm::object_type_t objectType) :
 	lcsm::EvaluatorNode(objectType), m_module(module)
 {
 }
@@ -30,7 +30,7 @@ lcsm::NodeType lcsm::physical::VerilogModule::nodeType() const noexcept
 
 std::size_t lcsm::physical::VerilogModule::contextSize() const noexcept
 {
-	return m_inputs.size() + m_inouts.size();
+	return m_inputs.size() + m_inouts.size() + m_outputs.size() + m_outputRegs.size();
 }
 
 std::size_t lcsm::physical::VerilogModule::privateContextSize() const noexcept
@@ -177,7 +177,7 @@ static void GenerateEvents(
 	// Create write value events.
 	if (!wires.empty())
 	{
-		// Verilog module ensures, that outputData[IOType::Output] is exists and its size == m_inouts.size().
+		// Verilog module ensures, that outputData[ioType] is exists and its size == wires.size().
 		const std::size_t size = wires.size();
 		std::vector< lcsm::DataBits > &output = data[ioType];
 		for (std::size_t i = 0; i < size; i++)
@@ -272,6 +272,43 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 
 	// Create for output regs.
 	GenerateEvents(this, m_outputRegs, outputData, events, lcsm::verilog::IOType::OutputReg);
+
+	// Save inputs values to context.
+	m_context->beginUpdate(now);
+	std::size_t i = 0;
+	if (!m_inputs.empty())
+	{
+		// Algorithm above make guarantees, that m_inputs would be used to generate testBenchData.
+		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::IOType::Input])
+		{
+			m_context->updateValue(i++, std::move(databits));
+		}
+	}
+	if (!m_inouts.empty())
+	{
+		// Algorithm above make guarantees, that m_inouts would be used to generate testBenchData.
+		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::IOType::Inout])
+		{
+			m_context->updateValue(i++, std::move(databits));
+		}
+	}
+	if (!m_outputs.empty())
+	{
+		// Algorithm above make guarantees, that m_outputs would be used to generate outputData.
+		for (lcsm::DataBits &databits : outputData[lcsm::verilog::IOType::Output])
+		{
+			m_context->updateValue(i++, std::move(databits));
+		}
+	}
+	if (!m_outputRegs.empty())
+	{
+		// Algorithm above make guarantees, that m_outputRegs would be used to generate outputData.
+		for (lcsm::DataBits &databits : outputData[lcsm::verilog::IOType::OutputReg])
+		{
+			m_context->updateValue(i++, std::move(databits));
+		}
+	}
+	m_context->endUpdate();
 
 	// Clear instants.
 	m_inputsInstants.clear();

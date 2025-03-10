@@ -12,6 +12,7 @@
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <algorithm>
 #include <cstddef>
@@ -230,7 +231,9 @@ void lcsm::LCSMState::tick()
 
 		/* Schedule events. */
 		for (lcsm::Event &event : events)
+		{
 			localQueue.push_back(event);
+		}
 	}
 
 	/* Main queue and visited elements. Generally, we should traverse over all elements only once to ensure, that
@@ -321,24 +324,40 @@ void lcsm::LCSMState::tick()
 
 				/* Break looping, when there is no nodes. */
 				if (nodes.empty())
+				{
 					break;
+				}
 
 				/* Invoke all nodes and push events to main scheduler. */
+				std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > already;
 				for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : nodes)
 				{
+					/* If already executed, then do not invoke. */
+					if (already.find(node) != already.end())
+					{
+						continue;
+					}
+
+					/* Make as already visited. */
+					already.insert(node);
+
 					/* Invoke and generate new instructions. */
 					std::vector< lcsm::Event > events = node->invokeInstants(m_globalTimer);
 
 					/* Schedule events. */
 					for (lcsm::Event &event : events)
+					{
 						localQueue.push_back(event);
+					}
 				}
 			} while (true);
 		}
 
 		/* Case: scheduler is empty. No need to double check something. */
 		if (localQueue.empty())
+		{
 			break;
+		}
 
 		/* Clear all visited. */
 		visited.clear();

@@ -4,6 +4,7 @@
 #include <lcsm/LCSMState.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
+#include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Clock.h>
@@ -31,8 +32,10 @@
 #include <lcsm/Physical/std/Transistor.h>
 #include <lcsm/Physical/std/TransmissionGate.h>
 #include <lcsm/Physical/std/Tunnel.h>
+#include <lcsm/Physical/std/Verilog.h>
 #include <lcsm/Physical/std/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/Verilog/Module.h>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -710,12 +713,108 @@ void lcsm::LCSMEngine::buildCircuit(
 	}
 	case lcsm::CircuitType::VerilogModule:
 	{
-		// TODO: Implement me.
+		// Extract VerilogModule as model object.
+		const lcsm::model::VerilogModule *verilogModuleModel = circuit.getCast< lcsm::model::VerilogModule >();
+		const lcsm::Identifier verilogModuleId = verilogModuleModel->id();
+
+		// By the algorithm, we have never created VerilogModule before this moment.
+		const lcsm::object_type_t objectType = verilogModuleModel->objectType();
+		const lcsm::verilog::Module *module = verilogModuleModel->module();
+		std::shared_ptr< lcsm::EvaluatorNode > verilogModulePhysical =
+			std::make_shared< lcsm::physical::VerilogModule >(module, objectType);
+		m_objects[verilogModuleId] = verilogModulePhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > verilogModuleEvaluatorNode = verilogModulePhysical;
+		lcsm::support::PointerView< lcsm::physical::VerilogModule > verilogModuleNode =
+			verilogModuleEvaluatorNode.staticCast< lcsm::physical::VerilogModule >();
+
+		// Ensure existence of inputs. Connect to VerilogModule and make them to know about each other.
+		for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(verilogModuleModel->numOfInputs()); portId++)
+		{
+			// Extract model.
+			const lcsm::model::Wire *wireModel = verilogModuleModel->input(portId);
+			const lcsm::Identifier wireId = wireModel->id();
+
+			// Ensure existing wire.
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+			// Connect to each other.
+			verilogModuleNode->connectInput(wireEvaluatorNode);
+			wireNode->connect(verilogModuleEvaluatorNode);
+
+			// Add wire to visit.
+			bfsVisit.emplace_back(wireModel);
+		}
+
+		// Ensure existence of inputs. Connect to VerilogModule and make them to know about each other.
+		for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(verilogModuleModel->numOfInouts()); portId++)
+		{
+			// Extract model.
+			const lcsm::model::Wire *wireModel = verilogModuleModel->inout(portId);
+			const lcsm::Identifier wireId = wireModel->id();
+
+			// Ensure existing wire.
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+			// Connect to each other.
+			verilogModuleNode->connectInout(wireEvaluatorNode);
+			wireNode->connect(verilogModuleEvaluatorNode);
+
+			// Add wire to visit.
+			bfsVisit.emplace_back(wireModel);
+		}
+
+		// Ensure existence of outputs. Connect to VerilogModule and make them to know about each other.
+		for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(verilogModuleModel->numOfOutputs()); portId++)
+		{
+			// Extract model.
+			const lcsm::model::Wire *wireModel = verilogModuleModel->output(portId);
+			const lcsm::Identifier wireId = wireModel->id();
+
+			// Ensure existing wire.
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+			// Connect to each other.
+			verilogModuleNode->connectOutput(wireEvaluatorNode);
+			wireNode->connect(verilogModuleEvaluatorNode);
+
+			// Add wire to visit.
+			bfsVisit.emplace_back(wireModel);
+		}
+
+		// Ensure existence of output regs. Connect to VerilogModule and make them to know about each other.
+		for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(verilogModuleModel->numOfOutputRegs()); portId++)
+		{
+			// Extract model.
+			const lcsm::model::Wire *wireModel = verilogModuleModel->outputReg(portId);
+			const lcsm::Identifier wireId = wireModel->id();
+
+			// Ensure existing wire.
+			lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+			lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+			// Connect to each other.
+			verilogModuleNode->connectOutputReg(wireEvaluatorNode);
+			wireNode->connect(verilogModuleEvaluatorNode);
+
+			// Add wire to visit.
+			bfsVisit.emplace_back(wireModel);
+		}
+
+		// Update visited objects.
+		visited.insert(verilogModuleId);
+
 		break;
 	}
 	case lcsm::CircuitType::LastCircuitType:
+	{
 		throw std::logic_error("Non-targeted circuit found!");
+	}
 	default:
+	{
 		throw std::logic_error("Unsupported circuit found!");
+	}
 	}
 }

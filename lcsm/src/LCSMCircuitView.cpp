@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+lcsm::LCSMCircuitView::LCSMCircuitView() noexcept : lcsm::LCSMCircuitView(nullptr) {}
+
 lcsm::LCSMCircuitView::LCSMCircuitView(lcsm::LCSMCircuit *circuit) noexcept : m_circuit(circuit) {}
 
 lcsm::LCSMCircuitView::LCSMCircuitView(const lcsm::LCSMCircuitView &other) noexcept : m_circuit(other.m_circuit) {}
@@ -28,6 +30,16 @@ lcsm::LCSMCircuitView &lcsm::LCSMCircuitView::operator=(lcsm::LCSMCircuitView &&
 void lcsm::LCSMCircuitView::swap(lcsm::LCSMCircuitView &other) noexcept
 {
 	std::swap(m_circuit, other.m_circuit);
+}
+
+bool lcsm::LCSMCircuitView::present() const noexcept
+{
+	return m_circuit != nullptr;
+}
+
+const lcsm::LCSMCircuit *lcsm::LCSMCircuitView::get() const noexcept
+{
+	return m_circuit;
 }
 
 lcsm::Identifier lcsm::LCSMCircuitView::globalId() const noexcept
@@ -58,6 +70,11 @@ const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSM
 const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuitView::outputs() const noexcept
 {
 	return m_circuit->outputs();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::find(lcsm::Circuit *circuit) noexcept
+{
+	return m_circuit->find(circuit);
 }
 
 lcsm::Circuit *lcsm::LCSMCircuitView::find(lcsm::Identifier id) noexcept

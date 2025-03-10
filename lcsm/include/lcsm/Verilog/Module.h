@@ -41,7 +41,9 @@ namespace lcsm
 			const std::vector< Port > &outputRegPorts() const noexcept;
 
 			std::unordered_map< IOType, std::vector< DataBits > >
-				invoke(const std::unordered_map< IOType, std::vector< DataBits > > &testBenchData);
+				invoke(const std::unordered_map< IOType, std::vector< DataBits > > &testBenchData) const;
+
+			const std::string &identifier() const noexcept;
 
 		  private:
 			std::string m_identifier;

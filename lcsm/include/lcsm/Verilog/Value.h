@@ -47,7 +47,7 @@ namespace lcsm
 			static Value zero(Strength strength) noexcept;
 
 			Strength strength() const noexcept;
-			void setStrength(Strength newStrength) noexcept;
+			void setStrength(Strength strength) noexcept;
 
 			Bit bit() const noexcept;
 			void setBit(Bit bit) noexcept;

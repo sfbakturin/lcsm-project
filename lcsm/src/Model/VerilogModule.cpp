@@ -2,6 +2,7 @@
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
+#include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
 
@@ -11,8 +12,24 @@
 #include <utility>
 #include <vector>
 
+static lcsm::Circuit *ByPortImpl(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, std::size_t &p) noexcept
+{
+	if (wires.size() != 0)
+	{
+		if (p >= wires.size())
+		{
+			p -= wires.size();
+		}
+		else
+		{
+			return wires[p].get();
+		}
+	}
+	return nullptr;
+}
+
 lcsm::model::VerilogModule::VerilogModule(const std::shared_ptr< lcsm::verilog::Module > &module) :
-	lcsm::model::VerilogModule(module, "")
+	lcsm::model::VerilogModule(module, module->identifier().c_str())
 {
 }
 
@@ -24,6 +41,78 @@ lcsm::model::VerilogModule::VerilogModule(const std::shared_ptr< lcsm::verilog::
 lcsm::model::VerilogModule::~VerilogModule() noexcept
 {
 	disconnectAll();
+}
+
+const lcsm::model::Wire *lcsm::model::VerilogModule::wire(lcsm::portid_t portId) const noexcept
+{
+	lcsm::Circuit *found = nullptr;
+	std::size_t p = static_cast< std::size_t >(portId);
+
+	// Check, if port is input.
+	found = ByPortImpl(m_inputs, p);
+	if (found != nullptr)
+	{
+		return static_cast< const lcsm::model::Wire * >(found);
+	}
+
+	// Check, if port is inout.
+	found = ByPortImpl(m_inouts, p);
+	if (found != nullptr)
+	{
+		return static_cast< const lcsm::model::Wire * >(found);
+	}
+
+	// Check, if port is output.
+	found = ByPortImpl(m_outputs, p);
+	if (found != nullptr)
+	{
+		return static_cast< const lcsm::model::Wire * >(found);
+	}
+
+	// Check, if port is output reg.
+	found = ByPortImpl(m_outputRegs, p);
+	if (found != nullptr)
+	{
+		return static_cast< const lcsm::model::Wire * >(found);
+	}
+
+	return nullptr;
+}
+
+const lcsm::model::Wire *lcsm::model::VerilogModule::input(lcsm::portid_t portId) const noexcept
+{
+	if (static_cast< std::size_t >(portId) < m_inputs.size())
+	{
+		return m_inputs[portId].get();
+	}
+	return nullptr;
+}
+
+const lcsm::model::Wire *lcsm::model::VerilogModule::inout(lcsm::portid_t portId) const noexcept
+{
+	if (static_cast< std::size_t >(portId) < m_inouts.size())
+	{
+		return m_inouts[portId].get();
+	}
+	return nullptr;
+}
+
+const lcsm::model::Wire *lcsm::model::VerilogModule::output(lcsm::portid_t portId) const noexcept
+{
+	if (static_cast< std::size_t >(portId) < m_outputs.size())
+	{
+		return m_outputs[portId].get();
+	}
+	return nullptr;
+}
+
+const lcsm::model::Wire *lcsm::model::VerilogModule::outputReg(lcsm::portid_t portId) const noexcept
+{
+	if (static_cast< std::size_t >(portId) < m_outputRegs.size())
+	{
+		return m_outputRegs[portId].get();
+	}
+	return nullptr;
 }
 
 std::size_t lcsm::model::VerilogModule::numOfInputs() const noexcept
@@ -44,6 +133,11 @@ std::size_t lcsm::model::VerilogModule::numOfOutputs() const noexcept
 std::size_t lcsm::model::VerilogModule::numOfOutputRegs() const noexcept
 {
 	return m_outputRegs.size();
+}
+
+const lcsm::verilog::Module *lcsm::model::VerilogModule::module() const noexcept
+{
+	return m_module.get();
 }
 
 std::size_t lcsm::model::VerilogModule::numOfWires() const noexcept
@@ -179,50 +273,34 @@ void lcsm::model::VerilogModule::disconnectAll() noexcept
 	m_outputRegs.clear();
 }
 
-static lcsm::Circuit *ByPort(std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, std::size_t &p) noexcept
-{
-	if (wires.size() != 0)
-	{
-		if (p >= wires.size())
-		{
-			p -= wires.size();
-		}
-		else
-		{
-			return wires[p].get();
-		}
-	}
-	return nullptr;
-}
-
 lcsm::Circuit *lcsm::model::VerilogModule::byPort(lcsm::portid_t portId) noexcept
 {
 	lcsm::Circuit *found = nullptr;
 	std::size_t p = static_cast< std::size_t >(portId);
 
 	// Check, if port is input.
-	found = ByPort(m_inputs, p);
+	found = ByPortImpl(m_inputs, p);
 	if (found != nullptr)
 	{
 		return found;
 	}
 
 	// Check, if port is inout.
-	found = ByPort(m_inouts, p);
+	found = ByPortImpl(m_inouts, p);
 	if (found != nullptr)
 	{
 		return found;
 	}
 
 	// Check, if port is output.
-	found = ByPort(m_outputs, p);
+	found = ByPortImpl(m_outputs, p);
 	if (found != nullptr)
 	{
 		return found;
 	}
 
 	// Check, if port is output reg.
-	found = ByPort(m_outputRegs, p);
+	found = ByPortImpl(m_outputRegs, p);
 	if (found != nullptr)
 	{
 		return found;
