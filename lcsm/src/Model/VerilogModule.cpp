@@ -115,24 +115,44 @@ const lcsm::model::Wire *lcsm::model::VerilogModule::outputReg(lcsm::portid_t po
 	return nullptr;
 }
 
-std::size_t lcsm::model::VerilogModule::numOfInputs() const noexcept
+lcsm::portid_t lcsm::model::VerilogModule::indexOfInput(lcsm::portid_t portId) const noexcept
 {
-	return m_inputs.size();
+	return portId;
 }
 
-std::size_t lcsm::model::VerilogModule::numOfInouts() const noexcept
+lcsm::portid_t lcsm::model::VerilogModule::indexOfInout(lcsm::portid_t portId) const noexcept
 {
-	return m_inouts.size();
+	return numOfInputs() + portId;
 }
 
-std::size_t lcsm::model::VerilogModule::numOfOutputs() const noexcept
+lcsm::portid_t lcsm::model::VerilogModule::indexOfOutput(lcsm::portid_t portId) const noexcept
 {
-	return m_outputs.size();
+	return numOfInputs() + numOfInouts() + portId;
 }
 
-std::size_t lcsm::model::VerilogModule::numOfOutputRegs() const noexcept
+lcsm::portid_t lcsm::model::VerilogModule::indexOfOutputReg(lcsm::portid_t portId) const noexcept
 {
-	return m_outputRegs.size();
+	return numOfInputs() + numOfInouts() + numOfOutputs() + portId;
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::numOfInputs() const noexcept
+{
+	return static_cast< lcsm::portid_t >(m_inputs.size());
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::numOfInouts() const noexcept
+{
+	return static_cast< lcsm::portid_t >(m_inouts.size());
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::numOfOutputs() const noexcept
+{
+	return static_cast< lcsm::portid_t >(m_outputs.size());
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::numOfOutputRegs() const noexcept
+{
+	return static_cast< lcsm::portid_t >(m_outputRegs.size());
 }
 
 const lcsm::verilog::Module *lcsm::model::VerilogModule::module() const noexcept

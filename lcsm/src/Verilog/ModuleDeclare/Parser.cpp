@@ -86,7 +86,7 @@ static std::vector< std::string > ruleListOfPortIdentifiers(lcsm::verilog::Modul
 	// Parse list_of_port_identifiers.
 	if (!lex.nextToken().isIdentifier())
 	{
-		throw std::logic_error("Parser error at trying to parse inout_declaration!");
+		throw std::logic_error("Parser error at trying to parse list_of_port_identifiers!");
 	}
 	else
 	{
@@ -104,9 +104,21 @@ static std::vector< std::string > ruleListOfPortIdentifiers(lcsm::verilog::Modul
 		}
 		else
 		{
-			// Otherwise, return back.
-			lex.backToken();
-			return identifiers;
+			// Otherwise, look at kind of token and check, then return back.
+			switch (lex.token().kind())
+			{
+			case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
+			case lcsm::verilog::ModuleDeclareKind::KW_INPUT:
+			case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
+			case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
+			{
+				lex.backToken();
+				return identifiers;
+			}
+			default:
+				break;
+			}
+			throw std::logic_error("Parser error at trying to parse list_of_port_identifiers!");
 		}
 	}
 
@@ -211,7 +223,7 @@ static void ruleInoutDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	}
 
 	// Check range.
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_RSQR)
+	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
 	{
 		// Return back token for range rule.
 		lex.backToken();
@@ -236,7 +248,7 @@ static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	// inout_declaration --> INOUT (net_type)? (SIGNED)? (range)? list_of_port_identifiers
 	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_INPUT)
 	{
-		throw std::logic_error("Parser error at trying to parse inout_declaration!");
+		throw std::logic_error("Parser error at trying to parse input_declaration!");
 	}
 	else
 	{
@@ -601,7 +613,7 @@ static void rulePortDeclaration(lcsm::verilog::ModuleDeclareContext &context, lc
 	}
 	}
 
-	throw std::logic_error("Parser error at trying to parse port_declarations!");
+	throw std::logic_error("Parser error at trying to parse port_declaration!");
 }
 
 static void ruleListOfPortDeclarations(lcsm::verilog::ModuleDeclareContext &context, lcsm::verilog::ModuleDeclareLexer &lex)
@@ -626,7 +638,6 @@ static void ruleListOfPortDeclarations(lcsm::verilog::ModuleDeclareContext &cont
 
 	// 2.2.1. (port_declaration (COMMA port_declaration)*)?
 	rulePortDeclaration(context, lex);
-	// while (lex.token().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
 	while (true)
 	{
 		switch (lex.nextToken().kind())

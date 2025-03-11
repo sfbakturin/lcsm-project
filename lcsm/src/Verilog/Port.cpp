@@ -179,14 +179,14 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 			}
 			case lcsm::verilog::Bit::False:
 			{
-				const std::string supplyVariableName = s + "_s0";
+				const std::string supplyVariableName = m_identifier + "_s0";
 				s = "supply0 " + supplyVariableName + "; ";
 				s += "assign " + m_identifier + " = " + supplyVariableName + ';';
 				break;
 			}
 			case lcsm::verilog::Bit::True:
 			{
-				const std::string supplyVariableName = s + "_s1";
+				const std::string supplyVariableName = m_identifier + "_s1";
 				s = "supply1 " + supplyVariableName + "; ";
 				s += "assign " + m_identifier + " = " + supplyVariableName + ';';
 				break;

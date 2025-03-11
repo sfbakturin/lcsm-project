@@ -39,10 +39,15 @@ namespace lcsm
 			const Wire *output(portid_t portId) const noexcept;
 			const Wire *outputReg(portid_t portId) const noexcept;
 
-			std::size_t numOfInputs() const noexcept;
-			std::size_t numOfInouts() const noexcept;
-			std::size_t numOfOutputs() const noexcept;
-			std::size_t numOfOutputRegs() const noexcept;
+			portid_t indexOfInput(portid_t portId) const noexcept;
+			portid_t indexOfInout(portid_t portId) const noexcept;
+			portid_t indexOfOutput(portid_t portId) const noexcept;
+			portid_t indexOfOutputReg(portid_t portId) const noexcept;
+
+			portid_t numOfInputs() const noexcept;
+			portid_t numOfInouts() const noexcept;
+			portid_t numOfOutputs() const noexcept;
+			portid_t numOfOutputRegs() const noexcept;
 
 			const verilog::Module *module() const noexcept;
 

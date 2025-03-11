@@ -1,6 +1,7 @@
 #ifndef LCSM_VERILOG_STRENGTH_H
 #define LCSM_VERILOG_STRENGTH_H
 
+#include <array>
 #include <cstdint>
 #include <ostream>
 
@@ -16,6 +17,14 @@ namespace lcsm
 			StrongDrive = 6,
 			SupplyDrive = 7
 		};
+
+		// clang-format off
+		static constexpr std::array< Strength, 5 > Strengths = {
+			Strength::HighImpedance, Strength::WeakDrive,
+			Strength::PullDrive,     Strength::StrongDrive,
+			Strength::SupplyDrive
+		};
+		// clang-format on
 
 		std::ostream &operator<<(std::ostream &os, const Strength &s);
 		const char *StrengthPretty(const Strength &s) noexcept;

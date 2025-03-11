@@ -1,3 +1,4 @@
 LCSM_ADD_TEST(CircuitInCircuit)
 LCSM_ADD_TEST(Copy)
 LCSM_ADD_TEST(Remove)
+LCSM_ADD_TEST(Verilog)

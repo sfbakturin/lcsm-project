@@ -12,18 +12,12 @@
 #include <lcsm/Testing/Test.h>
 #include <lcsm/Verilog/Bit.h>
 
-#include <array>
 #include <iostream>
 
 using namespace lcsm;
 using namespace lcsm::support;
 using namespace lcsm::testing;
 using namespace lcsm::verilog;
-
-static constexpr Bit T = Bit::True;
-static constexpr Bit F = Bit::False;
-
-const std::array< Bit, 2 > bits = { T, F };
 
 static LCSMCircuit generator1()
 {
@@ -184,7 +178,7 @@ static void test1()
 		LCSMState state = engine.fork();
 
 		// Single test.
-		for (Bit bit : bits)
+		for (Bit bit : Bits)
 		{
 			// Testing data.
 			const DataBits testdata{ width, bit };
@@ -270,7 +264,7 @@ static void test2()
 		LCSMState state = engine.fork();
 
 		// Single test.
-		for (Bit bit : bits)
+		for (Bit bit : Bits)
 		{
 			// Testing data.
 			const DataBits testdata{ width, bit };
@@ -375,7 +369,7 @@ static void test3()
 		LCSMState state = engine.fork();
 
 		// Single test.
-		for (Bit bit : bits)
+		for (Bit bit : Bits)
 		{
 			// Testing data.
 			const DataBits testdata{ width, bit };
@@ -472,7 +466,7 @@ static void test4()
 		LCSMState state = engine.fork();
 
 		// Single test.
-		for (Bit bit : bits)
+		for (Bit bit : Bits)
 		{
 			// Testing data.
 			const DataBits testdata{ width, bit };

@@ -34,10 +34,10 @@
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::label_t name) : m_name(name) {}
 
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMCircuit &&other) noexcept :
-	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components)),
-	m_inputs(std::move(other.m_inputs)), m_outputs(std::move(other.m_outputs)),
-	m_componentWires(std::move(other.m_componentWires)), m_connectorWires(std::move(other.m_connectorWires)),
-	m_circuits(std::move(other.m_circuits)), m_name(std::move(other.m_name))
+	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components)), m_inputs(std::move(other.m_inputs)),
+	m_outputs(std::move(other.m_outputs)), m_componentWires(std::move(other.m_componentWires)),
+	m_connectorWires(std::move(other.m_connectorWires)), m_circuits(std::move(other.m_circuits)),
+	m_verilogModules(std::move(other.m_verilogModules)), m_name(std::move(other.m_name))
 {
 }
 
@@ -55,6 +55,7 @@ void lcsm::LCSMCircuit::swap(lcsm::LCSMCircuit &other) noexcept
 	std::swap(m_componentWires, other.m_componentWires);
 	std::swap(m_connectorWires, other.m_connectorWires);
 	std::swap(m_circuits, other.m_circuits);
+	std::swap(m_verilogModules, other.m_verilogModules);
 	std::swap(m_name, other.m_name);
 }
 
@@ -198,7 +199,6 @@ lcsm::model::VerilogModule *lcsm::LCSMCircuit::createVerilogModule(lcsm::verilog
 {
 	// Indexes.
 	const lcsm::Identifier moduleId = m_globalId;
-	m_globalId = m_globalId.next();
 
 	// Move Verilog's abstract module to this circuit.
 	std::shared_ptr< lcsm::verilog::Module > circuitModule = std::make_shared< lcsm::verilog::Module >(std::move(module));
