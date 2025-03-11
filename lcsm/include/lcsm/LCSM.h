@@ -31,6 +31,8 @@ namespace lcsm
 		LastCircuitType = VerilogModule + 1
 	};
 
+	const char *CircuitTypePretty(CircuitType circuitType) noexcept;
+
 	/* All available physical node types. */
 	enum NodeType : target_t
 	{

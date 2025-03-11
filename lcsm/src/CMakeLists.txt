@@ -3,7 +3,7 @@
 # Add sources.
 LCSM_ADD_SOURCE(
     LIST LCSM_SOURCES
-    SOURCES LCSMCircuit.cpp LCSMCircuitView.cpp LCSMEngine.cpp LCSMState.cpp
+    SOURCES LCSM.cpp LCSMCircuit.cpp LCSMCircuitView.cpp LCSMEngine.cpp LCSMState.cpp
 )
 
 # Add subdirectory sources.

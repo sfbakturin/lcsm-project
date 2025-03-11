@@ -15,7 +15,6 @@
 #include <lcsm/Verilog/Value.h>
 
 #include <array>
-#include <cstddef>
 #include <iostream>
 #include <vector>
 
@@ -27,28 +26,20 @@ static constexpr Bit T = Bit::True;
 static constexpr Bit F = Bit::False;
 static constexpr Bit U = Bit::Undefined;
 
-// All widths and bits.
-// clang-format off
-const std::array< Width, 11 > widths = {
-	Width::Bit1, Width::Bit2, Width::Bit3,
-	Width::Bit4, Width::Bit5, Width::Bit6,
-	Width::Bit7, Width::Byte, Width::ShortWord,
-	Width::DoubleWord, Width::QuadWord
-};
 const std::array< Bit, 2 > bits1 = { T, F };
 const std::array< Bit, 2 > bits2 = { F, T };
-// clang-format on
 
 static LCSMCircuit generator1()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("PinCircuitTest");
 
-	// Create elements.
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output = circuit.createPin(true, "output");
 
 	// Make connections.
-	model::Wire *wire = circuit.connect(input, output, "wire");
+	model::Wire *wire = circuit.connect(input, output);
+	wire->setName("wire");
 
 	return circuit;
 }
@@ -68,14 +59,15 @@ static void checker1(LCSMCircuit &circuit)
 
 static LCSMCircuit generator2()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("PinCircuitTest");
 
-	// Create elements.
+	// Create all needed circuit elements.
 	model::Pin *input1 = circuit.createPin(false, "input1");
 	model::Pin *input2 = circuit.createPin(false, "input2");
 
 	// Make connections.
-	model::Wire *wire = circuit.connect(input1, input2, "wire");
+	model::Wire *wire = circuit.connect(input1, input2);
+	wire->setName("wire");
 
 	return circuit;
 }
@@ -95,18 +87,21 @@ static void checker2(LCSMCircuit &circuit)
 
 static LCSMCircuit generator3()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("PinCircuitTest");
 
-	// Create elements.
+	// Create all needed circuit elements.
 	model::Pin *input1 = circuit.createPin(false, "input1");
 	model::Pin *input2 = circuit.createPin(false, "input2");
 	model::Pin *output1 = circuit.createPin(true, "output1");
 	model::Pin *output2 = circuit.createPin(true, "output2");
 
 	// Make connections.
-	model::Wire *wire1 = circuit.connect(input1, input2, "wire1");
-	model::Wire *wire2 = circuit.connect(wire1, output1, "wire2");
-	model::Wire *wire3 = circuit.connect(wire1, output2, "wire3");
+	model::Wire *wire1 = circuit.connect(input1, input2);
+	model::Wire *wire2 = circuit.connect(wire1, output1);
+	model::Wire *wire3 = circuit.connect(wire1, output2);
+	wire1->setName("wire1");
+	wire2->setName("wire2");
+	wire3->setName("wire3");
 
 	return circuit;
 }
@@ -214,7 +209,7 @@ static void test2()
 	const Identifier wireId = wire->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		input1Model->setWidth(width);
@@ -307,7 +302,7 @@ static void test3()
 	const Identifier wire3Id = wire3->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		input1Model->setWidth(width);

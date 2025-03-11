@@ -53,31 +53,57 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 	switch (kind)
 	{
 	case TestBenchOutKind::InoutKind:
+	{
 		return "inout";
+	}
 	case TestBenchOutKind::OutputKind:
+	{
 		return "output";
+	}
 	case TestBenchOutKind::OutputRegKind:
+	{
 		return "outputreg";
+	}
 	case TestBenchOutKind::HiZKind:
+	{
 		return "HiZ";
+	}
 	case TestBenchOutKind::We0Kind:
+	{
 		return "We0";
+	}
 	case TestBenchOutKind::We1Kind:
+	{
 		return "We1";
+	}
 	case TestBenchOutKind::Pu0Kind:
+	{
 		return "Pu0";
+	}
 	case TestBenchOutKind::Pu1Kind:
+	{
 		return "Pu1";
+	}
 	case TestBenchOutKind::St0Kind:
+	{
 		return "St0";
+	}
 	case TestBenchOutKind::St1Kind:
+	{
 		return "St1";
+	}
 	case TestBenchOutKind::Su0Kind:
+	{
 		return "Su0";
+	}
 	case TestBenchOutKind::Su1Kind:
+	{
 		return "Su1";
+	}
 	default:
-		return nullptr;
+	{
+		break;
+	}
 	}
 	return nullptr;
 }
@@ -346,7 +372,6 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 			case lcsm::verilog::IOType::Output:
 			{
 				m.m_outputPorts.emplace_back(portType, std::move(identifier));
-
 				break;
 			}
 			case lcsm::verilog::IOType::OutputReg:

@@ -1,3 +1,4 @@
+#include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/Numbers.hpp>
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
@@ -11,6 +12,11 @@
 lcsm::verilog::Value::Value() noexcept : Value(lcsm::verilog::Strength::StrongDrive, lcsm::verilog::Bit::False) {}
 
 lcsm::verilog::Value::Value(lcsm::verilog::Bit bit) noexcept : Value(lcsm::verilog::Strength::StrongDrive, bit) {}
+
+lcsm::verilog::Value::Value(lcsm::verilog::Strength strength) noexcept :
+	lcsm::verilog::Value(strength, lcsm::verilog::Bit::Undefined)
+{
+}
 
 lcsm::verilog::Value::Value(lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept :
 	m_strength(strength), m_bit(bit)
@@ -26,51 +32,65 @@ lcsm::verilog::Value::Value(lcsm::verilog::Value &&other) noexcept : m_strength(
 
 lcsm::verilog::Value &lcsm::verilog::Value::operator=(const lcsm::verilog::Value &other) noexcept
 {
-	if (this != std::addressof(other))
-		lcsm::verilog::Value(other).swap(*this);
-	return *this;
+	return lcsm::support::CopyAssign< lcsm::verilog::Value >(this, other);
 }
 
 lcsm::verilog::Value &lcsm::verilog::Value::operator=(lcsm::verilog::Value &&other) noexcept
 {
-	if (this != std::addressof(other))
-		lcsm::verilog::Value(std::move(other)).swap(*this);
-	return *this;
+	return lcsm::support::MoveAssign< lcsm::verilog::Value >(this, std::move(other));
 }
 
 lcsm::verilog::Value lcsm::verilog::Value::operator|(const lcsm::verilog::Value &other) noexcept
 {
 	/* If values equals strictly, then return left. */
 	if (*this == other)
+	{
 		return *this;
+	}
 
 	/* If anyone is undefined and it's more strengths, than it's already undefined. */
 	if (bit() == lcsm::verilog::Bit::Undefined && strength() > other.strength())
+	{
 		return { strength(), bit() };
+	}
 	else if (other.bit() == lcsm::verilog::Bit::Undefined && strength() < other.strength())
+	{
 		return { other.strength(), other.bit() };
+	}
 
 	/* If left less-outer (by strength, bit's equals) than right, then result should have right's strength. */
 	if (lessOuter(other))
+	{
 		return other;
+	}
 	/* If left greater-other (by strength bit's equals) than right, then result should have left's strength. */
 	else if (greaterOuter(other))
+	{
 		return *this;
+	}
 	/* If left less than right by strength, then result should be right. */
 	else if (strength() < other.strength())
+	{
 		return other;
+	}
 	/* If left greater than right by strength, then result should be left. */
 	else if (strength() > other.strength())
+	{
 		return *this;
+	}
 	/* Otherwise, this is undefined (Verilog's X-bit). */
 	else
+	{
 		return { other.strength(), lcsm::verilog::Bit::Undefined };
+	}
 }
 
 lcsm::verilog::Value &lcsm::verilog::Value::operator|=(const lcsm::verilog::Value &other) noexcept
 {
 	if (this != std::addressof(other))
+	{
 		*this = *this | other;
+	}
 	return *this;
 }
 
@@ -163,9 +183,19 @@ void lcsm::verilog::Value::setBit(lcsm::verilog::Bit bit) noexcept
 void lcsm::verilog::Value::flip() noexcept
 {
 	if (m_bit == lcsm::verilog::Bit::True)
+	{
 		setBit(lcsm::verilog::Bit::False);
+	}
 	else if (m_bit == lcsm::verilog::Bit::False)
+	{
 		setBit(lcsm::verilog::Bit::True);
+	}
+}
+
+void lcsm::verilog::Value::reset() noexcept
+{
+	m_bit = lcsm::verilog::Bit::Undefined;
+	m_strength = lcsm::verilog::Strength::HighImpedance;
 }
 
 namespace lcsm

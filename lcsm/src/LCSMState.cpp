@@ -35,13 +35,14 @@ lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 		obj->setContext(context);
 	}
 
-	// Initialize all inputs and roots.
+	// Initialize all inputs.
 	for (auto &input : m_enginePtr->m_realInputs)
 	{
 		lcsm::support::PointerView< lcsm::EvaluatorNode > node = input.second;
 		m_roots.push_back(node);
 	}
 
+	// Initialize all roots.
 	for (auto &root : m_enginePtr->m_realRoots)
 	{
 		lcsm::support::PointerView< lcsm::EvaluatorNode > node = root.second;
@@ -125,23 +126,32 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databi
 
 	/* Check if exists. */
 	if (foundIt == m_contexts.end())
+	{
 		throw std::logic_error("No such value with identifier found");
+	}
 
 	/* Check if id's object is input. */
-	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::const_iterator foundInp =
+	std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::iterator foundInp =
 		m_enginePtr->m_realInputs.find(id);
-	if (foundInp == m_enginePtr->m_realInputs.cend())
+	if (foundInp == m_enginePtr->m_realInputs.end())
+	{
 		throw std::logic_error("No such input with identifier found");
+	}
 
 	/* Check size of value. */
 	lcsm::Context &context = foundIt->second;
 	if (i >= context.size())
+	{
 		throw std::out_of_range("Context: Index out of bound");
+	}
 
 	/* Update value. */
 	context.beginUpdate(m_globalTimer);
 	context.updateValue(i, databits);
 	context.endUpdate();
+
+	/* Verify value. */
+	foundInp->second->verifyContext();
 }
 
 void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm::DataBits > databits)
@@ -151,21 +161,30 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm:
 	/* Check if exists. */
 	std::unordered_map< lcsm::Identifier, lcsm::Context >::iterator foundIt = m_contexts.find(id);
 	if (foundIt == m_contexts.end())
+	{
 		throw std::logic_error("No such value with identifier found");
+	}
 
 	/* Check if id's object is input. */
 	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::const_iterator foundInp =
 		m_enginePtr->m_realInputs.find(id);
 	if (foundInp == m_enginePtr->m_realInputs.cend())
+	{
 		throw std::logic_error("No such input with identifier found");
+	}
 
 	/* Check size of value. */
 	lcsm::Context &context = foundIt->second;
 	if (databits.size() != context.size())
+	{
 		throw std::out_of_range("Context: Index out of bound");
+	}
 
 	/* Update values. */
 	context.updateValues(m_globalTimer, databits);
+
+	/* Verify values. */
+	foundInp->second->verifyContext();
 }
 
 void lcsm::LCSMState::scheduleEvent(const lcsm::Event &event)

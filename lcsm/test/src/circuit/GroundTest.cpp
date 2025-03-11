@@ -22,10 +22,16 @@ using namespace lcsm::verilog;
 
 static LCSMCircuit generator()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("GroundCircuitTest");
+
+	// Create all needed circuit elements.
 	model::Ground *ground = circuit.createGround("ground");
 	model::Pin *pin = circuit.createPin(true, "pin");
-	circuit.connect(ground, pin, "wire");
+
+	// Make connections.
+	model::Wire *wire = circuit.connect(ground, pin);
+	wire->setName("wire");
+
 	return circuit;
 }
 
@@ -70,7 +76,7 @@ static void test(LCSMState &state, const Circuit *ground, const Circuit *pin, co
 	std::cout << "<ground=" << actualGround << "> --> <wire=" << actualWire << "> --> <pin=" << actualPin << ">\n";
 }
 
-static void test1_widths()
+static void test1()
 {
 	LCSMCircuit circuit = generator();
 
@@ -114,5 +120,5 @@ static void test1_widths()
 int main()
 {
 	test0_pretest();
-	test1_widths();
+	test1();
 }

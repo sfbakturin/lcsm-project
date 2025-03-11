@@ -47,6 +47,7 @@ namespace lcsm
 
 		void setName(const std::string &name);
 		void setName(std::string &&name) noexcept;
+		void setName(label_t name);
 		const std::string &name() const noexcept;
 		label_t c_name() const noexcept;
 

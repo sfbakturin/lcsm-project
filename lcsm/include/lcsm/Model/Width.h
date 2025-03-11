@@ -1,6 +1,7 @@
 #ifndef LCSM_MODEL_WIDTH_H
 #define LCSM_MODEL_WIDTH_H
 
+#include <array>
 #include <cstdint>
 
 namespace lcsm
@@ -24,6 +25,19 @@ namespace lcsm
 		QuadWord = 64,
 		LastWidth = QuadWord
 	};
+
+	static constexpr lcsm::width_t MaxWidth = Width::LastWidth;
+
+	// clang-format off
+	constexpr std::array< Width, 11 > Widths =
+	{
+		Width::Bit1,      Width::Bit2, Width::Bit3,
+		Width::Bit4,      Width::Bit5, Width::Bit6,
+		Width::Bit7,      Width::Byte,
+		Width::ShortWord, Width::DoubleWord,
+		Width::QuadWord
+	};
+	// clang-format on
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */

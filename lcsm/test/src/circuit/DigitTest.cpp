@@ -30,12 +30,19 @@ static constexpr Bit F = Bit::False;
 
 static LCSMCircuit generator()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("DigitCircuitTest");
+
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output = circuit.createPin(true, "output");
 	model::Digit *digit = circuit.createDigit("digit");
-	model::Wire *wire1 = circuit.connect(input, output, "wire1");
-	model::Wire *wire2 = circuit.connect(wire1, digit, "wire2");
+
+	// Make connections.
+	model::Wire *wire1 = circuit.connect(input, output);
+	model::Wire *wire2 = circuit.connect(wire1, digit);
+	wire1->setName("wire1");
+	wire2->setName("wire2");
+
 	return circuit;
 }
 
@@ -204,7 +211,6 @@ static void test2_withDecimalPoint()
 	// Extract models.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);
 	model::Pin *outputModel = static_cast< model::Pin * >(output);
-	model::Digit *digitModel = static_cast< model::Digit * >(digit);
 
 	// Change circuit's elements.
 	const Width width = Width::Bit4;
@@ -213,7 +219,8 @@ static void test2_withDecimalPoint()
 
 	// Create and connect Pin for decimal point.
 	model::Pin *decimalPoint = circuit.createPin(false, "decimal point");
-	model::Wire *wire3 = circuit.connect(decimalPoint, digit, model::Digit::Port::WiringDecimalPoint, "wire3");
+	model::Wire *wire3 = circuit.connect(decimalPoint, digit, model::Digit::Port::WiringDecimalPoint);
+	wire3->setName("wire3");
 
 	// Testing data: expected==actual value with decimal point.
 	// clang-format off
@@ -247,6 +254,7 @@ static void test2_withDecimalPoint()
 
 int main()
 {
+	// Run all tests.
 	test0_pretest();
 	test1_withoutDecimalPoint();
 	test2_withDecimalPoint();

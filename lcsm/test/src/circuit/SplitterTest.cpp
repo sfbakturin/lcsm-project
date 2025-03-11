@@ -29,14 +29,19 @@ using TestData3bit = std::tuple< DataBits, DataBits, DataBits, DataBits >;
 
 static LCSMCircuit generator()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("SplitterCircuitTest");
+
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Splitter *splitter = circuit.createSplitter("splitter");
 	model::Pin *output1 = circuit.createPin(true, "output1");
 	model::Pin *output2 = circuit.createPin(true, "output2");
+
+	// Make connections.
 	circuit.connect(input, splitter);
 	circuit.connect(splitter, model::Splitter::Port::Out0, output1);
 	circuit.connect(splitter, model::Splitter::Port::Out1, output2);
+
 	return circuit;
 }
 
@@ -68,7 +73,7 @@ static void
 	const Identifier inputId = input->id();
 	const Identifier output1Id = output1->id();
 	const Identifier output2Id = output2->id();
-	for (const TestData2bit testdata : testdatas)
+	for (const TestData2bit &testdata : testdatas)
 	{
 		// Test's data.
 		const DataBits &expectedInput = std::get< 0 >(testdata);
@@ -228,7 +233,7 @@ static void
 	const Identifier output1Id = output1->id();
 	const Identifier output2Id = output2->id();
 	const Identifier output3Id = output3->id();
-	for (const TestData3bit testdata : testdatas)
+	for (const TestData3bit &testdata : testdatas)
 	{
 		// Test's data.
 		const DataBits &expectedInput = std::get< 0 >(testdata);

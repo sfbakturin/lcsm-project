@@ -16,6 +16,7 @@ namespace lcsm
 		  public:
 			Value() noexcept;
 			Value(Bit bit) noexcept;
+			Value(Strength strength) noexcept;
 			Value(Strength strength, Bit bit) noexcept;
 
 			Value(const Value &other) noexcept;
@@ -52,6 +53,8 @@ namespace lcsm
 			Bit bit() const noexcept;
 			void setBit(Bit bit) noexcept;
 			void flip() noexcept;
+
+			void reset() noexcept;
 
 			friend std::ostream &operator<<(std::ostream &os, const Value &v);
 

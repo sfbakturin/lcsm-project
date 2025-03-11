@@ -26,15 +26,15 @@ using TestData = std::pair< DataBits, DataBits >;
 
 static LCSMCircuit generator()
 {
-	// Main circuit.
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("RemoveOperationTest");
 
-	// Create input and output pins.
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output = circuit.createPin(true, "output");
 
-	// Connect input to output.
-	circuit.connect(input, output, "wire");
+	// Make connections.
+	model::Wire *wire = circuit.connect(input, output);
+	wire->setName("wire");
 
 	return circuit;
 }
@@ -123,8 +123,6 @@ void test2_removeInput()
 
 	// Find circuits.
 	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *wire = circuit.find("wire");
 
 	// Remove input.
 	circuit.remove(input);
@@ -146,8 +144,6 @@ void test3_removeWire()
 	LCSMCircuit circuit = generator();
 
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
 	Circuit *wire = circuit.find("wire");
 
 	// Remove wire.

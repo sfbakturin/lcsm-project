@@ -16,6 +16,11 @@ void lcsm::Circuit::setName(std::string &&name) noexcept
 	m_name = std::move(name);
 }
 
+void lcsm::Circuit::setName(lcsm::label_t name)
+{
+	m_name = name;
+}
+
 const std::string &lcsm::Circuit::name() const noexcept
 {
 	return m_name;

@@ -226,8 +226,7 @@ static lcsm::Circuit *FindCircuit(const std::map< lcsm::Identifier, std::shared_
 	}
 }
 
-lcsm::model::Wire *
-	lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::portid_t port2, lcsm::label_t name)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::portid_t port2)
 {
 	// If circuit1 or circuit2 is nullptrs, then return nullptr - as not succeeded.
 	if (circuit1 == nullptr || circuit2 == nullptr)
@@ -289,7 +288,7 @@ lcsm::model::Wire *
 		throw std::logic_error("One of two components is not found in this circuit");
 
 	// Make connect via new wire.
-	std::shared_ptr< lcsm::model::Wire > wire = createConnectorWire(name);
+	std::shared_ptr< lcsm::model::Wire > wire = createConnectorWire();
 	circuit1->connect(port1, wire.get());
 	circuit2->connect(port2, wire.get());
 	lcsm::Circuit *wire1 = circuit1->byPort(port1);
@@ -299,28 +298,34 @@ lcsm::model::Wire *
 	return wire.get();
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::portid_t port2, lcsm::label_t name)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::portid_t port2)
 {
 	// Use first circuit's default port, when `circuit1` is not nullptr.
 	if (circuit1 == nullptr)
+	{
 		return nullptr;
-	return connect(circuit1, circuit1->defaultPort(), circuit2, port2, name);
+	}
+	return connect(circuit1, circuit1->defaultPort(), circuit2, port2);
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2, lcsm::label_t name)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::portid_t port1, lcsm::Circuit *circuit2)
 {
 	// Use second circuit's default port, when `circuit2` is not nullptr.
 	if (circuit2 == nullptr)
+	{
 		return nullptr;
-	return connect(circuit1, port1, circuit2, circuit2->defaultPort(), name);
+	}
+	return connect(circuit1, port1, circuit2, circuit2->defaultPort());
 }
 
-lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2, lcsm::label_t name)
+lcsm::model::Wire *lcsm::LCSMCircuit::connect(lcsm::Circuit *circuit1, lcsm::Circuit *circuit2)
 {
 	// Use default ports, when `circuit1` and `circuit2` are not nullptr.
 	if (circuit1 == nullptr || circuit2 == nullptr)
+	{
 		return nullptr;
-	return connect(circuit1, circuit1->defaultPort(), circuit2, circuit2->defaultPort(), name);
+	}
+	return connect(circuit1, circuit1->defaultPort(), circuit2, circuit2->defaultPort());
 }
 
 lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Circuit *circuit) noexcept

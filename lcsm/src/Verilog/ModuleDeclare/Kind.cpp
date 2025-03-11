@@ -127,7 +127,7 @@ const char *lcsm::verilog::KindToKeyword(lcsm::verilog::ModuleDeclareKind kind) 
 	}
 	default:
 	{
-		return nullptr;
+		break;
 	}
 	}
 	return nullptr;
@@ -157,27 +157,49 @@ lcsm::verilog::ModuleDeclareKind lcsm::verilog::IsKeyword(char c) noexcept
 	switch (c)
 	{
 	case '=':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_EQUAL;
+	}
 	case ':':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_COLON;
+	}
 	case ',':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_COMMA;
+	}
 	case ';':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_SEMI;
+	}
 	case '(':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_LPAREN;
+	}
 	case ')':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_RPAREN;
+	}
 	case '{':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_LCURLY;
+	}
 	case '}':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_RCURLY;
+	}
 	case '[':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_LSQR;
+	}
 	case ']':
+	{
 		return lcsm::verilog::ModuleDeclareKind::KW_RSQR;
+	}
 	default:
-		return lcsm::verilog::ModuleDeclareKind::UnknownKind;
+	{
+		break;
+	}
 	}
 	return lcsm::verilog::ModuleDeclareKind::UnknownKind;
 }

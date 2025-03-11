@@ -7,8 +7,10 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/std/Button.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/Verilog/Value.h>
 
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 lcsm::physical::Button::Button(lcsm::object_type_t objectType, bool activeOnPress) :
@@ -96,12 +98,45 @@ void lcsm::physical::Button::addInstant(lcsm::Instruction &&instruction)
 	}
 }
 
-std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Timestamp &)
+std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Timestamp &now)
 {
+	// Constants.
+	const lcsm::InstructionType type = lcsm::InstructionType::WriteValue;
+	lcsm::EvaluatorNode *target = m_wire.get();
+	static const lcsm::DataBits T = lcsm::verilog::Bit::True;
+	static const lcsm::DataBits F = lcsm::verilog::Bit::False;
+
 	// Generated events.
 	std::vector< lcsm::Event > events;
-	// TODO: Implement Button as it's implemented in Constant.
-	(void)m_activeOnPress;
+
+	// Extract context.
+	const lcsm::DataBits &databits = m_context->getValue();
+	const lcsm::verilog::Value &value = databits.value(0);
+	lcsm::DataBits pushed;
+
+	// Generate pushed value by bit in value.
+	switch (value.bit())
+	{
+	// Undefined and False - is when we stopped to push the button.
+	case lcsm::verilog::Undefined:
+	case lcsm::verilog::False:
+	{
+		pushed = (m_activeOnPress ? F : T);
+		break;
+	}
+	// True - is when we start to push the button.
+	case lcsm::verilog::True:
+	{
+		pushed = (m_activeOnPress ? T : F);
+		break;
+	}
+	}
+
+	// Save context and generate event.
+	m_context->updateValues(now, { pushed });
+	lcsm::Instruction I = { type, this, target, std::move(pushed) };
+	events.emplace_back(std::move(I));
+
 	return events;
 }
 

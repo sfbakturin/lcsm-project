@@ -7,6 +7,7 @@
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
+#include <lcsm/Model/std/Button.h>
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Model/std/Constant.h>
 #include <lcsm/Model/std/Digit.h>
@@ -21,6 +22,7 @@
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
+#include <lcsm/Physical/std/Button.h>
 #include <lcsm/Physical/std/Clock.h>
 #include <lcsm/Physical/std/Constant.h>
 #include <lcsm/Physical/std/Digit.h>
@@ -52,7 +54,7 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	lcsm::LCSMEngine engine;
 
 	// BFS in-future visited components.
-	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > visit;
+	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > queue;
 
 	// Components.
 	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &components = circuit.components();
@@ -63,12 +65,12 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 		lcsm::Circuit *circ = it->second.get();
 		if (lcsm::TestObjectType(circ->objectType(), lcsm::ObjectType::Root))
 		{
-			visit.emplace_back(circ);
+			queue.emplace_back(circ);
 		}
 	}
 
 	// Build it!
-	engine.buildCircuit(visit);
+	engine.buildCircuit(queue);
 
 	// Components helpers.
 	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
@@ -101,32 +103,6 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 				}
 			}
 	}
-	// for (auto it = inputs.begin(); it != inputs.end(); it++)
-	// {
-	// 	const lcsm::Identifier &id = it->first;
-	// 	engine.m_realInputs[id] = engine.m_objects[id];
-	// 	engine.m_realInputsIds.push_back(id);
-	// }
-
-	// for (auto it = outputs.begin(); it != outputs.end(); it++)
-	// {
-	// 	const lcsm::Identifier &id = it->first;
-	// 	engine.m_realOutputs[id] = engine.m_objects[id];
-	// 	engine.m_realOutputsIds.push_back(id);
-	// }
-
-	// for (auto it = components.begin(); it != components.end(); it++)
-	// {
-	// 	const lcsm::Identifier &id = it->first;
-	// 	const lcsm::object_type_t objectType = it->second->objectType();
-	// 	// Circuit must be *pure* root to add to helpers.
-	// 	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Root) && !lcsm::TestObjectType(objectType,
-	// lcsm::ObjectType::Input))
-	// 	{
-	// 		engine.m_realRoots[id] = engine.m_objects[id];
-	// 		engine.m_realOutputsIds.push_back(id);
-	// 	}
-	// }
 
 	return engine;
 }
@@ -207,26 +183,26 @@ lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registeredTu
 	return tunnelNode;
 }
 
-void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &bfsVisit)
+void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &queue)
 {
 	std::unordered_set< lcsm::Identifier > visited;
 
-	while (!bfsVisit.empty())
+	while (!queue.empty())
 	{
-		const lcsm::support::PointerView< const lcsm::Circuit > circuit = bfsVisit.front();
-		bfsVisit.pop_front();
+		const lcsm::support::PointerView< const lcsm::Circuit > circuit = queue.front();
+		queue.pop_front();
 
 		const std::unordered_set< lcsm::Identifier >::const_iterator found = visited.find(circuit->id());
 		if (found != visited.cend())
 			continue;
 
-		buildCircuit(circuit, bfsVisit, visited);
+		buildCircuit(circuit, queue, visited);
 	}
 }
 
 void lcsm::LCSMEngine::buildCircuit(
 	const lcsm::support::PointerView< const lcsm::Circuit > &circuit,
-	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &bfsVisit,
+	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &queue,
 	std::unordered_set< lcsm::Identifier > &visited)
 {
 	switch (circuit->circuitType())
@@ -251,13 +227,13 @@ void lcsm::LCSMEngine::buildCircuit(
 			const lcsm::Identifier wireChildId = wireChild->id();
 			lcsm::support::PointerView< lcsm::EvaluatorNode > wireChildEvaluatorNode = registeredWire(wireChildId);
 			wireNode->connect(wireChildEvaluatorNode);
-			bfsVisit.emplace_back(wireChild.get());
+			queue.emplace_back(wireChild.get());
 		}
 
 		// This wire might be some object's wire, so we should make connection
 		// as tree's edge.
 		if (wireConnect)
-			bfsVisit.emplace_back(wireConnect.get());
+			queue.emplace_back(wireConnect.get());
 
 		// Add as visited objects.
 		visited.insert(wireId);
@@ -285,7 +261,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			const lcsm::Identifier tunnelChildId = tunnelChild->id();
 			lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelChildEvaluatorNode = registeredTunnel(tunnelChildId);
 			tunnelNode->connectTunnel(tunnelChildEvaluatorNode);
-			bfsVisit.emplace_back(tunnelChild);
+			queue.emplace_back(tunnelChild);
 		}
 
 		// Make connect to tunnel's wiring as tree's node.
@@ -294,7 +270,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			tunnelWireEvaluatorNode.staticCast< lcsm::physical::Wire >();
 		tunnelNode->connectWiring(tunnelWireEvaluatorNode);
 		tunnelWireNode->connect(tunnelEvaluatorNode);
-		bfsVisit.emplace_back(tunnelWire);
+		queue.emplace_back(tunnelWire);
 
 		// Add as visited objects.
 		visited.insert(tunnelId);
@@ -329,8 +305,8 @@ void lcsm::LCSMEngine::buildCircuit(
 		externalWire->connect(m_objects[idPin]);
 
 		// Add Pin's wire to queue.
-		bfsVisit.emplace_back(wireInternal);
-		bfsVisit.emplace_back(wireExternal);
+		queue.emplace_back(wireInternal);
+		queue.emplace_back(wireExternal);
 
 		// Add as visited objects.
 		visited.insert(pin->id());
@@ -364,7 +340,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireNode->connect(constantEvaluatorNode);
 
 		// Add Constant's wire to queue.
-		bfsVisit.emplace_back(wireModel);
+		queue.emplace_back(wireModel);
 
 		// Update visited objects.
 		visited.insert(constantId);
@@ -395,7 +371,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireNode->connect(powerEvaluatorNode);
 
 		// Add Power's wire to queue.
-		bfsVisit.emplace_back(wireModel);
+		queue.emplace_back(wireModel);
 
 		// Update visited objects.
 		visited.insert(powerId);
@@ -427,7 +403,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireNode->connect(groundEvaluatorNode);
 
 		// Add Ground's wire to queue.
-		bfsVisit.emplace_back(wireModel);
+		queue.emplace_back(wireModel);
 
 		// Update visited objects.
 		visited.insert(groundId);
@@ -460,7 +436,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireNode->connect(clockEvaluatorNode);
 
 		// Add Constant's wire to queue.
-		bfsVisit.emplace_back(wireModel);
+		queue.emplace_back(wireModel);
 
 		// Update visited objects.
 		visited.insert(clockId);
@@ -508,9 +484,9 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireSrcBNode->connect(transistorEvaluatorNode);
 
 		// Add wires to queue.
-		bfsVisit.emplace_back(transistorBaseModel);
-		bfsVisit.emplace_back(transistorSrcAModel);
-		bfsVisit.emplace_back(transistorSrcBModel);
+		queue.emplace_back(transistorBaseModel);
+		queue.emplace_back(transistorSrcAModel);
+		queue.emplace_back(transistorSrcBModel);
 
 		// Update visited objects.
 		visited.insert(transistorId);
@@ -565,10 +541,10 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireSrcCNode->connect(transmissionGateEvaluatorNode);
 
 		// Add wires to queue.
-		bfsVisit.emplace_back(wireBaseModel);
-		bfsVisit.emplace_back(wireSrcAModel);
-		bfsVisit.emplace_back(wireSrcBModel);
-		bfsVisit.emplace_back(wireSrcCModel);
+		queue.emplace_back(wireBaseModel);
+		queue.emplace_back(wireSrcAModel);
+		queue.emplace_back(wireSrcBModel);
+		queue.emplace_back(wireSrcCModel);
 
 		// Update visited objects.
 		visited.insert(id);
@@ -577,7 +553,36 @@ void lcsm::LCSMEngine::buildCircuit(
 	}
 	case lcsm::CircuitType::Button:
 	{
-		throw std::logic_error("Building transmission gate is not implemented.");
+		// Extract Button as model object.
+		const lcsm::model::Button *buttonModel = static_cast< const lcsm::model::Button * >(circuit.get());
+		const lcsm::model::Wire *wireModel = buttonModel->wire();
+		const lcsm::Identifier buttonId = buttonModel->id();
+		const lcsm::Identifier wireId = wireModel->id();
+
+		// By the algorithm, we have never create Button physical object before this moment.
+		const bool activeOnPress = buttonModel->activeOnPress();
+		const lcsm::object_type_t objectType = buttonModel->objectType();
+		std::shared_ptr< lcsm::EvaluatorNode > buttonPhysical = std::make_shared< lcsm::physical::Button >(objectType, activeOnPress);
+		m_objects[buttonId] = buttonPhysical;
+		lcsm::support::PointerView< lcsm::EvaluatorNode > buttonEvaluatorNode = buttonPhysical;
+		lcsm::support::PointerView< lcsm::physical::Button > buttonNode =
+			buttonEvaluatorNode.staticCast< lcsm::physical::Button >();
+
+		// Ensure existence of wires: they might be already in collection, so we shouldn't recreate them.
+		lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
+		lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
+
+		// Connect wire to button. Make them to know about each other.
+		buttonNode->connect(wireEvaluatorNode);
+		wireNode->connect(buttonEvaluatorNode);
+
+		// Add Button's wire to queue.
+		queue.emplace_back(wireModel);
+
+		// Update visited objects.
+		visited.insert(buttonId);
+
+		break;
 	}
 	case lcsm::CircuitType::Digit:
 	{
@@ -608,7 +613,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireDataNode->connect(digitEvaluatorNode);
 
 		// Add Ground's wire to queue.
-		bfsVisit.emplace_back(wireDataModel);
+		queue.emplace_back(wireDataModel);
 
 		// Ensure existence of wire for decimal point: they might be already in collection.
 		if (hasDecimalPoint)
@@ -618,7 +623,7 @@ void lcsm::LCSMEngine::buildCircuit(
 				wireDecimalPointEvaluatorNode.staticCast< lcsm::physical::Wire >();
 			digitNode->connectToDecimalPoint(wireDecimalPointEvaluatorNode);
 			wireDecimalPointNode->connect(digitEvaluatorNode);
-			bfsVisit.emplace_back(wireDecimalPointModel);
+			queue.emplace_back(wireDecimalPointModel);
 		}
 
 		// Update visited objects.
@@ -650,7 +655,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireNode->connect(probeEvaluatorNode);
 
 		// Add Probe's wire to queue.
-		bfsVisit.emplace_back(probeWireModel);
+		queue.emplace_back(probeWireModel);
 
 		// Update visited objects.
 		visited.insert(probeId);
@@ -682,7 +687,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		wireInNode->connect(splitterEvaluatorNode);
 
 		// Add Splitter's wire to queue.
-		bfsVisit.emplace_back(splitterWireInModel);
+		queue.emplace_back(splitterWireInModel);
 
 		// Update visited objects.
 		visited.insert(splitterId);
@@ -706,7 +711,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			wireOutNode->connect(splitterEvaluatorNode);
 
 			// Add wire to visit.
-			bfsVisit.emplace_back(splitterWireOutModel);
+			queue.emplace_back(splitterWireOutModel);
 		}
 
 		break;
@@ -743,7 +748,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			wireNode->connect(verilogModuleEvaluatorNode);
 
 			// Add wire to visit.
-			bfsVisit.emplace_back(wireModel);
+			queue.emplace_back(wireModel);
 		}
 
 		// Ensure existence of inputs. Connect to VerilogModule and make them to know about each other.
@@ -762,7 +767,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			wireNode->connect(verilogModuleEvaluatorNode);
 
 			// Add wire to visit.
-			bfsVisit.emplace_back(wireModel);
+			queue.emplace_back(wireModel);
 		}
 
 		// Ensure existence of outputs. Connect to VerilogModule and make them to know about each other.
@@ -781,7 +786,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			wireNode->connect(verilogModuleEvaluatorNode);
 
 			// Add wire to visit.
-			bfsVisit.emplace_back(wireModel);
+			queue.emplace_back(wireModel);
 		}
 
 		// Ensure existence of output regs. Connect to VerilogModule and make them to know about each other.
@@ -800,7 +805,7 @@ void lcsm::LCSMEngine::buildCircuit(
 			wireNode->connect(verilogModuleEvaluatorNode);
 
 			// Add wire to visit.
-			bfsVisit.emplace_back(wireModel);
+			queue.emplace_back(wireModel);
 		}
 
 		// Update visited objects.

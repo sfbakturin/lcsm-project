@@ -33,6 +33,17 @@ lcsm::DataBits::DataBits(lcsm::Width width, lcsm::verilog::Strength strength, lc
 {
 }
 
+lcsm::DataBits::DataBits(lcsm::verilog::Value value) noexcept : lcsm::DataBits(lcsm::Width::Bit1, value) {}
+
+lcsm::DataBits::DataBits(lcsm::verilog::Bit bit) noexcept : lcsm::DataBits(lcsm::Width::Bit1, bit) {}
+
+lcsm::DataBits::DataBits(lcsm::verilog::Strength strength) noexcept : lcsm::DataBits(lcsm::Width::Bit1, strength) {}
+
+lcsm::DataBits::DataBits(lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept :
+	lcsm::DataBits(lcsm::Width::Bit1, strength, bit)
+{
+}
+
 lcsm::DataBits::DataBits(lcsm::width_t width) noexcept :
 	lcsm::DataBits(width, lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Undefined)
 {
@@ -40,7 +51,7 @@ lcsm::DataBits::DataBits(lcsm::width_t width) noexcept :
 
 lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Value value) noexcept
 {
-	m_width = std::min(width, lcsm::DataBits::MaxWidth);
+	m_width = std::min(width, lcsm::MaxWidth);
 	for (lcsm::width_t i = 0; i < m_width; i++)
 	{
 		m_bits[i] = value;
@@ -54,7 +65,7 @@ lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Bit bit) noexcept :
 
 lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Strength strength, lcsm::verilog::Bit bit) noexcept
 {
-	m_width = std::min(width, lcsm::DataBits::MaxWidth);
+	m_width = std::min(width, lcsm::MaxWidth);
 	for (lcsm::width_t i = 0; i < m_width; i++)
 	{
 		lcsm::verilog::Value value{ strength, bit };
@@ -64,7 +75,7 @@ lcsm::DataBits::DataBits(lcsm::width_t width, lcsm::verilog::Strength strength, 
 
 lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits) noexcept
 {
-	m_width = std::min(static_cast< lcsm::width_t >(bits.size()), lcsm::DataBits::MaxWidth);
+	m_width = std::min(static_cast< lcsm::width_t >(bits.size()), lcsm::MaxWidth);
 	lcsm::width_t i = 0;
 	for (lcsm::verilog::Bit bit : bits)
 	{
@@ -80,7 +91,7 @@ lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Bit > bits) noexc
 
 lcsm::DataBits::DataBits(std::initializer_list< std::pair< lcsm::verilog::Strength, lcsm::verilog::Bit > > strengthBits) noexcept
 {
-	m_width = std::min(static_cast< lcsm::width_t >(strengthBits.size()), lcsm::DataBits::MaxWidth);
+	m_width = std::min(static_cast< lcsm::width_t >(strengthBits.size()), lcsm::MaxWidth);
 	lcsm::width_t i = 0;
 	for (std::pair< lcsm::verilog::Strength, lcsm::verilog::Bit > strengthBit : strengthBits)
 	{
@@ -96,7 +107,7 @@ lcsm::DataBits::DataBits(std::initializer_list< std::pair< lcsm::verilog::Streng
 
 lcsm::DataBits::DataBits(std::initializer_list< lcsm::verilog::Value > values) noexcept
 {
-	m_width = std::min(static_cast< lcsm::width_t >(values.size()), lcsm::DataBits::MaxWidth);
+	m_width = std::min(static_cast< lcsm::width_t >(values.size()), lcsm::MaxWidth);
 	lcsm::width_t i = 0;
 	for (lcsm::verilog::Value value : values)
 	{
@@ -128,13 +139,17 @@ lcsm::DataBits &lcsm::DataBits::operator=(lcsm::DataBits &&other) noexcept
 lcsm::DataBits lcsm::DataBits::operator|(const lcsm::DataBits &other)
 {
 	if (!checkWidth(other))
+	{
 		throw std::logic_error("Incompatible widths found");
+	}
 
 	const unsigned n = static_cast< unsigned >(m_width);
 	lcsm::DataBits result = *this;
 
 	for (unsigned i = 0; i < n; i++)
+	{
 		result[i] |= other[i];
+	}
 
 	return result;
 }
@@ -142,20 +157,28 @@ lcsm::DataBits lcsm::DataBits::operator|(const lcsm::DataBits &other)
 lcsm::DataBits &lcsm::DataBits::operator|=(const lcsm::DataBits &other)
 {
 	if (this != std::addressof(other))
+	{
 		*this = *this | other;
+	}
 	return *this;
 }
 
 bool lcsm::DataBits::operator==(const lcsm::DataBits &other) const noexcept
 {
 	if (!checkWidth(other))
+	{
 		return false;
+	}
 
 	const unsigned n = static_cast< unsigned >(m_width);
 
 	for (unsigned i = 0; i < n; i++)
+	{
 		if (value(i) != other[i])
+		{
 			return false;
+		}
+	}
 
 	return true;
 }
@@ -202,7 +225,7 @@ lcsm::width_t lcsm::DataBits::width() const noexcept
 
 void lcsm::DataBits::setWidth(lcsm::width_t width) noexcept
 {
-	m_width = std::min(width, lcsm::DataBits::MaxWidth);
+	m_width = std::min(width, lcsm::MaxWidth);
 }
 
 bool lcsm::DataBits::checkWidth(const lcsm::DataBits &other) const noexcept
@@ -274,7 +297,9 @@ void lcsm::DataBits::reset() noexcept
 	const unsigned n = static_cast< unsigned >(width());
 
 	for (unsigned i = 0; i < n; i++)
-		m_bits[i] = { lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };
+	{
+		m_bits[i].reset();
+	}
 }
 
 namespace lcsm
@@ -287,7 +312,9 @@ namespace lcsm
 		for (unsigned i = 0; i < n; i++)
 		{
 			if (needsComma)
+			{
 				os << ',';
+			}
 			os << db.m_bits[i];
 			needsComma = true;
 		}

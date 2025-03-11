@@ -29,10 +29,16 @@ static constexpr Bit F = Bit::False;
 
 static LCSMCircuit generator()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("ConstantCircuitTest");
+
+	// Create all needed circuit elements.
 	model::Constant *constant = circuit.createConstant("constant");
 	model::Pin *pin = circuit.createPin(true, "pin");
-	circuit.connect(constant, pin, "wire");
+
+	// Make connections.
+	model::Wire *wire = circuit.connect(constant, pin);
+	wire->setName("wire");
+
 	return circuit;
 }
 
@@ -190,6 +196,7 @@ static void test2_values()
 
 int main()
 {
+	// Run all tests.
 	test0_pretest();
 	test1_widths();
 	test2_values();

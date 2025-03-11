@@ -47,9 +47,9 @@ namespace lcsm
 		support::PointerView< EvaluatorNode > registeredWire(Identifier id);
 		support::PointerView< EvaluatorNode > registeredTunnel(Identifier id);
 
-		void buildCircuit(std::deque< support::PointerView< const Circuit > > &bfsVisit);
+		void buildCircuit(std::deque< support::PointerView< const Circuit > > &queue);
 		void buildCircuit(const support::PointerView< const Circuit > &circuit,
-						  std::deque< support::PointerView< const Circuit > > &bfsVisit,
+						  std::deque< support::PointerView< const Circuit > > &queue,
 						  std::unordered_set< Identifier > &visited);
 	};
 }	 // namespace lcsm

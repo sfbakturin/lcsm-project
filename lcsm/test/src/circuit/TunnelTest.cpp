@@ -23,22 +23,13 @@ using namespace lcsm::verilog;
 static constexpr Bit T = Bit::True;
 static constexpr Bit F = Bit::False;
 
-// All widths and bits.
-// clang-format off
-const std::array< Width, 11 > widths = {
-	Width::Bit1, Width::Bit2, Width::Bit3,
-	Width::Bit4, Width::Bit5, Width::Bit6,
-	Width::Bit7, Width::Byte, Width::ShortWord,
-	Width::DoubleWord, Width::QuadWord
-};
 const std::array< Bit, 2 > bits = { T, F };
-// clang-format on
 
 static LCSMCircuit generator1()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("TunnelCircuitTest");
 
-	// Create elements.
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output = circuit.createPin(true, "output");
 	model::Tunnel *tunnel1 = circuit.createTunnel("tunnel1");
@@ -47,17 +38,19 @@ static LCSMCircuit generator1()
 	// Make connections.
 	tunnel1->connectTunnel(tunnel2);
 	tunnel2->connectTunnel(tunnel1);
-	circuit.connect(input, tunnel1, "wire1");
-	circuit.connect(output, tunnel2, "wire2");
+	model::Wire *wire1 = circuit.connect(input, tunnel1);
+	model::Wire *wire2 = circuit.connect(output, tunnel2);
+	wire1->setName("wire1");
+	wire2->setName("wire2");
 
 	return circuit;
 }
 
 static LCSMCircuit generator2()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("TunnelCircuitTest");
 
-	// Create elements.
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output1 = circuit.createPin(true, "output1");
 	model::Pin *output2 = circuit.createPin(true, "output2");
@@ -76,10 +69,14 @@ static LCSMCircuit generator2()
 	tunnel3->connectTunnel(tunnel1);
 	tunnel4->connectTunnel(tunnel1);
 
-	circuit.connect(input, tunnel1, "wire1");
-	circuit.connect(tunnel2, output1, "wire2");
-	circuit.connect(tunnel3, output2, "wire3");
-	circuit.connect(tunnel4, output3, "wire4");
+	model::Wire *wire1 = circuit.connect(input, tunnel1);
+	model::Wire *wire2 = circuit.connect(tunnel2, output1);
+	model::Wire *wire3 = circuit.connect(tunnel3, output2);
+	model::Wire *wire4 = circuit.connect(tunnel4, output3);
+	wire1->setName("wire1");
+	wire2->setName("wire2");
+	wire3->setName("wire3");
+	wire4->setName("wire4");
 
 	return circuit;
 }
@@ -174,7 +171,7 @@ static void test1()
 	const Identifier wire2Id = wire2->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		inputModel->setWidth(width);
@@ -258,7 +255,7 @@ static void test2()
 	const Identifier wire4Id = wire4->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		inputModel->setWidth(width);
@@ -363,7 +360,7 @@ static void test3()
 	const Identifier wire4Id = wire4->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		inputModel->setWidth(width);
@@ -460,7 +457,7 @@ static void test4()
 	const Identifier wire4Id = wire4->id();
 
 	// Test!
-	for (Width width : widths)
+	for (Width width : Widths)
 	{
 		// Change model's settings.
 		inputModel->setWidth(width);
@@ -517,6 +514,7 @@ static void test4()
 
 int main()
 {
+	// Run all tests.
 	test0_pretest();
 	test1();
 	test2();

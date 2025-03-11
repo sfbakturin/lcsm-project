@@ -26,6 +26,11 @@ namespace lcsm
 		DataBits(Width width, verilog::Bit bit) noexcept;
 		DataBits(Width width, verilog::Strength strength, verilog::Bit bit) noexcept;
 
+		DataBits(verilog::Value value) noexcept;
+		DataBits(verilog::Bit bit) noexcept;
+		DataBits(verilog::Strength strength) noexcept;
+		DataBits(verilog::Strength strength, verilog::Bit bit) noexcept;
+
 		DataBits(width_t width) noexcept;
 		DataBits(width_t width, verilog::Value value) noexcept;
 		DataBits(width_t width, verilog::Bit bit) noexcept;
@@ -76,8 +81,6 @@ namespace lcsm
 		friend std::ostream &operator<<(std::ostream &os, const DataBits &db);
 
 		std::string toString() const;
-
-		static constexpr lcsm::width_t MaxWidth = Width::LastWidth;
 
 	  private:
 		width_t m_width;

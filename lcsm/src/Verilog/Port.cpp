@@ -1,10 +1,10 @@
-#include "lcsm/Model/Width.h"
-#include "lcsm/Verilog/Bit.h"
-#include "lcsm/Verilog/Strength.h"
-#include "lcsm/Verilog/Value.h"
+#include <lcsm/Model/Width.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Support/Algorithm.hpp>
+#include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Port.h>
+#include <lcsm/Verilog/Strength.h>
+#include <lcsm/Verilog/Value.h>
 
 #include <string>
 #include <utility>

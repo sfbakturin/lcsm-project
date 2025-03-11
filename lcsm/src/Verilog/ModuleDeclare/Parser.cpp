@@ -596,7 +596,9 @@ static void rulePortDeclaration(lcsm::verilog::ModuleDeclareContext &context, lc
 		return;
 	}
 	default:
-		throw std::logic_error("Parser error at trying to parse port_declarations!");
+	{
+		break;
+	}
 	}
 
 	throw std::logic_error("Parser error at trying to parse port_declarations!");

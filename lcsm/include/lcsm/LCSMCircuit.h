@@ -96,7 +96,7 @@ namespace lcsm
 		model::TransmissionGate *createTransmissionGate(label_t name = "");
 		model::Tunnel *createTunnel(label_t name = "");
 		model::Clock *createClock(label_t name = "", unsigned highDuration = 1, unsigned lowDuration = 1, unsigned phaseOffset = 0);
-		model::Button *createButton(label_t name = "", bool activeOnPress = false);
+		model::Button *createButton(label_t name = "", bool activeOnPress = true);
 		model::Digit *createDigit(label_t name = "", bool hasDecimalPoint = true);
 		model::Probe *createProbe(label_t name = "");
 		model::Splitter *createSplitter(label_t name = "", Width widthIn = Width::Bit2, width_t widthOut = 2);
@@ -127,10 +127,10 @@ namespace lcsm
 		bool removeCircuit(label_t name);
 		bool removeCircuit(const std::string &name);
 
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2, label_t name = "");
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2, label_t name = "");
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, label_t name = "");
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, label_t name = "");
+		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2);
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2);
+		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2);
+		model::Wire *connect(Circuit *circuit1, Circuit *circuit2);
 
 	  private:
 		Identifier m_globalId;

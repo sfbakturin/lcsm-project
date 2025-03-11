@@ -29,12 +29,19 @@ static constexpr Bit F = Bit::False;
 
 static LCSMCircuit generator()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("ProbeCircuitTest");
+
+	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
 	model::Pin *output = circuit.createPin(true, "output");
 	model::Probe *probe = circuit.createProbe("probe");
-	model::Wire *wire1 = circuit.connect(input, output, "wire1");
-	model::Wire *wire2 = circuit.connect(wire1, probe, "wire2");
+
+	// Make connections.
+	model::Wire *wire1 = circuit.connect(input, output);
+	model::Wire *wire2 = circuit.connect(wire1, probe);
+	wire1->setName("wire1");
+	wire2->setName("wire2");
+
 	return circuit;
 }
 
@@ -55,7 +62,7 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire2, CircuitType::Wire);
 }
 
-static void test0_pretest()
+static void test0()
 {
 	const GeneratorTy g = generator;
 	const CheckerTy c = checker;
@@ -92,7 +99,7 @@ static void
 	std::cout << "<input = " << actualInput << "> --> <wire1 = " << actualWire1 << "> --> <output = " << actualOutput << ">\n";
 }
 
-static void test1_general()
+static void test1()
 {
 	LCSMCircuit circuit = generator();
 
@@ -144,6 +151,7 @@ static void test1_general()
 
 int main()
 {
-	test0_pretest();
-	test1_general();
+	// Run all tests.
+	test0();
+	test1();
 }
