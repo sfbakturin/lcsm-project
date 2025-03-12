@@ -302,11 +302,16 @@ static void test3_runTheVerilogModule()
 	Circuit *a = circuit.find("a");
 	Circuit *b = circuit.find("b");
 	Circuit *out = circuit.find("out");
+	Circuit *strengthExample = circuit.find("strength_example1");
+
+	// Extract models.
+	model::VerilogModule *strengthExampleModel = static_cast< model::VerilogModule * >(strengthExample);
 
 	// Indexes.
 	const Identifier aId = a->id();
 	const Identifier bId = b->id();
 	const Identifier outId = out->id();
+	const Identifier strengthExampleId = strengthExample->id();
 
 	// Generate physical engine.
 	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
@@ -318,7 +323,7 @@ static void test3_runTheVerilogModule()
 	for (Strength sa : Strengths)
 	{
 		// Skip HiZ.
-		// TODO: Maybe, there is another bug with icarus so that it returns 36X as value.
+		// No ambiguous strength.
 		if (sa == Strength::HighImpedance)
 		{
 			continue;
@@ -327,7 +332,7 @@ static void test3_runTheVerilogModule()
 		for (Strength sb : Strengths)
 		{
 			// Skip HiZ and HiZ.
-			// TODO: Maybe, there is another bug with icarus so that it returns 36X as value.
+			// No ambiguous strength.
 			if (sb == Strength::HighImpedance)
 			{
 				continue;
@@ -350,6 +355,12 @@ static void test3_runTheVerilogModule()
 
 					// Printout values.
 					const DataBits &vout = state.valueOf(outId);
+					const DataBits &mout = state.valueOf(strengthExampleId, strengthExampleModel->indexOfOutputByLabel("out"));
+					const DataBits &ma = state.valueOf(strengthExampleId, strengthExampleModel->indexOfInputByLabel("a"));
+					const DataBits &mb = state.valueOf(strengthExampleId, strengthExampleModel->indexOfInputByLabel("b"));
+					assertEquals(vout, mout);
+					assertEquals(ma, va);
+					assertEquals(mb, vb);
 					std::cout << "<a = " << va << ">, <b = " << vb << "> -> <out = " << vout << ">\n";
 				}
 			}

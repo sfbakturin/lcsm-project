@@ -44,6 +44,11 @@ namespace lcsm
 			portid_t indexOfOutput(portid_t portId) const noexcept;
 			portid_t indexOfOutputReg(portid_t portId) const noexcept;
 
+			portid_t indexOfInputByLabel(label_t label) const noexcept;
+			portid_t indexOfInoutByLabel(label_t label) const noexcept;
+			portid_t indexOfOutputByLabel(label_t label) const noexcept;
+			portid_t indexOfOutputRegByLabel(label_t label) const noexcept;
+
 			portid_t numOfInputs() const noexcept;
 			portid_t numOfInouts() const noexcept;
 			portid_t numOfOutputs() const noexcept;

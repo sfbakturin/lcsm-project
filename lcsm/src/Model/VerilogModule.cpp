@@ -5,6 +5,7 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
+#include <lcsm/Verilog/Port.h>
 
 #include <cstddef>
 #include <memory>
@@ -133,6 +134,67 @@ lcsm::portid_t lcsm::model::VerilogModule::indexOfOutput(lcsm::portid_t portId) 
 lcsm::portid_t lcsm::model::VerilogModule::indexOfOutputReg(lcsm::portid_t portId) const noexcept
 {
 	return numOfInputs() + numOfInouts() + numOfOutputs() + portId;
+}
+
+static lcsm::portid_t FindByLabel(const std::vector< lcsm::verilog::Port > &ports, lcsm::label_t label) noexcept
+{
+	lcsm::portid_t i = 0;
+	for (const lcsm::verilog::Port &port : ports)
+	{
+		if (port.identifier() == label)
+		{
+			return i;
+		}
+		else
+		{
+			i++;
+		}
+	}
+	return -1;
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::indexOfInputByLabel(lcsm::label_t label) const noexcept
+{
+	return FindByLabel(m_module->inputPorts(), label);
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::indexOfInoutByLabel(lcsm::label_t label) const noexcept
+{
+	const lcsm::portid_t d = FindByLabel(m_module->inoutPorts(), label);
+	if (d >= 0)
+	{
+		return indexOfInout(d);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::indexOfOutputByLabel(lcsm::label_t label) const noexcept
+{
+	const lcsm::portid_t d = FindByLabel(m_module->outputPorts(), label);
+	if (d >= 0)
+	{
+		return indexOfOutput(d);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+lcsm::portid_t lcsm::model::VerilogModule::indexOfOutputRegByLabel(lcsm::label_t label) const noexcept
+{
+	const lcsm::portid_t d = FindByLabel(m_module->outputRegPorts(), label);
+	if (d >= 0)
+	{
+		return indexOfOutputReg(d);
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 lcsm::portid_t lcsm::model::VerilogModule::numOfInputs() const noexcept
