@@ -140,7 +140,7 @@ static void ruleInoutDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	}
 	else
 	{
-		portType.setIOType(lcsm::verilog::IOType::Inout);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Inout);
 	}
 
 	// Check keywords: (net_type)? (SIGNED)? <start of (range)?>
@@ -252,7 +252,7 @@ static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	}
 	else
 	{
-		portType.setIOType(lcsm::verilog::IOType::Input);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Input);
 	}
 
 	// Check keywords: (net_type)? (SIGNED)? <start of (range)?>
@@ -441,7 +441,7 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareContext &context, 
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
 	{
 		// Check keywords: (net_type)?
-		portType.setIOType(lcsm::verilog::IOType::Output);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Output);
 		switch (lex.nextToken().kind())
 		{
 		case lcsm::verilog::KW_SUPPLY0:
@@ -542,7 +542,7 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareContext &context, 
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
 	{
-		portType.setIOType(lcsm::verilog::IOType::OutputReg);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::OutputReg);
 
 		// Check SIGNED.
 		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)

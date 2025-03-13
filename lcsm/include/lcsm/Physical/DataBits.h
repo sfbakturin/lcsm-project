@@ -59,19 +59,19 @@ namespace lcsm
 
 		width_t width() const noexcept;
 		void setWidth(width_t width) noexcept;
+		void setWidth(std::size_t width) noexcept;
 		bool checkWidth(const DataBits &other) const noexcept;
 
-		verilog::Bit bit(std::size_t index) const;
-
-		verilog::Value &value(std::size_t index);
-		const verilog::Value &value(std::size_t index) const;
+		verilog::Bit bit(std::size_t index) const noexcept;
+		verilog::Value value(std::size_t index) const noexcept;
 
 		verilog::Value &operator[](std::size_t index);
 		const verilog::Value &operator[](std::size_t index) const;
 
-		void setBit(std::size_t index, verilog::Bit bit);
-		void setValue(std::size_t index, verilog::Value value);
-		void set(std::size_t index, verilog::Bit bit, verilog::Strength strength);
+		void setBit(std::size_t index, verilog::Bit bit) noexcept;
+		void setStrength(std::size_t index, verilog::Strength strength) noexcept;
+		void setValue(std::size_t index, verilog::Value value) noexcept;
+		void set(std::size_t index, verilog::Bit bit, verilog::Strength strength) noexcept;
 
 		DataBits subdatabits(std::size_t begin) const noexcept;
 		DataBits subdatabits(std::size_t begin, std::size_t end) const noexcept;

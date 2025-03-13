@@ -348,33 +348,33 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 	for (std::pair< lcsm::verilog::PortType, std::vector< std::string > > &portDeclaration : context.modulePortDeclarations())
 	{
 		const lcsm::verilog::PortType portType = portDeclaration.first;
-		const lcsm::verilog::IOType ioType = portType.ioType();
+		const lcsm::verilog::PortDirectionType portDirectionType = portType.portDirectionType();
 		std::size_t i = 0;
 		for (std::string &identifier : portDeclaration.second)
 		{
-			m.m_ports.emplace_back(ioType, i++);
-			switch (ioType)
+			m.m_ports.emplace_back(portDirectionType, i++);
+			switch (portDirectionType)
 			{
-			case lcsm::verilog::IOType::UnknowPortType:
+			case lcsm::verilog::PortDirectionType::UnknowPortDirectionType:
 			{
 				break;
 			}
-			case lcsm::verilog::IOType::Input:
+			case lcsm::verilog::PortDirectionType::Input:
 			{
 				m.m_inputPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
-			case lcsm::verilog::IOType::Inout:
+			case lcsm::verilog::PortDirectionType::Inout:
 			{
 				m.m_inoutPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
-			case lcsm::verilog::IOType::Output:
+			case lcsm::verilog::PortDirectionType::Output:
 			{
 				m.m_outputPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
-			case lcsm::verilog::IOType::OutputReg:
+			case lcsm::verilog::PortDirectionType::OutputReg:
 			{
 				m.m_outputRegPorts.emplace_back(portType, std::move(identifier));
 				break;
@@ -521,12 +521,12 @@ static void SourcePortDeclaration(const std::vector< lcsm::verilog::Port > &port
 }
 
 static void SourcePortAssignment(
-	const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &datas,
+	const std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > &datas,
 	const std::vector< lcsm::verilog::Port > &ports,
-	lcsm::verilog::IOType type,
+	lcsm::verilog::PortDirectionType type,
 	std::string &source)
 {
-	const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >::const_iterator found = datas.find(type);
+	const std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > >::const_iterator found = datas.find(type);
 	if (found == datas.end())
 	{
 		return;
@@ -549,8 +549,8 @@ static void SourcePortAssignment(
 
 static void InitializeOutData(
 	const std::vector< lcsm::verilog::Port > &ports,
-	std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &out,
-	lcsm::verilog::IOType type)
+	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > &out,
+	lcsm::verilog::PortDirectionType type)
 {
 	if (!ports.empty())
 	{
@@ -558,14 +558,14 @@ static void InitializeOutData(
 		std::vector< lcsm::DataBits > &databits = out[type];
 		for (std::size_t i = 0; i < ports.size(); i++)
 		{
-			const lcsm::width_t width = ports[i].width();
+			const std::size_t width = ports[i].width();
 			databits[i].setWidth(width);
 		}
 	}
 }
 
-std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
-	lcsm::verilog::Module::invoke(const std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > &testBenchInData) const
+std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > >
+	lcsm::verilog::Module::invoke(const std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > &testBenchInData) const
 {
 	// Step 1. Generate testbench module.
 	std::string testBenchSource = m_sourceModule;
@@ -580,13 +580,13 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	SourcePortDeclaration(m_outputRegPorts, testBenchSource);
 
 	// 1.3. Assignment.
-	SourcePortAssignment(testBenchInData, m_inputPorts, lcsm::verilog::IOType::Input, testBenchSource);
-	SourcePortAssignment(testBenchInData, m_inoutPorts, lcsm::verilog::IOType::Inout, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inputPorts, lcsm::verilog::PortDirectionType::Input, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inoutPorts, lcsm::verilog::PortDirectionType::Inout, testBenchSource);
 
 	// 1.4. Module declare.
 	testBenchSource += m_identifier + " tb(";
 	bool needsComma = false;
-	for (const std::pair< lcsm::verilog::IOType, std::size_t > &port : m_ports)
+	for (const std::pair< lcsm::verilog::PortDirectionType, std::size_t > &port : m_ports)
 	{
 		if (needsComma)
 		{
@@ -594,26 +594,26 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 		}
 		switch (port.first)
 		{
-		case lcsm::verilog::IOType::UnknowPortType:
+		case lcsm::verilog::PortDirectionType::UnknowPortDirectionType:
 		{
 			throw std::logic_error("Found unknown port type, impossible!");
 		}
-		case lcsm::verilog::IOType::Input:
+		case lcsm::verilog::PortDirectionType::Input:
 		{
 			testBenchSource += m_inputPorts[port.second].identifier();
 			break;
 		}
-		case lcsm::verilog::IOType::Inout:
+		case lcsm::verilog::PortDirectionType::Inout:
 		{
 			testBenchSource += m_inoutPorts[port.second].identifier();
 			break;
 		}
-		case lcsm::verilog::IOType::Output:
+		case lcsm::verilog::PortDirectionType::Output:
 		{
 			testBenchSource += m_outputPorts[port.second].identifier();
 			break;
 		}
-		case lcsm::verilog::IOType::OutputReg:
+		case lcsm::verilog::PortDirectionType::OutputReg:
 		{
 			testBenchSource += m_outputRegPorts[port.second].identifier();
 			break;
@@ -626,37 +626,39 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	// 1.5. Monitor.
 	testBenchSource += "initial begin\n";
 	std::size_t t = 1;
-	for (const std::pair< lcsm::verilog::IOType, std::size_t > &port : m_ports)
+	for (const std::pair< lcsm::verilog::PortDirectionType, std::size_t > &port : m_ports)
 	{
 		const lcsm::verilog::Port *p = nullptr;
+
 		switch (port.first)
 		{
-		case lcsm::verilog::IOType::UnknowPortType:
+		case lcsm::verilog::PortDirectionType::UnknowPortDirectionType:
 		{
 			throw std::logic_error("Found unknown port type, impossible!");
 		}
-		case lcsm::verilog::IOType::Input:
+		case lcsm::verilog::PortDirectionType::Input:
 		{
 			// Skip INPUT, as there is no any thoughts to parse input's value.
 			continue;
 		}
-		case lcsm::verilog::IOType::Inout:
+		case lcsm::verilog::PortDirectionType::Inout:
 		{
 			p = std::addressof(m_inoutPorts[port.second]);
 			break;
 		}
-		case lcsm::verilog::IOType::Output:
+		case lcsm::verilog::PortDirectionType::Output:
 		{
 			p = std::addressof(m_outputPorts[port.second]);
 			break;
 		}
-		case lcsm::verilog::IOType::OutputReg:
+		case lcsm::verilog::PortDirectionType::OutputReg:
 		{
 			p = std::addressof(m_outputRegPorts[port.second]);
 			break;
 		}
 		}
-		for (lcsm::width_t w = 0; w < p->width(); w++)
+
+		for (std::size_t w = 0; w < p->width(); w++)
 		{
 			testBenchSource += '#' + std::to_string(t) + ' ';
 			testBenchSource += p->verilogPortMonitorCall(port.second, w) + ";\n";
@@ -707,12 +709,12 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 	TestBenchOutLexer lex = source;
 
 	// Output data for physical model.
-	std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > > testBenchOutData;
+	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > testBenchOutData;
 
 	// Initialize output data.
-	InitializeOutData(m_inoutPorts, testBenchOutData, lcsm::verilog::IOType::Inout);
-	InitializeOutData(m_outputPorts, testBenchOutData, lcsm::verilog::IOType::Output);
-	InitializeOutData(m_outputRegPorts, testBenchOutData, lcsm::verilog::IOType::OutputReg);
+	InitializeOutData(m_inoutPorts, testBenchOutData, lcsm::verilog::PortDirectionType::Inout);
+	InitializeOutData(m_outputPorts, testBenchOutData, lcsm::verilog::PortDirectionType::Output);
+	InitializeOutData(m_outputRegPorts, testBenchOutData, lcsm::verilog::PortDirectionType::OutputReg);
 
 	// Generated output will be like this:
 	// <type> <global index> <local index> <value>, where:
@@ -727,24 +729,24 @@ std::unordered_map< lcsm::verilog::IOType, std::vector< lcsm::DataBits > >
 		std::size_t localIndex;
 		lcsm::verilog::Bit bit;
 		lcsm::verilog::Strength strength;
-		lcsm::verilog::IOType type;
+		lcsm::verilog::PortDirectionType type;
 
 		// <type> --> 'inout' | 'output' | 'outputreg'
 		switch (lex.token().kind())
 		{
 		case TestBenchOutKind::InoutKind:
 		{
-			type = lcsm::verilog::IOType::Inout;
+			type = lcsm::verilog::PortDirectionType::Inout;
 			break;
 		}
 		case TestBenchOutKind::OutputKind:
 		{
-			type = lcsm::verilog::IOType::Output;
+			type = lcsm::verilog::PortDirectionType::Output;
 			break;
 		}
 		case TestBenchOutKind::OutputRegKind:
 		{
-			type = lcsm::verilog::IOType::OutputReg;
+			type = lcsm::verilog::PortDirectionType::OutputReg;
 			break;
 		}
 		default:

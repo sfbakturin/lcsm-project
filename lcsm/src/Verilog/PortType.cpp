@@ -6,19 +6,19 @@
 #include <utility>
 
 lcsm::verilog::PortType::PortType() noexcept :
-	m_ioType(lcsm::verilog::IOType::UnknowPortType), m_netType(lcsm::verilog::NetType::UnknownPortType),
+	m_portDirectionType(lcsm::verilog::PortDirectionType::UnknowPortDirectionType), m_netType(lcsm::verilog::NetType::UnknownPortType),
 	m_isSigned(false), m_outputVariableType(lcsm::verilog::UnknownOutputVariableType), m_range(0, 0), m_rangeValid(false)
 {
 }
 
 lcsm::verilog::PortType::PortType(const lcsm::verilog::PortType &other) noexcept :
-	m_ioType(other.m_ioType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
+	m_portDirectionType(other.m_portDirectionType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
 	m_outputVariableType(other.m_outputVariableType), m_range(other.m_range), m_rangeValid(other.m_rangeValid)
 {
 }
 
 lcsm::verilog::PortType::PortType(lcsm::verilog::PortType &&other) noexcept :
-	m_ioType(other.m_ioType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
+	m_portDirectionType(other.m_portDirectionType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
 	m_outputVariableType(other.m_outputVariableType), m_range(std::move(other.m_range)), m_rangeValid(other.m_rangeValid)
 {
 }
@@ -35,7 +35,7 @@ lcsm::verilog::PortType &lcsm::verilog::PortType::operator=(lcsm::verilog::PortT
 
 void lcsm::verilog::PortType::swap(lcsm::verilog::PortType &other) noexcept
 {
-	std::swap(m_ioType, other.m_ioType);
+	std::swap(m_portDirectionType, other.m_portDirectionType);
 	std::swap(m_netType, other.m_netType);
 	std::swap(m_isSigned, other.m_isSigned);
 	std::swap(m_outputVariableType, other.m_outputVariableType);
@@ -43,14 +43,14 @@ void lcsm::verilog::PortType::swap(lcsm::verilog::PortType &other) noexcept
 	std::swap(m_rangeValid, other.m_rangeValid);
 }
 
-lcsm::verilog::IOType lcsm::verilog::PortType::ioType() const noexcept
+lcsm::verilog::PortDirectionType lcsm::verilog::PortType::portDirectionType() const noexcept
 {
-	return m_ioType;
+	return m_portDirectionType;
 }
 
-void lcsm::verilog::PortType::setIOType(lcsm::verilog::IOType ioType) noexcept
+void lcsm::verilog::PortType::setPortDirectionType(lcsm::verilog::PortDirectionType portDirectionType) noexcept
 {
-	m_ioType = ioType;
+	m_portDirectionType = portDirectionType;
 }
 
 lcsm::verilog::NetType lcsm::verilog::PortType::netType() const noexcept
@@ -105,16 +105,33 @@ void lcsm::verilog::PortType::setRange(lcsm::verilog::Range &&range) noexcept
 	m_rangeValid = true;
 }
 
-lcsm::width_t lcsm::verilog::PortType::rangeWidth() const noexcept
+std::size_t lcsm::verilog::PortType::rangeWidth() const noexcept
 {
-	const int lhs = std::min(m_range.first, m_range.second);
-	const int rhs = std::max(m_range.first, m_range.second);
-	return static_cast< lcsm::width_t >(rhs - lhs + 1);
+	const int s = std::min(m_range.first, m_range.second);
+	const int e = std::max(m_range.first, m_range.second);
+	if (e >= 0)
+	{
+		return static_cast<std::size_t>(e) - s + 1;	
+	}
+	else
+	{
+		return static_cast< std::size_t >(-e) - s + 1;
+	}
 }
 
 bool lcsm::verilog::PortType::rangeLeftToRight() const noexcept
 {
 	return m_range.first <= m_range.second;
+}
+
+int lcsm::verilog::PortType::rangeStart() const noexcept
+{
+	return (rangeLeftToRight() ? std::min(m_range.first, m_range.second) : std::max(m_range.first, m_range.second));
+}
+
+int lcsm::verilog::PortType::rangeEnd() const noexcept
+{
+	return (rangeLeftToRight() ? std::max(m_range.first, m_range.second) : std::min(m_range.first, m_range.second));
 }
 
 std::string lcsm::verilog::PortType::toVerilogString() const

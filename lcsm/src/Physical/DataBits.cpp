@@ -228,50 +228,77 @@ void lcsm::DataBits::setWidth(lcsm::width_t width) noexcept
 	m_width = std::min(width, lcsm::MaxWidth);
 }
 
+void lcsm::DataBits::setWidth(std::size_t width) noexcept
+{
+	if (width > lcsm::MaxWidth)
+	{
+		m_width = lcsm::MaxWidth;
+	} else {
+		m_width = static_cast< lcsm::width_t >(width);
+	}
+}
+
 bool lcsm::DataBits::checkWidth(const lcsm::DataBits &other) const noexcept
 {
 	return m_width == other.width();
 }
 
-lcsm::verilog::Bit lcsm::DataBits::bit(std::size_t index) const
+lcsm::verilog::Bit lcsm::DataBits::bit(std::size_t index) const noexcept
 {
 	return value(index).bit();
 }
 
-lcsm::verilog::Value &lcsm::DataBits::value(std::size_t index)
+lcsm::verilog::Value lcsm::DataBits::value(std::size_t index) const noexcept
 {
-	return m_bits[index];
-}
-
-const lcsm::verilog::Value &lcsm::DataBits::value(std::size_t index) const
-{
-	return m_bits[index];
+	static const lcsm::verilog::Value NO_VALUE{ lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };
+	if (static_cast<lcsm::width_t>(index) >= m_width)
+	{
+		return NO_VALUE;
+	}
+	else
+	{
+		return m_bits[index];
+	}
 }
 
 lcsm::verilog::Value &lcsm::DataBits::operator[](std::size_t index)
 {
-	return value(index);
+	return m_bits[index];
 }
 
 const lcsm::verilog::Value &lcsm::DataBits::operator[](std::size_t index) const
 {
-	return value(index);
+	return m_bits[index];
 }
 
-void lcsm::DataBits::setBit(std::size_t index, lcsm::verilog::Bit bit)
+void lcsm::DataBits::setBit(std::size_t index, lcsm::verilog::Bit bit) noexcept
 {
-	m_bits[index].setBit(bit);
+	if (index < m_width)
+	{
+		m_bits[index].setBit(bit);
+	}
 }
 
-void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value value)
+void lcsm::DataBits::setStrength(std::size_t index, lcsm::verilog::Strength strength) noexcept
 {
-	m_bits[index] = value;
+	if (index < m_width)
+	{
+		m_bits[index].setStrength(strength);
+	}
 }
 
-void lcsm::DataBits::set(std::size_t index, verilog::Bit bit, verilog::Strength strength)
+void lcsm::DataBits::setValue(std::size_t index, lcsm::verilog::Value value) noexcept
 {
-	m_bits[index].setBit(bit);
-	m_bits[index].setStrength(strength);
+	if (index < m_width)
+	{
+		m_bits[index] = value;
+	}
+}
+
+void lcsm::DataBits::set(std::size_t index, verilog::Bit bit, verilog::Strength strength) noexcept
+{
+	setBit(index, bit);
+	setStrength(index, strength);
 }
 
 lcsm::DataBits lcsm::DataBits::subdatabits(std::size_t begin) const noexcept

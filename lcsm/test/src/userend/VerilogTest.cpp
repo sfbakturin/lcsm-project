@@ -267,6 +267,71 @@ static LCSMCircuit generator1()
 	return circuit;
 }
 
+static LCSMCircuit generator2()
+{
+	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	
+	// Create all needed circuit elements.
+	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
+	model::Pin *out = circuit.createPin(true, "out");
+
+	// Create Verilog Module.
+	Module module = Module::fromString("module or_test1(output wire out, input [1:0] in);or (pull1, strong0) o1(out, "
+									   "in[0], in[1]);endmodule");
+	model::VerilogModule *or_test1 = circuit.createVerilogModule(std::move(module));
+
+	// Make connections.
+	circuit.connect(in, or_test1, or_test1->indexOfInputByLabel("in"));
+	circuit.connect(or_test1, or_test1->indexOfOutputByLabel("out"), out);
+
+	return circuit;
+}
+
+static LCSMCircuit generator3()
+{
+	LCSMCircuit circuit("VerilogModuleCircuitTest");
+
+	// Create all needed circuit elements.
+	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
+	model::Pin *out = circuit.createPin(true, "out");
+
+	// Create Verilog Module.
+	Module module = Module::fromString(
+		"module or_test2(output wire out, input [1:2] in);or (weak1, pull0) o1(out, "
+		"in[2], in[1]);endmodule");
+	model::VerilogModule *or_test2= circuit.createVerilogModule(std::move(module));
+
+	// Make connections.
+	circuit.connect(in, or_test2, or_test2->indexOfInputByLabel("in"));
+	circuit.connect(or_test2, or_test2->indexOfOutputByLabel("out"), out);
+
+	return circuit;
+}
+
+static LCSMCircuit generator4()
+{
+	LCSMCircuit circuit("VerilogModuleCircuitTest");
+
+	// Create all needed circuit elements.
+	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
+	model::Pin *out = circuit.createPin(true, "out", Width::Bit2);
+
+	// Create Verilog Module.
+	Module module = Module::fromString(R"(
+		module andor_test(input [1:0] in, output [0:1] out);
+			and (strong0, strong1) o1(out[0], in[0], in[1]);
+			or (strong0, strong1) o2(out[1], in[0], in[1]);
+		endmodule
+	)");
+	model::VerilogModule *andor_test = circuit.createVerilogModule(std::move(module));
+
+	// Make connections.
+	circuit.connect(in, andor_test, andor_test->indexOfByLabel("in"));
+	circuit.connect(andor_test, andor_test->indexOfByLabel("out"), out);
+
+	return circuit;
+}
+
 static void checker1(LCSMCircuit &circuit)
 {
 	// Find circuits.
@@ -282,16 +347,64 @@ static void checker1(LCSMCircuit &circuit)
 	assertType(strength_example1, CircuitType::VerilogModule);
 }
 
+static void checker2(LCSMCircuit &circuit)
+{
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *or_test1 = circuit.find("or_test1");
+
+	// Check element's types.
+	assertType(in, CircuitType::Pin);
+	assertType(out, CircuitType::Pin);
+	assertType(or_test1, CircuitType::VerilogModule);
+}
+
+static void checker3(LCSMCircuit &circuit)
+{
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *or_test2 = circuit.find("or_test2");
+
+	// Check element's types.
+	assertType(in, CircuitType::Pin);
+	assertType(out, CircuitType::Pin);
+	assertType(or_test2, CircuitType::VerilogModule);
+}
+
+static void checker4(LCSMCircuit& circuit)
+{
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *andor_test = circuit.find("andor_test");
+
+	// Check element's types.
+	assertType(in, CircuitType::Pin);
+	assertType(out, CircuitType::Pin);
+	assertType(andor_test, CircuitType::VerilogModule);
+}
+
 static void test3_pretest()
 {
 	// Generators.
 	const GeneratorTy g1 = generator1;
+	const GeneratorTy g2 = generator2;
+	const GeneratorTy g3 = generator3;
+	const GeneratorTy g4 = generator4;
 
 	// Checkers.
 	const CheckerTy c1 = checker1;
+	const CheckerTy c2 = checker2;
+	const CheckerTy c3 = checker3;
+	const CheckerTy c4 = checker4;
 
 	// Pre-test.
 	preTest(g1, c1);
+	preTest(g2, c2);
+	preTest(g3, c3);
+	preTest(g4, c4);
 }
 
 static void test3_runTheVerilogModule()
@@ -355,9 +468,9 @@ static void test3_runTheVerilogModule()
 
 					// Printout values.
 					const DataBits &vout = state.valueOf(outId);
-					const DataBits &mout = state.valueOf(strengthExampleId, strengthExampleModel->indexOfOutputByLabel("out"));
-					const DataBits &ma = state.valueOf(strengthExampleId, strengthExampleModel->indexOfInputByLabel("a"));
-					const DataBits &mb = state.valueOf(strengthExampleId, strengthExampleModel->indexOfInputByLabel("b"));
+					const DataBits &mout = state.valueOf(strengthExampleId, strengthExampleModel->indexOfByLabel("out"));
+					const DataBits &ma = state.valueOf(strengthExampleId, strengthExampleModel->indexOfByLabel("a"));
+					const DataBits &mb = state.valueOf(strengthExampleId, strengthExampleModel->indexOfByLabel("b"));
 					assertEquals(vout, mout);
 					assertEquals(ma, va);
 					assertEquals(mb, vb);
@@ -368,10 +481,221 @@ static void test3_runTheVerilogModule()
 	}
 }
 
+static void test4_runTheVerilogModuleWithWideWires1()
+{
+	LCSMCircuit circuit = generator2();
+	
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *orTest = circuit.find("or_test1");
+
+	// Extract models.
+	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(orTest);
+
+	// Indexes.
+	const Identifier inId = in->id();
+	const Identifier outId = out->id();
+	const Identifier orTestId = orTest->id();
+
+	// Generate physical engine.
+	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
+
+	// Fork new state.
+	LCSMState state = engine.fork();
+
+	// Test!
+	for (Strength s1 : Strengths)
+	{
+		// Skip HiZ and HiZ.
+		// No ambiguous strength.
+		if (s1 == Strength::HighImpedance)
+		{
+			continue;
+		}
+
+		for (Strength s2 : Strengths)
+		{
+			// Skip HiZ and HiZ.
+			// No ambiguous strength.
+			if (s2 == Strength::HighImpedance)
+			{
+				continue;
+			}
+
+			for (Bit bit1 : Bits)
+			{
+				for (Bit bit2 : Bits)
+				{
+					// Input.
+					std::initializer_list< Value > vins = { { s1, bit1 }, { s2, bit2 } };
+					const DataBits vin{ vins };
+
+					// Put value.
+					state.putValue(inId, vin);
+
+					// Step once.
+					state.tick();
+
+					// Assertion.
+					const DataBits &vout = state.valueOf(outId);
+					const DataBits &mdlin = state.valueOf(orTestId, orTestModel->indexOfByLabel("in"));
+					const DataBits &mdlout = state.valueOf(orTestId, orTestModel->indexOfByLabel("out"));
+					assertEquals(vout, mdlout);
+					assertEquals(vin, mdlin);
+					std::cout << "<in = " << vin << ">, <out = " << vout << ">\n";
+				}
+			}
+		}
+	}
+}
+
+static void test4_runTheVerilogModuleWithWideWires2()
+{
+	LCSMCircuit circuit = generator3();
+
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *orTest = circuit.find("or_test2");
+
+	// Extract models.
+	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(orTest);
+
+	// Indexes.
+	const Identifier inId = in->id();
+	const Identifier outId = out->id();
+	const Identifier orTestId = orTest->id();
+
+	// Generate physical engine.
+	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
+
+	// Fork new state.
+	LCSMState state = engine.fork();
+
+	// Test!
+	for (Strength s1 : Strengths)
+	{
+		// Skip HiZ and HiZ.
+		// No ambiguous strength.
+		if (s1 == Strength::HighImpedance)
+		{
+			continue;
+		}
+
+		for (Strength s2 : Strengths)
+		{
+			// Skip HiZ and HiZ.
+			// No ambiguous strength.
+			if (s2 == Strength::HighImpedance)
+			{
+				continue;
+			}
+
+			for (Bit bit1 : Bits)
+			{
+				for (Bit bit2 : Bits)
+				{
+					// Input.
+					std::initializer_list< Value > vins = { { s1, bit1 }, { s2, bit2 } };
+					const DataBits vin{ vins };
+
+					// Put value.
+					state.putValue(inId, vin);
+
+					// Step once.
+					state.tick();
+
+					// Assertion.
+					const DataBits &vout = state.valueOf(outId);
+					const DataBits &mdlin = state.valueOf(orTestId, orTestModel->indexOfByLabel("in"));
+					const DataBits &mdlout = state.valueOf(orTestId, orTestModel->indexOfByLabel("out"));
+					assertEquals(vout, mdlout);
+					assertEquals(vin, mdlin);
+					std::cout << "<in = " << vin << ">, <out = " << vout << ">\n";
+				}
+			}
+		}
+	}
+}
+
+static void test5_runTheVerilogModuleWithWideOut()
+{
+	LCSMCircuit circuit = generator4();
+
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *andOrTest = circuit.find("andor_test");
+
+	// Extract models.
+	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(andOrTest);
+
+	// Indexes.
+	const Identifier inId = in->id();
+	const Identifier outId = out->id();
+	const Identifier andOrTestId = andOrTest->id();
+
+	// Generate physical engine.
+	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
+
+	// Fork new state.
+	LCSMState state = engine.fork();
+
+	// Test!
+	for (Strength s1 : Strengths)
+	{
+		// Skip HiZ and HiZ.
+		// No ambiguous strength.
+		if (s1 == Strength::HighImpedance)
+		{
+			continue;
+		}
+
+		for (Strength s2 : Strengths)
+		{
+			// Skip HiZ and HiZ.
+			// No ambiguous strength.
+			if (s2 == Strength::HighImpedance)
+			{
+				continue;
+			}
+
+			for (Bit bit1 : Bits)
+			{
+				for (Bit bit2 : Bits)
+				{
+					// Input.
+					std::initializer_list< Value > vins = { { s1, bit1 }, { s2, bit2 } };
+					const DataBits vin{ vins };
+
+					// Put value.
+					state.putValue(inId, vin);
+
+					// Step once.
+					state.tick();
+
+					// Assertion.
+					const DataBits &vout = state.valueOf(outId);
+					const DataBits &mdlin = state.valueOf(andOrTestId, orTestModel->indexOfByLabel("in"));
+					const DataBits &mdlout = state.valueOf(andOrTestId, orTestModel->indexOfByLabel("out"));
+					assertEquals(vout, mdlout);
+					assertEquals(vin, mdlin);
+					std::cout << "<in = " << vin << ">, <out = " << vout << ">\n";
+				}
+			}
+		}
+	}
+}
+
 int main()
 {
+	// Run all tests.
 	test1_verilogModuleDeclareParse();
 	test2_badVerilogModuleDeclareParse();
 	test3_pretest();
 	test3_runTheVerilogModule();
+	test4_runTheVerilogModuleWithWideWires1();
+	test4_runTheVerilogModuleWithWideWires2();
+	test5_runTheVerilogModuleWithWideOut();
 }

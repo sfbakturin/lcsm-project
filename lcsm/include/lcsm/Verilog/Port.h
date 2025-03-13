@@ -14,16 +14,23 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		enum IOType : std::int8_t
+		enum PortDirectionType : std::int8_t
 		{
-			UnknowPortType = -1,
+			UnknowPortDirectionType = -1,
 			Input,
 			Inout,
 			Output,
 			OutputReg
 		};
 
-		const char *IOTypePretty(IOType ioType) noexcept;
+		enum IntegerVectorType
+		{
+			UnknownIntegerVectorType = -1,
+			Logic,
+			Reg
+		};
+
+		const char *PortDirectionTypePretty(PortDirectionType portDirectionType) noexcept;
 
 		enum NetType : std::int8_t
 		{
@@ -63,8 +70,8 @@ namespace lcsm
 
 			void swap(PortType &other) noexcept;
 
-			IOType ioType() const noexcept;
-			void setIOType(IOType ioType) noexcept;
+			PortDirectionType portDirectionType() const noexcept;
+			void setPortDirectionType(PortDirectionType portDirectionType) noexcept;
 
 			NetType netType() const noexcept;
 			void setNetType(NetType netType) noexcept;
@@ -79,13 +86,15 @@ namespace lcsm
 			const Range &range() const noexcept;
 			void setRange(const Range &range) noexcept;
 			void setRange(Range &&range) noexcept;
-			width_t rangeWidth() const noexcept;
+			std::size_t rangeWidth() const noexcept;
 			bool rangeLeftToRight() const noexcept;
+			int rangeStart() const noexcept;
+			int rangeEnd() const noexcept;
 
 			std::string toVerilogString() const;
 
 		  private:
-			IOType m_ioType;
+			PortDirectionType m_portDirectionType;
 			NetType m_netType;
 			bool m_isSigned;
 			OutputVariableType m_outputVariableType;
@@ -117,7 +126,7 @@ namespace lcsm
 			void setIdentifier(const std::string &identifier);
 			void setIdentifier(std::string &&identifier) noexcept;
 
-			width_t width() const noexcept;
+			std::size_t width() const noexcept;
 
 			std::string verilogPortDeclaration() const;
 			std::vector< std::string > verilogPortAssignment(const DataBits &databits) const;

@@ -197,6 +197,31 @@ lcsm::portid_t lcsm::model::VerilogModule::indexOfOutputRegByLabel(lcsm::label_t
 	}
 }
 
+lcsm::portid_t lcsm::model::VerilogModule::indexOfByLabel(lcsm::label_t label) const noexcept
+{
+	lcsm::portid_t found = indexOfInputByLabel(label);
+	if (found >= 0)
+	{
+		return found;
+	}
+
+	found = indexOfInoutByLabel(label);
+	if (found >= 0)
+	{
+		return found;
+	}
+
+	found = indexOfOutputByLabel(label);
+	if (found >= 0)
+	{
+		return found;
+	}
+	else
+	{
+		return indexOfOutputRegByLabel(label);
+	}
+}
+
 lcsm::portid_t lcsm::model::VerilogModule::numOfInputs() const noexcept
 {
 	return static_cast< lcsm::portid_t >(m_inputs.size());

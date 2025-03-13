@@ -37,7 +37,7 @@ lcsm::verilog::Port::Port(lcsm::verilog::PortType &&portType, std::string &&iden
 lcsm::verilog::Port::Port(const Port &other) : m_portType(other.m_portType), m_identifier(other.m_identifier) {}
 
 lcsm::verilog::Port::Port(Port &&other) noexcept :
-	m_portType(std::move(other.portType())), m_identifier(std::move(other.m_identifier))
+	m_portType(std::move(other.m_portType)), m_identifier(std::move(other.m_identifier))
 {
 }
 
@@ -77,7 +77,7 @@ void lcsm::verilog::Port::setIdentifier(std::string &&identifier) noexcept
 	m_identifier = std::move(identifier);
 }
 
-lcsm::width_t lcsm::verilog::Port::width() const noexcept
+std::size_t lcsm::verilog::Port::width() const noexcept
 {
 	return m_portType.rangeWidth();
 }
@@ -93,12 +93,13 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 {
 	std::vector< std::string > portAssignments;
 
-	const lcsm::width_t expectedWidth = m_portType.rangeWidth();
-	const lcsm::width_t actualWidth = databits.width();
+	const int di = (m_portType.rangeLeftToRight() ? 1 : -1);
+	int id = m_portType.rangeStart();
+	std::size_t supplyUniqueIndex = 0;
 
-	for (lcsm::width_t i = 0; i < std::min(expectedWidth, actualWidth); i++)
+	for (std::size_t i = 0; i < m_portType.rangeWidth(); i++)
 	{
-		const lcsm::verilog::Value &value = databits.value(i);
+		const lcsm::verilog::Value value = databits.value(i);
 		const lcsm::verilog::Bit bit = value.bit();
 		std::string s;
 
@@ -116,7 +117,7 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 
 			if (bit != lcsm::verilog::Bit::Undefined)
 			{
-				s = "assign (weak1, weak0) " + m_identifier + '[' + std::to_string(i) + "] = 1'b" +
+				s = "assign (weak1, weak0) " + m_identifier + '[' + std::to_string(id) + "] = 1'b" +
 					lcsm::verilog::BitPretty(bit) + ';';
 			}
 
@@ -149,7 +150,7 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 
 			if (!kw.empty())
 			{
-				s = kw + " (" + m_identifier + '[' + std::to_string(i) + "]);";
+				s = kw + " (" + m_identifier + '[' + std::to_string(id) + "]);";
 			}
 
 			break;
@@ -161,7 +162,7 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 
 			if (bit != lcsm::verilog::Bit::Undefined)
 			{
-				s = "assign " + m_identifier + '[' + std::to_string(i) + "] = 1'b" + lcsm::verilog::BitPretty(bit) + ";";
+				s = "assign " + m_identifier + '[' + std::to_string(id) + "] = 1'b" + lcsm::verilog::BitPretty(bit) + ";";
 			}
 
 			break;
@@ -171,6 +172,8 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 			// supply0 <id>_s0; assign <id>[<i>] = <id>_s0; // Su0
 			// supply1 <id>_s1; assign <id>[<i>] = <id>_s1; // Su1
 
+			std::string supplyIndex = std::to_string(supplyUniqueIndex);
+
 			switch (bit)
 			{
 			case lcsm::verilog::Bit::Undefined:
@@ -179,19 +182,21 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 			}
 			case lcsm::verilog::Bit::False:
 			{
-				const std::string supplyVariableName = m_identifier + "_s0";
+				const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
 				s = "supply0 " + supplyVariableName + "; ";
-				s += "assign " + m_identifier + " = " + supplyVariableName + ';';
+				s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
 				break;
 			}
 			case lcsm::verilog::Bit::True:
 			{
-				const std::string supplyVariableName = m_identifier + "_s1";
+				const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
 				s = "supply1 " + supplyVariableName + "; ";
-				s += "assign " + m_identifier + " = " + supplyVariableName + ';';
+				s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
 				break;
 			}
 			}
+
+			supplyUniqueIndex++;
 
 			break;
 		}
@@ -201,6 +206,8 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 		{
 			portAssignments.push_back(std::move(s));
 		}
+
+		id += di;
 	}
 
 	return portAssignments;
@@ -208,11 +215,13 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 
 std::string lcsm::verilog::Port::verilogPortMonitorCall(std::size_t globalPortIndex, std::size_t localPortIndex) const
 {
+	const int di = (m_portType.rangeLeftToRight() ? 1 : -1);
+
 	std::string s = "$monitor(\"";
 	// Port is always must be parsed successfully, so IOType is known.
-	s.append(lcsm::verilog::IOTypePretty(m_portType.ioType()));
+	s.append(lcsm::verilog::PortDirectionTypePretty(m_portType.portDirectionType()));
 	s.append(' ' + std::to_string(globalPortIndex) + ' ' + std::to_string(localPortIndex) + " %v\", " + m_identifier +
-			 '[' + std::to_string(localPortIndex) + "])");
+			 '[' + std::to_string(m_portType.rangeStart() + di * static_cast< int >(localPortIndex)) + "])");
 	// Generated string:
 	// $monitor("<iotype> <global> <local> %v", <id>[<local>])
 	return s;
