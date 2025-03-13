@@ -789,25 +789,6 @@ void lcsm::LCSMEngine::buildCircuit(
 			queue.emplace_back(wireModel);
 		}
 
-		// Ensure existence of output regs. Connect to VerilogModule and make them to know about each other.
-		for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(verilogModuleModel->numOfOutputRegs()); portId++)
-		{
-			// Extract model.
-			const lcsm::model::Wire *wireModel = verilogModuleModel->outputReg(portId);
-			const lcsm::Identifier wireId = wireModel->id();
-
-			// Ensure existing wire.
-			lcsm::support::PointerView< lcsm::EvaluatorNode > wireEvaluatorNode = registeredWire(wireId);
-			lcsm::support::PointerView< lcsm::physical::Wire > wireNode = wireEvaluatorNode.staticCast< lcsm::physical::Wire >();
-
-			// Connect to each other.
-			verilogModuleNode->connectOutputReg(wireEvaluatorNode);
-			wireNode->connect(verilogModuleEvaluatorNode);
-
-			// Add wire to visit.
-			queue.emplace_back(wireModel);
-		}
-
 		// Update visited objects.
 		visited.insert(verilogModuleId);
 

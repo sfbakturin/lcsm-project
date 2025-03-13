@@ -16,13 +16,13 @@ namespace lcsm
 		{
 		  public:
 			ModuleDeclareParser(const std::shared_ptr< support::CharSource > &source);
-			ModuleDeclareParser(std::shared_ptr< support::CharSource > &&source);
+			ModuleDeclareParser(std::shared_ptr< support::CharSource > &&source) noexcept;
 
 			ModuleDeclareParser(const ModuleDeclareParser &other) = delete;
-			ModuleDeclareParser(ModuleDeclareParser &&other);
+			ModuleDeclareParser(ModuleDeclareParser &&other) noexcept;
 
 			ModuleDeclareParser &operator=(const ModuleDeclareParser &other) = delete;
-			ModuleDeclareParser &operator=(ModuleDeclareParser &&other);
+			ModuleDeclareParser &operator=(ModuleDeclareParser &&other) noexcept;
 
 			void swap(ModuleDeclareParser &other);
 

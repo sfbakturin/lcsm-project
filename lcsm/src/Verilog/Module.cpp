@@ -38,12 +38,16 @@ enum TestBenchOutKind : signed
 	HiZKind,
 	We0Kind,
 	We1Kind,
+	WeXKind,
 	Pu0Kind,
 	Pu1Kind,
+	PuXKind,
 	St0Kind,
 	St1Kind,
+	StXKind,
 	Su0Kind,
 	Su1Kind,
+	SuXKind,
 	IntegerKind,
 	EofKind
 };
@@ -76,6 +80,10 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 	{
 		return "We1";
 	}
+	case TestBenchOutKind::WeXKind:
+	{
+		return "WeX";
+	}
 	case TestBenchOutKind::Pu0Kind:
 	{
 		return "Pu0";
@@ -83,6 +91,10 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 	case TestBenchOutKind::Pu1Kind:
 	{
 		return "Pu1";
+	}
+	case TestBenchOutKind::PuXKind:
+	{
+		return "PuX";
 	}
 	case TestBenchOutKind::St0Kind:
 	{
@@ -92,6 +104,10 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 	{
 		return "St1";
 	}
+	case TestBenchOutKind::StXKind:
+	{
+		return "StX";
+	}
 	case TestBenchOutKind::Su0Kind:
 	{
 		return "Su0";
@@ -99,6 +115,10 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 	case TestBenchOutKind::Su1Kind:
 	{
 		return "Su1";
+	}
+	case TestBenchOutKind::SuXKind:
+	{
+		return "SuX";
 	}
 	default:
 	{
@@ -110,7 +130,7 @@ static const char *AsKeyword(TestBenchOutKind kind) noexcept
 
 static TestBenchOutKind IsKeyword(const char *str) noexcept
 {
-	for (signed i = TestBenchOutKind::InoutKind; i <= TestBenchOutKind::Su1Kind; i++)
+	for (signed i = TestBenchOutKind::InoutKind; i <= TestBenchOutKind::SuXKind; i++)
 	{
 		const TestBenchOutKind kind = static_cast< TestBenchOutKind >(i);
 		const char *keyword = AsKeyword(kind);
@@ -359,24 +379,19 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 			{
 				break;
 			}
-			case lcsm::verilog::PortDirectionType::Input:
+			case lcsm::verilog::PortDirectionType::InputPortDirection:
 			{
 				m.m_inputPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
-			case lcsm::verilog::PortDirectionType::Inout:
+			case lcsm::verilog::PortDirectionType::InoutPortDirection:
 			{
 				m.m_inoutPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
-			case lcsm::verilog::PortDirectionType::Output:
+			case lcsm::verilog::PortDirectionType::OutputPortDirection:
 			{
 				m.m_outputPorts.emplace_back(portType, std::move(identifier));
-				break;
-			}
-			case lcsm::verilog::PortDirectionType::OutputReg:
-			{
-				m.m_outputRegPorts.emplace_back(portType, std::move(identifier));
 				break;
 			}
 			}
@@ -387,16 +402,14 @@ lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::
 
 lcsm::verilog::Module::Module(const lcsm::verilog::Module &other) :
 	m_identifier(other.m_identifier), m_sourceModule(other.m_sourceModule), m_inputPorts(other.m_inputPorts),
-	m_inoutPorts(other.m_inoutPorts), m_outputPorts(other.m_outputPorts), m_outputRegPorts(other.m_outputRegPorts),
-	m_ports(other.m_ports)
+	m_inoutPorts(other.m_inoutPorts), m_outputPorts(other.m_outputPorts), m_ports(other.m_ports)
 {
 }
 
 lcsm::verilog::Module::Module(lcsm::verilog::Module &&other) noexcept :
 	m_identifier(std::move(other.m_identifier)), m_sourceModule(std::move(other.m_sourceModule)),
 	m_inputPorts(std::move(other.m_inputPorts)), m_inoutPorts(std::move(other.m_inoutPorts)),
-	m_outputPorts(std::move(other.m_outputPorts)), m_outputRegPorts(std::move(other.m_outputRegPorts)),
-	m_ports(std::move(other.m_ports))
+	m_outputPorts(std::move(other.m_outputPorts)), m_ports(std::move(other.m_ports))
 {
 }
 
@@ -417,7 +430,6 @@ void lcsm::verilog::Module::swap(lcsm::verilog::Module &other) noexcept
 	std::swap(m_inputPorts, other.m_inputPorts);
 	std::swap(m_inoutPorts, other.m_inoutPorts);
 	std::swap(m_outputPorts, other.m_outputPorts);
-	std::swap(m_outputRegPorts, other.m_outputRegPorts);
 	std::swap(m_ports, other.m_ports);
 }
 
@@ -507,11 +519,6 @@ const std::vector< lcsm::verilog::Port > &lcsm::verilog::Module::outputPorts() c
 	return m_outputPorts;
 }
 
-const std::vector< lcsm::verilog::Port > &lcsm::verilog::Module::outputRegPorts() const noexcept
-{
-	return m_outputRegPorts;
-}
-
 static void SourcePortDeclaration(const std::vector< lcsm::verilog::Port > &ports, std::string &source)
 {
 	for (const lcsm::verilog::Port &port : ports)
@@ -526,7 +533,8 @@ static void SourcePortAssignment(
 	lcsm::verilog::PortDirectionType type,
 	std::string &source)
 {
-	const std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > >::const_iterator found = datas.find(type);
+	const std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > >::const_iterator found =
+		datas.find(type);
 	if (found == datas.end())
 	{
 		return;
@@ -577,11 +585,10 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 	SourcePortDeclaration(m_inputPorts, testBenchSource);
 	SourcePortDeclaration(m_inoutPorts, testBenchSource);
 	SourcePortDeclaration(m_outputPorts, testBenchSource);
-	SourcePortDeclaration(m_outputRegPorts, testBenchSource);
 
 	// 1.3. Assignment.
-	SourcePortAssignment(testBenchInData, m_inputPorts, lcsm::verilog::PortDirectionType::Input, testBenchSource);
-	SourcePortAssignment(testBenchInData, m_inoutPorts, lcsm::verilog::PortDirectionType::Inout, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inputPorts, lcsm::verilog::PortDirectionType::InputPortDirection, testBenchSource);
+	SourcePortAssignment(testBenchInData, m_inoutPorts, lcsm::verilog::PortDirectionType::InoutPortDirection, testBenchSource);
 
 	// 1.4. Module declare.
 	testBenchSource += m_identifier + " tb(";
@@ -598,24 +605,19 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 		{
 			throw std::logic_error("Found unknown port type, impossible!");
 		}
-		case lcsm::verilog::PortDirectionType::Input:
+		case lcsm::verilog::PortDirectionType::InputPortDirection:
 		{
 			testBenchSource += m_inputPorts[port.second].identifier();
 			break;
 		}
-		case lcsm::verilog::PortDirectionType::Inout:
+		case lcsm::verilog::PortDirectionType::InoutPortDirection:
 		{
 			testBenchSource += m_inoutPorts[port.second].identifier();
 			break;
 		}
-		case lcsm::verilog::PortDirectionType::Output:
+		case lcsm::verilog::PortDirectionType::OutputPortDirection:
 		{
 			testBenchSource += m_outputPorts[port.second].identifier();
-			break;
-		}
-		case lcsm::verilog::PortDirectionType::OutputReg:
-		{
-			testBenchSource += m_outputRegPorts[port.second].identifier();
 			break;
 		}
 		}
@@ -636,24 +638,19 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 		{
 			throw std::logic_error("Found unknown port type, impossible!");
 		}
-		case lcsm::verilog::PortDirectionType::Input:
+		case lcsm::verilog::PortDirectionType::InputPortDirection:
 		{
 			// Skip INPUT, as there is no any thoughts to parse input's value.
 			continue;
 		}
-		case lcsm::verilog::PortDirectionType::Inout:
+		case lcsm::verilog::PortDirectionType::InoutPortDirection:
 		{
 			p = std::addressof(m_inoutPorts[port.second]);
 			break;
 		}
-		case lcsm::verilog::PortDirectionType::Output:
+		case lcsm::verilog::PortDirectionType::OutputPortDirection:
 		{
 			p = std::addressof(m_outputPorts[port.second]);
-			break;
-		}
-		case lcsm::verilog::PortDirectionType::OutputReg:
-		{
-			p = std::addressof(m_outputRegPorts[port.second]);
 			break;
 		}
 		}
@@ -712,9 +709,8 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > testBenchOutData;
 
 	// Initialize output data.
-	InitializeOutData(m_inoutPorts, testBenchOutData, lcsm::verilog::PortDirectionType::Inout);
-	InitializeOutData(m_outputPorts, testBenchOutData, lcsm::verilog::PortDirectionType::Output);
-	InitializeOutData(m_outputRegPorts, testBenchOutData, lcsm::verilog::PortDirectionType::OutputReg);
+	InitializeOutData(m_inoutPorts, testBenchOutData, lcsm::verilog::PortDirectionType::InoutPortDirection);
+	InitializeOutData(m_outputPorts, testBenchOutData, lcsm::verilog::PortDirectionType::OutputPortDirection);
 
 	// Generated output will be like this:
 	// <type> <global index> <local index> <value>, where:
@@ -736,22 +732,17 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 		{
 		case TestBenchOutKind::InoutKind:
 		{
-			type = lcsm::verilog::PortDirectionType::Inout;
+			type = lcsm::verilog::PortDirectionType::InoutPortDirection;
 			break;
 		}
 		case TestBenchOutKind::OutputKind:
 		{
-			type = lcsm::verilog::PortDirectionType::Output;
-			break;
-		}
-		case TestBenchOutKind::OutputRegKind:
-		{
-			type = lcsm::verilog::PortDirectionType::OutputReg;
+			type = lcsm::verilog::PortDirectionType::OutputPortDirection;
 			break;
 		}
 		default:
 			throw std::logic_error(
-				"Expected 'inout' | 'output' | 'outputreg' in generated test bench as first entity "
+				"Expected 'inout' | 'output' | in generated test bench as first entity "
 				"in line!");
 		}
 
@@ -800,6 +791,12 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 			bit = lcsm::verilog::Bit::True;
 			break;
 		}
+		case TestBenchOutKind::WeXKind:
+		{
+			strength = lcsm::verilog::Strength::WeakDrive;
+			bit = lcsm::verilog::Bit::Undefined;
+			break;
+		}
 		case TestBenchOutKind::Pu0Kind:
 		{
 			strength = lcsm::verilog::Strength::PullDrive;
@@ -810,6 +807,12 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 		{
 			strength = lcsm::verilog::Strength::PullDrive;
 			bit = lcsm::verilog::Bit::True;
+			break;
+		}
+		case TestBenchOutKind::PuXKind:
+		{
+			strength = lcsm::verilog::Strength::PullDrive;
+			bit = lcsm::verilog::Bit::Undefined;
 			break;
 		}
 		case TestBenchOutKind::St0Kind:
@@ -824,6 +827,12 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 			bit = lcsm::verilog::Bit::True;
 			break;
 		}
+		case TestBenchOutKind::StXKind:
+		{
+			strength = lcsm::verilog::Strength::StrongDrive;
+			bit = lcsm::verilog::Bit::Undefined;
+			break;
+		}
 		case TestBenchOutKind::Su0Kind:
 		{
 			strength = lcsm::verilog::Strength::SupplyDrive;
@@ -836,9 +845,16 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 			bit = lcsm::verilog::Bit::True;
 			break;
 		}
+		case TestBenchOutKind::SuXKind:
+		{
+			strength = lcsm::verilog::Strength::SupplyDrive;
+			bit = lcsm::verilog::Bit::Undefined;
+			break;
+		}
 		default:
 			throw std::logic_error(
-				"Expected 'HiZ' | 'We0' | 'We1' | 'Pu0' | 'Pu1' | 'St0' | 'St1' | 'Su0' | 'Su1' in generated test "
+				"Expected 'HiZ' | 'We0' | 'We1' | 'WeX' | 'Pu0' | 'Pu1' | 'PuX' | 'St0' | 'St1' | 'StX' | 'Su0' | "
+				"'Su1' | 'SuX' in generated test "
 				"bench as fourth entity "
 				"in line!");
 		}

@@ -22,11 +22,11 @@ namespace lcsm
 			KW_LSQR,
 			KW_RSQR,
 			KW_MODULE,
-			KW_INOUT,
 			KW_INPUT,
+			KW_INOUT,
 			KW_OUTPUT,
-			KW_OUTPUT_REG,
 			KW_SIGNED,
+			KW_UNSIGNED,
 			KW_SUPPLY0,
 			KW_SUPPLY1,
 			KW_TRI,
@@ -38,6 +38,9 @@ namespace lcsm
 			KW_WIRE,
 			KW_WAND,
 			KW_WOR,
+			KW_BIT,
+			KW_LOGIC,
+			KW_REG,
 			KW_INTEGER,
 			KW_TIME,
 			TK_INTEGER,
@@ -69,6 +72,9 @@ namespace lcsm
 
 			ModuleDeclareToken &operator=(const ModuleDeclareToken &other);
 			ModuleDeclareToken &operator=(ModuleDeclareToken &&other) noexcept;
+
+			bool operator==(ModuleDeclareKind kind) const noexcept;
+			bool operator!=(ModuleDeclareKind kind) const noexcept;
 
 			void swap(ModuleDeclareToken &other) noexcept;
 

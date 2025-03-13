@@ -233,7 +233,9 @@ void lcsm::DataBits::setWidth(std::size_t width) noexcept
 	if (width > lcsm::MaxWidth)
 	{
 		m_width = lcsm::MaxWidth;
-	} else {
+	}
+	else
+	{
 		m_width = static_cast< lcsm::width_t >(width);
 	}
 }
@@ -251,7 +253,7 @@ lcsm::verilog::Bit lcsm::DataBits::bit(std::size_t index) const noexcept
 lcsm::verilog::Value lcsm::DataBits::value(std::size_t index) const noexcept
 {
 	static const lcsm::verilog::Value NO_VALUE{ lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };
-	if (static_cast<lcsm::width_t>(index) >= m_width)
+	if (static_cast< lcsm::width_t >(index) >= m_width)
 	{
 		return NO_VALUE;
 	}

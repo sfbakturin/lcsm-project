@@ -103,103 +103,113 @@ std::vector< std::string > lcsm::verilog::Port::verilogPortAssignment(const lcsm
 		const lcsm::verilog::Bit bit = value.bit();
 		std::string s;
 
-		switch (value.strength())
+		if (m_portType.integerVectorType() != lcsm::verilog::IntegerVectorType::UnknownIntegerVectorType)
 		{
-		case lcsm::verilog::Strength::HighImpedance:
-		{
-			// Do nothing, Verilog will assign this bit as HiZ.
-			break;
+			if (value.strength() != lcsm::verilog::Strength::HighImpedance && bit != lcsm::verilog::Bit::Undefined)
+			{
+				s = "assign " + m_identifier + '[' + std::to_string(id) + "] = 1'b" + lcsm::verilog::BitPretty(bit) + ';';
+			}
 		}
-		case lcsm::verilog::Strength::WeakDrive:
+		else
 		{
-			// assign (weak1, weak0) <id>[<i>] = 1'b0; // We0
-			// assign (weak1, weak0) <id>[<i>] = 1'b1; // We1
-
-			if (bit != lcsm::verilog::Bit::Undefined)
+			switch (value.strength())
 			{
-				s = "assign (weak1, weak0) " + m_identifier + '[' + std::to_string(id) + "] = 1'b" +
-					lcsm::verilog::BitPretty(bit) + ';';
-			}
-
-			break;
-		}
-		case lcsm::verilog::Strength::PullDrive:
-		{
-			// pulldown (<id>[<i>]); // Pu0
-			// pullup (<id>[<i>]);   // Pu1
-
-			std::string kw;
-
-			switch (bit)
+			case lcsm::verilog::Strength::HighImpedance:
 			{
-			case lcsm::verilog::Bit::Undefined:
-			{
+				// Do nothing, Verilog will assign this bit as HiZ.
 				break;
 			}
-			case lcsm::verilog::Bit::False:
+			case lcsm::verilog::Strength::WeakDrive:
 			{
-				kw = "pulldown";
+				// assign (weak1, weak0) <id>[<i>] = 1'b0; // We0
+				// assign (weak1, weak0) <id>[<i>] = 1'b1; // We1
+
+				if (bit != lcsm::verilog::Bit::Undefined)
+				{
+					s = "assign (weak1, weak0) " + m_identifier + '[' + std::to_string(id) + "] = 1'b" +
+						lcsm::verilog::BitPretty(bit) + ';';
+				}
+
 				break;
 			}
-			case lcsm::verilog::Bit::True:
+			case lcsm::verilog::Strength::PullDrive:
 			{
-				kw = "pullup";
+				// pulldown (<id>[<i>]); // Pu0
+				// pullup (<id>[<i>]);   // Pu1
+
+				std::string kw;
+
+				switch (bit)
+				{
+				case lcsm::verilog::Bit::Undefined:
+				{
+					break;
+				}
+				case lcsm::verilog::Bit::False:
+				{
+					kw = "pulldown";
+					break;
+				}
+				case lcsm::verilog::Bit::True:
+				{
+					kw = "pullup";
+					break;
+				}
+				}
+
+				if (!kw.empty())
+				{
+					s = kw + " (" + m_identifier + '[' + std::to_string(id) + "]);";
+				}
+
+				break;
+			}
+			case lcsm::verilog::Strength::StrongDrive:
+			{
+				// assign <id>[<i>] = 1'b0; // St0
+				// assign <id>[<i>] = 1'b1; // St1
+
+				if (bit != lcsm::verilog::Bit::Undefined)
+				{
+					s = "assign " + m_identifier + '[' + std::to_string(id) + "] = 1'b" + lcsm::verilog::BitPretty(bit) + ";";
+				}
+
+				break;
+			}
+			case lcsm::verilog::Strength::SupplyDrive:
+			{
+				// supply0 <id>_s0; assign <id>[<i>] = <id>_s0; // Su0
+				// supply1 <id>_s1; assign <id>[<i>] = <id>_s1; // Su1
+
+				std::string supplyIndex = std::to_string(supplyUniqueIndex);
+
+				switch (bit)
+				{
+				case lcsm::verilog::Bit::Undefined:
+				{
+					break;
+				}
+				case lcsm::verilog::Bit::False:
+				{
+					const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
+					s = "supply0 " + supplyVariableName + "; ";
+					s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
+					break;
+				}
+				case lcsm::verilog::Bit::True:
+				{
+					const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
+					s = "supply1 " + supplyVariableName + "; ";
+					s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
+					break;
+				}
+				}
+
+				supplyUniqueIndex++;
+
 				break;
 			}
 			}
-
-			if (!kw.empty())
-			{
-				s = kw + " (" + m_identifier + '[' + std::to_string(id) + "]);";
-			}
-
-			break;
-		}
-		case lcsm::verilog::Strength::StrongDrive:
-		{
-			// assign <id>[<i>] = 1'b0; // St0
-			// assign <id>[<i>] = 1'b1; // St1
-
-			if (bit != lcsm::verilog::Bit::Undefined)
-			{
-				s = "assign " + m_identifier + '[' + std::to_string(id) + "] = 1'b" + lcsm::verilog::BitPretty(bit) + ";";
-			}
-
-			break;
-		}
-		case lcsm::verilog::Strength::SupplyDrive:
-		{
-			// supply0 <id>_s0; assign <id>[<i>] = <id>_s0; // Su0
-			// supply1 <id>_s1; assign <id>[<i>] = <id>_s1; // Su1
-
-			std::string supplyIndex = std::to_string(supplyUniqueIndex);
-
-			switch (bit)
-			{
-			case lcsm::verilog::Bit::Undefined:
-			{
-				break;
-			}
-			case lcsm::verilog::Bit::False:
-			{
-				const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
-				s = "supply0 " + supplyVariableName + "; ";
-				s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
-				break;
-			}
-			case lcsm::verilog::Bit::True:
-			{
-				const std::string supplyVariableName = m_identifier + '_' + std::move(supplyIndex);
-				s = "supply1 " + supplyVariableName + "; ";
-				s += "assign " + m_identifier + '[' + std::to_string(id) + "] = " + supplyVariableName + ';';
-				break;
-			}
-			}
-
-			supplyUniqueIndex++;
-
-			break;
-		}
 		}
 
 		if (!s.empty())

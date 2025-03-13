@@ -23,8 +23,7 @@ namespace lcsm
 			{
 				Input,
 				Inout,
-				Output,
-				OutputReg
+				Output
 			};
 
 		  public:
@@ -37,24 +36,20 @@ namespace lcsm
 			const Wire *input(portid_t portId) const noexcept;
 			const Wire *inout(portid_t portId) const noexcept;
 			const Wire *output(portid_t portId) const noexcept;
-			const Wire *outputReg(portid_t portId) const noexcept;
 
 			portid_t indexOfInput(portid_t portId) const noexcept;
 			portid_t indexOfInout(portid_t portId) const noexcept;
 			portid_t indexOfOutput(portid_t portId) const noexcept;
-			portid_t indexOfOutputReg(portid_t portId) const noexcept;
 
 			portid_t indexOfInputByLabel(label_t label) const noexcept;
 			portid_t indexOfInoutByLabel(label_t label) const noexcept;
 			portid_t indexOfOutputByLabel(label_t label) const noexcept;
-			portid_t indexOfOutputRegByLabel(label_t label) const noexcept;
 
 			portid_t indexOfByLabel(label_t label) const noexcept;
 
 			portid_t numOfInputs() const noexcept;
 			portid_t numOfInouts() const noexcept;
 			portid_t numOfOutputs() const noexcept;
-			portid_t numOfOutputRegs() const noexcept;
 
 			const verilog::Module *module() const noexcept;
 
@@ -83,7 +78,6 @@ namespace lcsm
 			std::vector< std::shared_ptr< Wire > > m_inputs;
 			std::vector< std::shared_ptr< Wire > > m_inouts;
 			std::vector< std::shared_ptr< Wire > > m_outputs;
-			std::vector< std::shared_ptr< Wire > > m_outputRegs;
 
 			std::shared_ptr< verilog::Module > m_module;
 		};

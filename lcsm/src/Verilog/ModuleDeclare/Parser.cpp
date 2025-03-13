@@ -15,17 +15,17 @@ lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(const std::shared_ptr< l
 {
 }
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::shared_ptr< lcsm::support::CharSource > &&source) :
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::shared_ptr< lcsm::support::CharSource > &&source) noexcept :
 	m_lex(std::move(source))
 {
 }
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(lcsm::verilog::ModuleDeclareParser &&other) :
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(lcsm::verilog::ModuleDeclareParser &&other) noexcept :
 	m_lex(std::move(other.m_lex))
 {
 }
 
-lcsm::verilog::ModuleDeclareParser &lcsm::verilog::ModuleDeclareParser::operator=(lcsm::verilog::ModuleDeclareParser &&other)
+lcsm::verilog::ModuleDeclareParser &lcsm::verilog::ModuleDeclareParser::operator=(lcsm::verilog::ModuleDeclareParser &&other) noexcept
 {
 	return lcsm::support::MoveAssign< lcsm::verilog::ModuleDeclareParser >(this, std::move(other));
 }
@@ -35,12 +35,20 @@ void lcsm::verilog::ModuleDeclareParser::swap(lcsm::verilog::ModuleDeclareParser
 	std::swap(m_lex, other.m_lex);
 }
 
-static void ruleRange(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+static void ruleRange(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex, bool isOptional = false)
 {
 	// range --> LSQR INT COLON INT RSQR
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_LSQR)
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_LSQR)
 	{
-		throw std::logic_error("Parser error at trying to parse range!");
+		if (isOptional)
+		{
+			lex.backToken();
+			return;
+		}
+		else
+		{
+			throw std::logic_error("Parser error at trying to parse range!");
+		}
 	}
 
 	// For future constructed range.
@@ -56,7 +64,7 @@ static void ruleRange(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDe
 		left = lex.token().asInteger();
 	}
 
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_COLON)
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_COLON)
 	{
 		throw std::logic_error("Parser error at trying to parse range!");
 	}
@@ -70,7 +78,7 @@ static void ruleRange(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDe
 		right = lex.token().asInteger();
 	}
 
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_RSQR)
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_RSQR)
 	{
 		throw std::logic_error("Parser error at trying to parse range!");
 	}
@@ -110,7 +118,6 @@ static std::vector< std::string > ruleListOfPortIdentifiers(lcsm::verilog::Modul
 			case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
 			case lcsm::verilog::ModuleDeclareKind::KW_INPUT:
 			case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
-			case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
 			{
 				lex.backToken();
 				return identifiers;
@@ -128,115 +135,260 @@ static std::vector< std::string > ruleListOfPortIdentifiers(lcsm::verilog::Modul
 	return identifiers;
 }
 
+static bool ruleNetType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex, bool isOptional = false)
+{
+	// net_type --> SUPPLY0 | SUPPLY1 | TRI | TRIAND | TRIOR | TRIREG | TRE0 | TRI1 | UWIRE | WIRE | WAND | WOR
+
+	switch (lex.nextToken().kind())
+	{
+	case lcsm::verilog::ModuleDeclareKind::KW_SUPPLY0:
+	{
+		portType.setNetType(lcsm::verilog::Supply0Net);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_SUPPLY1:
+	{
+		portType.setNetType(lcsm::verilog::Supply1Net);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_TRI:
+	{
+		portType.setNetType(lcsm::verilog::TriNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_TRI0:
+	{
+		portType.setNetType(lcsm::verilog::Tri0Net);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_TRI1:
+	{
+		portType.setNetType(lcsm::verilog::Tri1Net);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_TRIAND:
+	{
+		portType.setNetType(lcsm::verilog::TriandNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_TRIOR:
+	{
+		portType.setNetType(lcsm::verilog::TriorNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_UWIRE:
+	{
+		portType.setNetType(lcsm::verilog::UwireNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_WIRE:
+	{
+		portType.setNetType(lcsm::verilog::WireNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_WAND:
+	{
+		portType.setNetType(lcsm::verilog::WireNet);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_WOR:
+	{
+		portType.setNetType(lcsm::verilog::WorNet);
+		return true;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	if (isOptional)
+	{
+		lex.backToken();
+		return false;
+	}
+
+	throw std::logic_error("Parser error at trying to parse net_type!");
+}
+
+static bool ruleSigning(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex, bool isOptional = false)
+{
+	// signing --> SIGNED | UNSIGNED
+
+	switch (lex.nextToken().kind())
+	{
+	case lcsm::verilog::ModuleDeclareKind::KW_SIGNED:
+	{
+		portType.setIsSigned(true);
+		return true;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_UNSIGNED:
+	{
+		portType.setIsSigned(false);
+		return true;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	if (isOptional)
+	{
+		lex.backToken();
+		return false;
+	}
+
+	throw std::logic_error("Parser error at trying to parse signing!");
+}
+
+static void ruleImplicitDataType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+{
+	// implicit_data_type --> (signing)? (range)?
+
+	// 1. (signing)?
+	ruleSigning(portType, lex, true);
+
+	// 2. (range)?
+	ruleRange(portType, lex, true);
+}
+
+static void ruleIntegerVectorType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+{
+	// integer_vector_type --> BIT | LOGIC | REG
+
+	switch (lex.nextToken().kind())
+	{
+	case lcsm::verilog::ModuleDeclareKind::KW_BIT:
+	{
+		portType.setIntegerVectorType(lcsm::verilog::IntegerVectorType::BitIntegerVector);
+		return;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_LOGIC:
+	{
+		portType.setIntegerVectorType(lcsm::verilog::IntegerVectorType::LogicIntegerVector);
+		return;
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_REG:
+	{
+		portType.setIntegerVectorType(lcsm::verilog::IntegerVectorType::RegIntegerVector);
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Parser error at trying to parse integer_vector_type!");
+}
+
+static void ruleDataType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+{
+	// data_type --> integer_vector_type (signing)? (range)?
+
+	// 1. integer_vector_type
+	ruleIntegerVectorType(portType, lex);
+
+	// 2. (signing)?
+	ruleSigning(portType, lex, true);
+
+	// 3. (range)?
+	ruleRange(portType, lex, true);
+}
+
+static void ruleDataTypeOrImplicit(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+{
+	// data_type_or_implicit --> data_type | implicit_data_type
+	// data_type             --> integer_vector_type (signing)? (range)?
+	// implicit_data_type    --> (signing)? (range)?
+
+	// 1. Check for (signing)? - if found, then parse it as implicit_data_type, otherwise - as data_type.
+	switch (lex.nextToken().kind())
+	{
+	case lcsm::verilog::ModuleDeclareKind::KW_SIGNED:
+	case lcsm::verilog::ModuleDeclareKind::KW_UNSIGNED:
+	{
+		// 2. This is implicit_data_type. Return back token for next rule and perform rule.
+		lex.backToken();
+		ruleImplicitDataType(portType, lex);
+		return;
+	}
+	default:
+	{
+		// Return back token.
+		lex.backToken();
+		break;
+	}
+	}
+
+	// 2. Check for (range)? - if fount, then parse it as implicit_data_type, otherwise - as data_type.
+	if (lex.nextToken() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
+	{
+		// Return token back for rule.
+		lex.backToken();
+		ruleImplicitDataType(portType, lex);
+		return;
+	}
+	else
+	{
+		// Return token back.
+		lex.backToken();
+	}
+
+	// 2.This might be data_type, we should check integer_vector_type first.
+	switch (lex.nextToken().kind())
+	{
+	case lcsm::verilog::ModuleDeclareKind::KW_BIT:
+	case lcsm::verilog::ModuleDeclareKind::KW_LOGIC:
+	case lcsm::verilog::ModuleDeclareKind::KW_REG:
+	{
+		// This is data_type. Return token for rule and perform parsing.
+		lex.backToken();
+		ruleDataType(portType, lex);
+		return;
+	}
+	default:
+	{
+		// Return token back.
+		lex.backToken();
+		break;
+	}
+	}
+}
+
+static void ruleNetPortType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
+{
+	// net_port_type --> (net_type)? data_type_or_implicit
+
+	// 1. (net_type)?
+	ruleNetType(portType, lex, true);
+
+	// 2. data_type_or_implicit.
+	ruleDataTypeOrImplicit(portType, lex);
+}
+
 static void ruleInoutDeclaration(lcsm::verilog::ModuleDeclareContext &context, lcsm::verilog::ModuleDeclareLexer &lex)
 {
 	// Port type.
 	lcsm::verilog::PortType portType;
 
-	// inout_declaration --> INOUT (net_type)? (SIGNED)? (range)? list_of_port_identifiers
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_INOUT)
+	// inout_declaration --> INOUT net_port_type list_of_port_identifiers
+
+	// 1. INOUT
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_INOUT)
 	{
 		throw std::logic_error("Parser error at trying to parse inout_declaration!");
 	}
 	else
 	{
-		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Inout);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::InoutPortDirection);
 	}
 
-	// Check keywords: (net_type)? (SIGNED)? <start of (range)?>
-	lex.nextToken();
-	// Check net_type --> SUPPLY0 | SUPPLY1 | TRI | TRIAND | TRIOR | TRI0 | TRI1 | UWIRE | WIRE | WAND | WOR
-	switch (lex.token().kind())
-	{
-	case lcsm::verilog::KW_SUPPLY0:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Supply0);
-		break;
-	}
-	case lcsm::verilog::KW_SUPPLY1:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Supply1);
-		break;
-	}
-	case lcsm::verilog::KW_TRI:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri);
-		break;
-	}
-	case lcsm::verilog::KW_TRI0:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri0);
-		break;
-	}
-	case lcsm::verilog::KW_TRI1:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri1);
-		break;
-	}
-	case lcsm::verilog::KW_TRIAND:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Triand);
-		break;
-	}
-	case lcsm::verilog::KW_TRIOR:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Trior);
-		break;
-	}
-	case lcsm::verilog::KW_UWIRE:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Uwire);
-		break;
-	}
-	case lcsm::verilog::KW_WIRE:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wire);
-		break;
-	}
-	case lcsm::verilog::KW_WAND:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wand);
-		break;
-	}
-	case lcsm::verilog::KW_WOR:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wor);
-		break;
-	}
-	default:
-	{
-		// Return back.
-		lex.backToken();
-		break;
-	}
-	}
+	// 2. net_port_type.
+	ruleNetPortType(portType, lex);
 
-	// Check SIGNED
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
-	{
-		portType.setIsSigned(true);
-	}
-	else
-	{
-		// Return back.
-		lex.backToken();
-	}
-
-	// Check range.
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
-	{
-		// Return back token for range rule.
-		lex.backToken();
-		// Parse range.
-		ruleRange(portType, lex);
-	}
-	else
-	{
-		// Return back.
-		lex.backToken();
-	}
-
-	// Parse list_of_port_identifiers.
+	// 3. list_of_port_identifiers
 	context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
 }
 
@@ -245,187 +397,23 @@ static void ruleInputDeclaration(lcsm::verilog::ModuleDeclareContext &context, l
 	// Port type.
 	lcsm::verilog::PortType portType;
 
-	// inout_declaration --> INOUT (net_type)? (SIGNED)? (range)? list_of_port_identifiers
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_INPUT)
+	// input_declaration --> INPUT net_port_type list_of_port_identifiers
+
+	// 1. INPUT
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_INPUT)
 	{
 		throw std::logic_error("Parser error at trying to parse input_declaration!");
 	}
 	else
 	{
-		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Input);
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::InputPortDirection);
 	}
 
-	// Check keywords: (net_type)? (SIGNED)? <start of (range)?>
-	// Check net_type --> SUPPLY0 | SUPPLY1 | TRI | TRIAND | TRIOR | TRI0 | TRI1 | UWIRE | WIRE | WAND | WOR
-	switch (lex.nextToken().kind())
-	{
-	case lcsm::verilog::KW_SUPPLY0:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Supply0);
-		break;
-	}
-	case lcsm::verilog::KW_SUPPLY1:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Supply1);
-		break;
-	}
-	case lcsm::verilog::KW_TRI:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri);
-		break;
-	}
-	case lcsm::verilog::KW_TRI0:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri0);
-		break;
-	}
-	case lcsm::verilog::KW_TRI1:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Tri1);
-		break;
-	}
-	case lcsm::verilog::KW_TRIAND:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Triand);
-		break;
-	}
-	case lcsm::verilog::KW_TRIOR:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Trior);
-		break;
-	}
-	case lcsm::verilog::KW_UWIRE:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Uwire);
-		break;
-	}
-	case lcsm::verilog::KW_WIRE:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wire);
-		break;
-	}
-	case lcsm::verilog::KW_WAND:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wand);
-		break;
-	}
-	case lcsm::verilog::KW_WOR:
-	{
-		portType.setNetType(lcsm::verilog::NetType::Wor);
-		break;
-	}
-	default:
-	{
-		lex.backToken();
-		break;
-	}
-	}
+	// 2. net_port_type.
+	ruleNetPortType(portType, lex);
 
-	// Check SIGNED
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
-	{
-		portType.setIsSigned(true);
-	}
-	else
-	{
-		lex.backToken();
-	}
-
-	// Check range.
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
-	{
-		lex.backToken();
-		ruleRange(portType, lex);
-	}
-	else
-	{
-		lex.backToken();
-	}
-
-	// Parse list_of_port_identifiers.
+	// 3. list_of_port_identifiers
 	context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
-}
-
-static void ruleOutputVariableType(lcsm::verilog::PortType &portType, lcsm::verilog::ModuleDeclareLexer &lex)
-{
-	switch (lex.nextToken().kind())
-	{
-	case lcsm::verilog::ModuleDeclareKind::KW_INTEGER:
-	{
-		portType.setOutputVariableType(lcsm::verilog::OutputVariableType::Integer);
-		return;
-	}
-	case lcsm::verilog::ModuleDeclareKind::KW_TIME:
-	{
-		portType.setOutputVariableType(lcsm::verilog::OutputVariableType::Time);
-		return;
-	}
-	default:
-	{
-		break;
-	}
-	}
-	throw std::logic_error("Parser error at trying to parse output_variable_type!");
-}
-
-static void ruleListOfVariablePortIdentifiers(lcsm::verilog::ModuleDeclareLexer &lex)
-{
-	// list_of_variable_port_identifiers --> port_identifier (EQUAL constant_expression)? (COMMA port_identifier (EQUAL
-	// constant_expression)?)*
-	if (!lex.nextToken().isIdentifier())
-	{
-		throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
-	}
-
-	// (EQUAL constant_expression)?
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
-	{
-		if (!lex.nextToken().isInteger())
-		{
-			throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
-		}
-	}
-	else
-	{
-		// Return back.
-		lex.backToken();
-	}
-
-	// (COMMA port_identifier (EQUAL constant_expression)?)*
-	// FIXME: Might fail at ", input"
-	while (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_COMMA)
-	{
-		// port_identifier
-		lex.nextToken();
-		if (lex.token().isIdentifier())
-		{
-			goto l_parse_constant_expression;
-		}
-		else
-		{
-			// Otherwise, return back.
-			lex.backToken();
-			return;
-		}
-
-		// (EQUAL constant_expression)?
-l_parse_constant_expression:
-		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_EQUAL)
-		{
-			if (!lex.nextToken().isInteger())
-			{
-				throw std::logic_error("Parser error at trying to parse list_of_variable_port_identifiers!");
-			}
-		}
-		else
-		{
-			// Return back.
-			lex.backToken();
-		}
-	}
-
-	// Return back for other rules.
-	lex.backToken();
 }
 
 static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareContext &context, lcsm::verilog::ModuleDeclareLexer &lex)
@@ -433,151 +421,23 @@ static void ruleOutputDeclaration(lcsm::verilog::ModuleDeclareContext &context, 
 	// Port type.
 	lcsm::verilog::PortType portType;
 
-	// output_declaration --> OUTPUT (net_type)? (SIGNED)? (range)? list_of_port_identifiers |
-	//                        OUTPUT_REG (SIGNED)? (range)? list_of_port_identifiers         |
-	//                        OUTPUT output_variable_type list_of_variable_port_identifiers
-	switch (lex.nextToken().kind())
+	// output_declaration --> OUTPUT net_port_type list_of_port_identifiers
+
+	// 1. OUTPUT
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_OUTPUT)
 	{
-	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
-	{
-		// Check keywords: (net_type)?
-		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::Output);
-		switch (lex.nextToken().kind())
-		{
-		case lcsm::verilog::KW_SUPPLY0:
-		case lcsm::verilog::KW_SUPPLY1:
-		case lcsm::verilog::KW_TRI:
-		case lcsm::verilog::KW_TRI0:
-		case lcsm::verilog::KW_TRI1:
-		case lcsm::verilog::KW_TRIAND:
-		case lcsm::verilog::KW_TRIOR:
-		case lcsm::verilog::KW_UWIRE:
-		case lcsm::verilog::KW_WIRE:
-		case lcsm::verilog::KW_WAND:
-		case lcsm::verilog::KW_WOR:
-		{
-			// Then we should now parse (SIGNED)? (range)? list_of_port_identifiers
-
-			// Check SIGNED.
-			if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
-			{
-				portType.setIsSigned(true);
-			}
-			else
-			{
-				lex.backToken();
-			}
-
-			// Check range.
-			if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
-			{
-				lex.backToken();
-				ruleRange(portType, lex);
-			}
-			else
-			{
-				lex.backToken();
-			}
-
-			// Parse list_of_port_identifiers.
-			context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
-
-			return;
-		}
-		default:
-		{
-			lex.backToken();
-			break;
-		}
-		}
-
-		// Check SIGNED.
-		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
-		{
-			portType.setIsSigned(true);
-		}
-		else
-		{
-			lex.backToken();
-		}
-
-		// Check range.
-		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
-		{
-			lex.backToken();
-			ruleRange(portType, lex);
-		}
-		else
-		{
-			lex.backToken();
-		}
-
-		// Choose between list_of_port_identifiers | output_variable_type.
-		// Check output_variable_type.
-		lex.nextToken();
-		if (lex.token().kind() != lcsm::verilog::ModuleDeclareKind::KW_INTEGER &&
-			lex.token().kind() != lcsm::verilog::ModuleDeclareKind::KW_TIME)
-		{
-			// Return back for list_of_port_identifiers.
-			lex.backToken();
-			// Parse list_of_port_identifiers.
-			context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
-			return;
-		}
-		else
-		{
-			// Return back for output_variable_type.
-			lex.backToken();
-
-			// Parse output_variable_type.
-			ruleOutputVariableType(portType, lex);
-
-			// Parse list_of_variable_port_identifiers
-			ruleListOfVariablePortIdentifiers(lex);
-
-			return;
-		}
-
-		break;
+		throw std::logic_error("Parser error at trying to parse input_declaration!");
 	}
-	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
+	else
 	{
-		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::OutputReg);
-
-		// Check SIGNED.
-		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_SIGNED)
-		{
-			portType.setIsSigned(true);
-		}
-		else
-		{
-			lex.backToken();
-		}
-
-		// Check range.
-		if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_LSQR)
-		{
-			// Return back for range.
-			lex.backToken();
-			// Parse range.
-			ruleRange(portType, lex);
-		}
-		else
-		{
-			// Return back.
-			lex.backToken();
-		}
-
-		// Parse list_of_port_identifiers.
-		context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
-
-		return;
-	}
-	default:
-		break;
+		portType.setPortDirectionType(lcsm::verilog::PortDirectionType::OutputPortDirection);
 	}
 
-	throw std::logic_error("Parser error at trying to parse output_declaration!");
+	// 2. net_port_type.
+	ruleNetPortType(portType, lex);
+
+	// 3. list_of_port_identifiers
+	context.addPortDeclaration(portType, ruleListOfPortIdentifiers(lex));
 }
 
 static void rulePortDeclaration(lcsm::verilog::ModuleDeclareContext &context, lcsm::verilog::ModuleDeclareLexer &lex)
@@ -601,7 +461,6 @@ static void rulePortDeclaration(lcsm::verilog::ModuleDeclareContext &context, lc
 		return;
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
-	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
 	{
 		lex.backToken();
 		ruleOutputDeclaration(context, lex);
@@ -621,13 +480,13 @@ static void ruleListOfPortDeclarations(lcsm::verilog::ModuleDeclareContext &cont
 	// list_of_port_declarations --> LPAREN (port_declaration  (COMMA port_declaration)*)? RPAREN
 
 	// 1. LPAREN
-	if (lex.nextToken().kind() != lcsm::verilog::ModuleDeclareKind::KW_LPAREN)
+	if (lex.nextToken() != lcsm::verilog::ModuleDeclareKind::KW_LPAREN)
 	{
 		throw std::logic_error("Parser error at trying to parse list_of_port_declarations!");
 	}
 
 	// 2.1. RPAREN
-	if (lex.nextToken().kind() == lcsm::verilog::ModuleDeclareKind::KW_RPAREN)
+	if (lex.nextToken() == lcsm::verilog::ModuleDeclareKind::KW_RPAREN)
 	{
 		return;
 	}

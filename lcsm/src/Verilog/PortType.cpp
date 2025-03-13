@@ -6,20 +6,24 @@
 #include <utility>
 
 lcsm::verilog::PortType::PortType() noexcept :
-	m_portDirectionType(lcsm::verilog::PortDirectionType::UnknowPortDirectionType), m_netType(lcsm::verilog::NetType::UnknownPortType),
-	m_isSigned(false), m_outputVariableType(lcsm::verilog::UnknownOutputVariableType), m_range(0, 0), m_rangeValid(false)
+	m_portDirectionType(lcsm::verilog::PortDirectionType::UnknowPortDirectionType),
+	m_integerVectorType(lcsm::verilog::IntegerVectorType::UnknownIntegerVectorType),
+	m_netType(lcsm::verilog::NetType::UnknownNetType), m_isSigned(false),
+	m_outputVariableType(lcsm::verilog::UnknownOutputVariableType), m_range(0, 0), m_rangeValid(false)
 {
 }
 
 lcsm::verilog::PortType::PortType(const lcsm::verilog::PortType &other) noexcept :
-	m_portDirectionType(other.m_portDirectionType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
-	m_outputVariableType(other.m_outputVariableType), m_range(other.m_range), m_rangeValid(other.m_rangeValid)
+	m_portDirectionType(other.m_portDirectionType), m_integerVectorType(other.m_integerVectorType),
+	m_netType(other.m_netType), m_isSigned(other.m_isSigned), m_outputVariableType(other.m_outputVariableType),
+	m_range(other.m_range), m_rangeValid(other.m_rangeValid)
 {
 }
 
 lcsm::verilog::PortType::PortType(lcsm::verilog::PortType &&other) noexcept :
-	m_portDirectionType(other.m_portDirectionType), m_netType(other.m_netType), m_isSigned(other.m_isSigned),
-	m_outputVariableType(other.m_outputVariableType), m_range(std::move(other.m_range)), m_rangeValid(other.m_rangeValid)
+	m_portDirectionType(other.m_portDirectionType), m_integerVectorType(other.m_integerVectorType),
+	m_netType(other.m_netType), m_isSigned(other.m_isSigned), m_outputVariableType(other.m_outputVariableType),
+	m_range(std::move(other.m_range)), m_rangeValid(other.m_rangeValid)
 {
 }
 
@@ -36,6 +40,7 @@ lcsm::verilog::PortType &lcsm::verilog::PortType::operator=(lcsm::verilog::PortT
 void lcsm::verilog::PortType::swap(lcsm::verilog::PortType &other) noexcept
 {
 	std::swap(m_portDirectionType, other.m_portDirectionType);
+	std::swap(m_integerVectorType, other.m_integerVectorType);
 	std::swap(m_netType, other.m_netType);
 	std::swap(m_isSigned, other.m_isSigned);
 	std::swap(m_outputVariableType, other.m_outputVariableType);
@@ -83,6 +88,16 @@ void lcsm::verilog::PortType::setOutputVariableType(lcsm::verilog::OutputVariabl
 	m_outputVariableType = outputVariableType;
 }
 
+lcsm::verilog::IntegerVectorType lcsm::verilog::PortType::integerVectorType() const noexcept
+{
+	return m_integerVectorType;
+}
+
+void lcsm::verilog::PortType::setIntegerVectorType(lcsm::verilog::IntegerVectorType integerVectorType) noexcept
+{
+	m_integerVectorType = integerVectorType;
+}
+
 bool lcsm::verilog::PortType::isRangeValid() const noexcept
 {
 	return m_rangeValid;
@@ -111,7 +126,7 @@ std::size_t lcsm::verilog::PortType::rangeWidth() const noexcept
 	const int e = std::max(m_range.first, m_range.second);
 	if (e >= 0)
 	{
-		return static_cast<std::size_t>(e) - s + 1;	
+		return static_cast< std::size_t >(e) - s + 1;
 	}
 	else
 	{
@@ -137,6 +152,21 @@ int lcsm::verilog::PortType::rangeEnd() const noexcept
 std::string lcsm::verilog::PortType::toVerilogString() const
 {
 	// Generated string:
-	// wire [<range_f>:<rangle_s>]
-	return "wire [" + std::to_string(m_range.first) + ":" + std::to_string(m_range.second) + "]";
+	// <type> [<range_f>:<rangle_s>]
+	std::string builder;
+
+	// Type string.
+	if (m_integerVectorType != lcsm::verilog::IntegerVectorType::UnknownIntegerVectorType)
+	{
+		builder.append(lcsm::verilog::IntegerVectorTypePretty(m_integerVectorType));
+	}
+	else
+	{
+		builder.append("wire");
+	}
+
+	// Range.
+	builder += '[' + std::to_string(m_range.first) + ':' + std::to_string(m_range.second) + ']';
+
+	return builder;
 }

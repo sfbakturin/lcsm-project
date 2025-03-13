@@ -201,6 +201,20 @@ static void test1_verilogModuleDeclareParse()
 	testParseMany(inputVariants, { 1 });
 	testParseMany(inputVariants, { 2, 3 });
 
+	// All 'input reg' variants.
+	// clang-format off
+	const std::vector< std::string > inputRegVariants = {
+		"input reg",
+		"input reg [0:0]",
+		"input reg [12:0]",
+		"input reg [0:12]",
+		"input reg [13:12]",
+	};
+	// clang-format on
+
+	testParseMany(inputRegVariants, { 1 });
+	testParseMany(inputRegVariants, { 2, 3 });
+
 	// All 'inout' variants.
 	// clang-format off
 	const std::vector< std::string > inoutVariants = {
@@ -220,9 +234,26 @@ static void test1_verilogModuleDeclareParse()
 	testParseMany(inoutVariants, { 1 });
 	testParseMany(inoutVariants, { 2, 3 });
 
+	// All 'inout reg' variants.
+	// clang-format off
+	const std::vector< std::string > inoutRegVariants = {
+		"inout reg",
+		"inout reg [0:0]",
+		"inout reg [12:0]",
+		"inout reg [0:12]",
+		"inout reg [13:12]",
+	};
+	// clang-format on
+
+	testParseMany(inoutRegVariants, { 1 });
+	testParseMany(inoutRegVariants, { 2, 3 });
+
 	testParseMany(inputVariants, outputVariants, { 1, 2 });
 	testParseMany(outputRegVariants, inputVariants, { 3, 4 });
 	testParseMany(outputVariants, inoutVariants, { 3, 4 });
+	testParseMany(inputRegVariants, outputRegVariants, { 1, 2 });
+	testParseMany(outputRegVariants, inputRegVariants, { 3, 4 });
+	testParseMany(outputRegVariants, inoutRegVariants, { 3, 4 });
 }
 
 static void test2_badVerilogModuleDeclareParse()
@@ -238,6 +269,8 @@ static void test2_badVerilogModuleDeclareParse()
 	testNoParse("module example example(input a);", "identifier continues with another identifier 2");
 	testNoParse("module example(input a,);", "no list of identifier 1");
 	testNoParse("module example(input a,b,c,);", "no list of identifier 2");
+	testNoParse("module example(input output a,b,c);", "multiply port directions 1");
+	testNoParse("module example(output inout a,b,c);", "multiply port directions 2");
 	testNoParse("module example(input a,b,c.);", "bad symbol 1");
 	testNoParse("module ex@mple(input a,b,c.);", "bad symbol 2");
 	testNoParse("module example<input a,b,c>;", "bad symbol 3");
@@ -270,14 +303,15 @@ static LCSMCircuit generator1()
 static LCSMCircuit generator2()
 {
 	LCSMCircuit circuit("VerilogModuleCircuitTest");
-	
+
 	// Create all needed circuit elements.
 	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
 	model::Pin *out = circuit.createPin(true, "out");
 
 	// Create Verilog Module.
-	Module module = Module::fromString("module or_test1(output wire out, input [1:0] in);or (pull1, strong0) o1(out, "
-									   "in[0], in[1]);endmodule");
+	Module module = Module::fromString(
+		"module or_test1(output wire out, input [1:0] in);or (pull1, strong0) o1(out, "
+		"in[0], in[1]);endmodule");
 	model::VerilogModule *or_test1 = circuit.createVerilogModule(std::move(module));
 
 	// Make connections.
@@ -299,7 +333,7 @@ static LCSMCircuit generator3()
 	Module module = Module::fromString(
 		"module or_test2(output wire out, input [1:2] in);or (weak1, pull0) o1(out, "
 		"in[2], in[1]);endmodule");
-	model::VerilogModule *or_test2= circuit.createVerilogModule(std::move(module));
+	model::VerilogModule *or_test2 = circuit.createVerilogModule(std::move(module));
 
 	// Make connections.
 	circuit.connect(in, or_test2, or_test2->indexOfInputByLabel("in"));
@@ -328,6 +362,29 @@ static LCSMCircuit generator4()
 	// Make connections.
 	circuit.connect(in, andor_test, andor_test->indexOfByLabel("in"));
 	circuit.connect(andor_test, andor_test->indexOfByLabel("out"), out);
+
+	return circuit;
+}
+
+static LCSMCircuit generator5()
+{
+	LCSMCircuit circuit("VerilogModuleCircuitTest");
+
+	// Create all needed circuit elements.
+	model::Pin *in = circuit.createPin(false, "in");
+	model::Pin *out = circuit.createPin(true, "out");
+
+	// Create Verilog Module.
+	Module module = Module::fromString(R"(
+		module reg_test(output reg out, input reg in);
+			not(out, in);
+		endmodule
+	)");
+	model::VerilogModule *reg_test = circuit.createVerilogModule(std::move(module));
+
+	// Make connections.
+	circuit.connect(in, reg_test, reg_test->indexOfByLabel("in"));
+	circuit.connect(reg_test, reg_test->indexOfByLabel("out"), out);
 
 	return circuit;
 }
@@ -373,7 +430,7 @@ static void checker3(LCSMCircuit &circuit)
 	assertType(or_test2, CircuitType::VerilogModule);
 }
 
-static void checker4(LCSMCircuit& circuit)
+static void checker4(LCSMCircuit &circuit)
 {
 	// Find circuits.
 	Circuit *in = circuit.find("in");
@@ -386,6 +443,19 @@ static void checker4(LCSMCircuit& circuit)
 	assertType(andor_test, CircuitType::VerilogModule);
 }
 
+static void checker5(LCSMCircuit &circuit)
+{
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *reg_test = circuit.find("reg_test");
+
+	// Check element's types.
+	assertType(in, CircuitType::Pin);
+	assertType(out, CircuitType::Pin);
+	assertType(reg_test, CircuitType::VerilogModule);
+}
+
 static void test3_pretest()
 {
 	// Generators.
@@ -393,18 +463,21 @@ static void test3_pretest()
 	const GeneratorTy g2 = generator2;
 	const GeneratorTy g3 = generator3;
 	const GeneratorTy g4 = generator4;
+	const GeneratorTy g5 = generator5;
 
 	// Checkers.
 	const CheckerTy c1 = checker1;
 	const CheckerTy c2 = checker2;
 	const CheckerTy c3 = checker3;
 	const CheckerTy c4 = checker4;
+	const CheckerTy c5 = checker5;
 
 	// Pre-test.
 	preTest(g1, c1);
 	preTest(g2, c2);
 	preTest(g3, c3);
 	preTest(g4, c4);
+	preTest(g5, c5);
 }
 
 static void test3_runTheVerilogModule()
@@ -484,7 +557,7 @@ static void test3_runTheVerilogModule()
 static void test4_runTheVerilogModuleWithWideWires1()
 {
 	LCSMCircuit circuit = generator2();
-	
+
 	// Find circuits.
 	Circuit *in = circuit.find("in");
 	Circuit *out = circuit.find("out");
@@ -688,6 +761,96 @@ static void test5_runTheVerilogModuleWithWideOut()
 	}
 }
 
+static void test6_runTheVerilogModuleWithRegs()
+{
+	LCSMCircuit circuit = generator5();
+
+	// Find circuits.
+	Circuit *in = circuit.find("in");
+	Circuit *out = circuit.find("out");
+	Circuit *regTest = circuit.find("reg_test");
+
+	// Extract models.
+	model::VerilogModule *regTestModel = static_cast< model::VerilogModule * >(regTest);
+
+	// Indexes.
+	const Identifier inId = in->id();
+	const Identifier outId = out->id();
+	const Identifier regTestId = regTest->id();
+
+	// Test data.
+	// clang-format off
+	const std::vector< std::pair< Bit, Bit > > testdatas = {
+		{ Bit::True,      Bit::False     },
+		{ Bit::False,     Bit::True      },
+		{ Bit::Undefined, Bit::Undefined }
+	};
+	// clang-format on
+
+	// Generate physical engine.
+	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
+
+	// Fork new state.
+	LCSMState state = engine.fork();
+
+	// Test!
+	for (Strength s : Strengths)
+	{
+		// Skip HiZ.
+		if (s == Strength::HighImpedance)
+		{
+			continue;
+		}
+
+		for (const std::pair< Bit, Bit > &testdata : testdatas)
+		{
+			// Testing data.
+			const Bit inputBit = testdata.first;
+			const Bit expectedBit = testdata.second;
+			const DataBits input{ Width::Bit1, s, inputBit };
+			const DataBits expected{ Width::Bit1, Strength::StrongDrive, expectedBit };
+
+			// Put value.
+			state.putValue(inId, input);
+
+			// Step once.
+			state.tick();
+
+			// Assertion.
+			const DataBits &output = state.valueOf(outId);
+			const DataBits &verilogIn = state.valueOf(regTestId, regTestModel->indexOfByLabel("in"));
+			const DataBits &verilogOut = state.valueOf(regTestId, regTestModel->indexOfByLabel("out"));
+			assertEquals(output, expected);
+			assertEquals(verilogIn, input);
+			assertEquals(verilogOut, output);
+			std::cout << "<in = " << input << ">, <out = " << output << ">\n";
+		}
+	}
+
+	// Test with HiZ.
+	for (Bit b : Bits)
+	{
+		// Testing data.
+		const DataBits input{ Width::Bit1, Strength::HighImpedance, b };
+		const DataBits expected{ Width::Bit1, Strength::StrongDrive, Bit::Undefined };
+
+		// Put value.
+		state.putValue(inId, input);
+
+		// Step once.
+		state.tick();
+
+		// Assertion.
+		const DataBits &output = state.valueOf(outId);
+		const DataBits &verilogIn = state.valueOf(regTestId, regTestModel->indexOfByLabel("in"));
+		const DataBits &verilogOut = state.valueOf(regTestId, regTestModel->indexOfByLabel("out"));
+		assertEquals(output, expected);
+		assertEquals(verilogIn, input);
+		assertEquals(verilogOut, output);
+		std::cout << "<in = " << input << ">, <out = " << output << ">\n";
+	}
+}
+
 int main()
 {
 	// Run all tests.
@@ -698,4 +861,5 @@ int main()
 	test4_runTheVerilogModuleWithWideWires1();
 	test4_runTheVerilogModuleWithWideWires2();
 	test5_runTheVerilogModuleWithWideOut();
+	test6_runTheVerilogModuleWithRegs();
 }

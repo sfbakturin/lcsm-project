@@ -17,43 +17,46 @@ namespace lcsm
 		enum PortDirectionType : std::int8_t
 		{
 			UnknowPortDirectionType = -1,
-			Input,
-			Inout,
-			Output,
-			OutputReg
+			InputPortDirection,
+			InoutPortDirection,
+			OutputPortDirection
 		};
 
-		enum IntegerVectorType
+		enum IntegerVectorType : std::int8_t
 		{
 			UnknownIntegerVectorType = -1,
-			Logic,
-			Reg
+			BitIntegerVector,
+			LogicIntegerVector,
+			RegIntegerVector
 		};
-
-		const char *PortDirectionTypePretty(PortDirectionType portDirectionType) noexcept;
 
 		enum NetType : std::int8_t
 		{
-			UnknownPortType = -1,
-			Supply0,
-			Supply1,
-			Tri,
-			Triand,
-			Trior,
-			Tri0,
-			Tri1,
-			Uwire,
-			Wire,
-			Wand,
-			Wor
+			UnknownNetType = -1,
+			Supply0Net,
+			Supply1Net,
+			TriNet,
+			TriandNet,
+			TriorNet,
+			Tri0Net,
+			Tri1Net,
+			UwireNet,
+			WireNet,
+			WandNet,
+			WorNet
 		};
 
 		enum OutputVariableType : std::int8_t
 		{
 			UnknownOutputVariableType = -1,
-			Integer,
-			Time
+			IntegerOutputVariable,
+			TimeOutputVariable
 		};
+
+		const char *PortDirectionTypePretty(PortDirectionType portDirectionType) noexcept;
+		const char *IntegerVectorTypePretty(IntegerVectorType integerVectorType) noexcept;
+		const char *NetTypePretty(NetType netType) noexcept;
+		const char *OutputVariableTypePretty(OutputVariableType outputVariableType) noexcept;
 
 		using Range = std::pair< int, int >;
 
@@ -82,6 +85,9 @@ namespace lcsm
 			OutputVariableType outputVariableType() const noexcept;
 			void setOutputVariableType(OutputVariableType outputVariableType) noexcept;
 
+			IntegerVectorType integerVectorType() const noexcept;
+			void setIntegerVectorType(IntegerVectorType integerVectorType) noexcept;
+
 			bool isRangeValid() const noexcept;
 			const Range &range() const noexcept;
 			void setRange(const Range &range) noexcept;
@@ -95,6 +101,7 @@ namespace lcsm
 
 		  private:
 			PortDirectionType m_portDirectionType;
+			IntegerVectorType m_integerVectorType;
 			NetType m_netType;
 			bool m_isSigned;
 			OutputVariableType m_outputVariableType;

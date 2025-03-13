@@ -30,7 +30,7 @@ lcsm::NodeType lcsm::physical::VerilogModule::nodeType() const noexcept
 
 std::size_t lcsm::physical::VerilogModule::contextSize() const noexcept
 {
-	return m_inputs.size() + m_inouts.size() + m_outputs.size() + m_outputRegs.size();
+	return m_inputs.size() + m_inouts.size() + m_outputs.size();
 }
 
 std::size_t lcsm::physical::VerilogModule::privateContextSize() const noexcept
@@ -98,7 +98,7 @@ void lcsm::physical::VerilogModule::addInstant(const Instruction &instruction)
 	}
 
 	// Check, if caller is one of outputs, then ignore this instant.
-	if (Find(m_outputs, caller) >= 0 || Find(m_outputRegs, caller) >= 0)
+	if (Find(m_outputs, caller) >= 0)
 	{
 		return;
 	}
@@ -142,7 +142,7 @@ void lcsm::physical::VerilogModule::addInstant(Instruction &&instruction)
 	}
 
 	// Check, if caller is one of outputs, then ignore this instant.
-	if (Find(m_outputs, caller) >= 0 || Find(m_outputRegs, caller) >= 0)
+	if (Find(m_outputs, caller) >= 0)
 	{
 		return;
 	}
@@ -256,22 +256,19 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 	const bool takeFirst = now > then;
 
 	// Extract values and invoke instructions on inputs.
-	ExtractValues(m_inputs.size(), takeFirst, m_inputsInstants, m_context, 0, testBenchData, lcsm::verilog::PortDirectionType::Input);
+	ExtractValues(m_inputs.size(), takeFirst, m_inputsInstants, m_context, 0, testBenchData, lcsm::verilog::PortDirectionType::InputPortDirection);
 
 	// Extract values and invoke instructions on inouts.
-	ExtractValues(m_inouts.size(), takeFirst, m_inoutsInstants, m_context, m_inputs.size(), testBenchData, lcsm::verilog::PortDirectionType::Inout);
+	ExtractValues(m_inouts.size(), takeFirst, m_inoutsInstants, m_context, m_inputs.size(), testBenchData, lcsm::verilog::PortDirectionType::InoutPortDirection);
 
 	// Invoke the Verilog module.
 	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > outputData = m_module->invoke(testBenchData);
 
 	// Create for inouts.
-	GenerateEvents(this, m_inouts, outputData, events, lcsm::verilog::PortDirectionType::Inout);
+	GenerateEvents(this, m_inouts, outputData, events, lcsm::verilog::PortDirectionType::InoutPortDirection);
 
 	// Create for outputs.
-	GenerateEvents(this, m_outputs, outputData, events, lcsm::verilog::PortDirectionType::Output);
-
-	// Create for output regs.
-	GenerateEvents(this, m_outputRegs, outputData, events, lcsm::verilog::PortDirectionType::OutputReg);
+	GenerateEvents(this, m_outputs, outputData, events, lcsm::verilog::PortDirectionType::OutputPortDirection);
 
 	// Save inputs values to context.
 	m_context->beginUpdate(now);
@@ -279,7 +276,7 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 	if (!m_inputs.empty())
 	{
 		// Algorithm above make guarantees, that m_inputs would be used to generate testBenchData.
-		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::Input])
+		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::InputPortDirection])
 		{
 			m_context->updateValue(i++, std::move(databits));
 		}
@@ -287,7 +284,7 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 	if (!m_inouts.empty())
 	{
 		// Algorithm above make guarantees, that m_inouts would be used to generate testBenchData.
-		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::Inout])
+		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::InoutPortDirection])
 		{
 			m_context->updateValue(i++, std::move(databits));
 		}
@@ -295,15 +292,7 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 	if (!m_outputs.empty())
 	{
 		// Algorithm above make guarantees, that m_outputs would be used to generate outputData.
-		for (lcsm::DataBits &databits : outputData[lcsm::verilog::PortDirectionType::Output])
-		{
-			m_context->updateValue(i++, std::move(databits));
-		}
-	}
-	if (!m_outputRegs.empty())
-	{
-		// Algorithm above make guarantees, that m_outputRegs would be used to generate outputData.
-		for (lcsm::DataBits &databits : outputData[lcsm::verilog::PortDirectionType::OutputReg])
+		for (lcsm::DataBits &databits : outputData[lcsm::verilog::PortDirectionType::OutputPortDirection])
 		{
 			m_context->updateValue(i++, std::move(databits));
 		}
@@ -330,9 +319,4 @@ void lcsm::physical::VerilogModule::connectInout(const lcsm::support::PointerVie
 void lcsm::physical::VerilogModule::connectOutput(const lcsm::support::PointerView< lcsm::EvaluatorNode > &output)
 {
 	m_outputs.push_back(output);
-}
-
-void lcsm::physical::VerilogModule::connectOutputReg(const lcsm::support::PointerView< lcsm::EvaluatorNode > &outputReg)
-{
-	m_outputRegs.push_back(outputReg);
 }

@@ -38,15 +38,15 @@ namespace lcsm
 			void connectInput(const support::PointerView< EvaluatorNode > &input);
 			void connectInout(const support::PointerView< EvaluatorNode > &inout);
 			void connectOutput(const support::PointerView< EvaluatorNode > &output);
-			void connectOutputReg(const support::PointerView< EvaluatorNode > &outputReg);
 
 		  private:
 			std::deque< std::pair< portid_t, Instruction > > m_inputsInstants;
 			std::deque< std::pair< portid_t, Instruction > > m_inoutsInstants;
+
 			std::vector< support::PointerView< EvaluatorNode > > m_inputs;
 			std::vector< support::PointerView< EvaluatorNode > > m_inouts;
 			std::vector< support::PointerView< EvaluatorNode > > m_outputs;
-			std::vector< support::PointerView< EvaluatorNode > > m_outputRegs;
+
 			support::PointerView< const verilog::Module > m_module;
 			support::PointerView< Context > m_context;
 		};

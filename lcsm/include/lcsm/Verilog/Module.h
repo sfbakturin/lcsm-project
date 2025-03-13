@@ -38,7 +38,6 @@ namespace lcsm
 			const std::vector< Port > &inputPorts() const noexcept;
 			const std::vector< Port > &inoutPorts() const noexcept;
 			const std::vector< Port > &outputPorts() const noexcept;
-			const std::vector< Port > &outputRegPorts() const noexcept;
 
 			std::unordered_map< PortDirectionType, std::vector< DataBits > >
 				invoke(const std::unordered_map< PortDirectionType, std::vector< DataBits > > &testBenchData) const;
@@ -52,7 +51,6 @@ namespace lcsm
 			std::vector< Port > m_inputPorts;
 			std::vector< Port > m_inoutPorts;
 			std::vector< Port > m_outputPorts;
-			std::vector< Port > m_outputRegPorts;
 
 			std::vector< std::pair< PortDirectionType, std::size_t > > m_ports;
 

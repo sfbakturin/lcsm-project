@@ -17,12 +17,12 @@ lcsm::verilog::ModuleDeclareToken::ModuleDeclareToken(int i) :
 }
 
 lcsm::verilog::ModuleDeclareToken::ModuleDeclareToken(const std::string &s) :
-	m_kind(lcsm::verilog::ModuleDeclareKind::TK_IDENTIFIER), m_s(s)
+	m_kind(lcsm::verilog::ModuleDeclareKind::TK_IDENTIFIER), m_i(0), m_s(s)
 {
 }
 
 lcsm::verilog::ModuleDeclareToken::ModuleDeclareToken(std::string &&s) noexcept :
-	m_kind(lcsm::verilog::ModuleDeclareKind::TK_IDENTIFIER), m_s(std::move(s))
+	m_kind(lcsm::verilog::ModuleDeclareKind::TK_IDENTIFIER), m_i(0), m_s(std::move(s))
 {
 }
 
@@ -44,6 +44,16 @@ lcsm::verilog::ModuleDeclareToken &lcsm::verilog::ModuleDeclareToken::operator=(
 lcsm::verilog::ModuleDeclareToken &lcsm::verilog::ModuleDeclareToken::operator=(lcsm::verilog::ModuleDeclareToken &&other) noexcept
 {
 	return lcsm::support::MoveAssign< lcsm::verilog::ModuleDeclareToken >(this, std::move(other));
+}
+
+bool lcsm::verilog::ModuleDeclareToken::operator==(lcsm::verilog::ModuleDeclareKind kind) const noexcept
+{
+	return m_kind == kind;
+}
+
+bool lcsm::verilog::ModuleDeclareToken::operator!=(lcsm::verilog::ModuleDeclareKind kind) const noexcept
+{
+	return m_kind != kind;
 }
 
 void lcsm::verilog::ModuleDeclareToken::swap(lcsm::verilog::ModuleDeclareToken &other) noexcept

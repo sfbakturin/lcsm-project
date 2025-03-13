@@ -53,25 +53,25 @@ const char *lcsm::verilog::KindToKeyword(lcsm::verilog::ModuleDeclareKind kind) 
 	{
 		return "module";
 	}
-	case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
-	{
-		return "inout";
-	}
 	case lcsm::verilog::ModuleDeclareKind::KW_INPUT:
 	{
 		return "input";
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_INOUT:
+	{
+		return "inout";
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT:
 	{
 		return "output";
 	}
-	case lcsm::verilog::ModuleDeclareKind::KW_OUTPUT_REG:
-	{
-		return "output reg";
-	}
 	case lcsm::verilog::ModuleDeclareKind::KW_SIGNED:
 	{
 		return "signed";
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_UNSIGNED:
+	{
+		return "unsigned";
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_SUPPLY0:
 	{
@@ -116,6 +116,18 @@ const char *lcsm::verilog::KindToKeyword(lcsm::verilog::ModuleDeclareKind kind) 
 	case lcsm::verilog::ModuleDeclareKind::KW_WOR:
 	{
 		return "wor";
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_BIT:
+	{
+		return "bit";
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_LOGIC:
+	{
+		return "logic";
+	}
+	case lcsm::verilog::ModuleDeclareKind::KW_REG:
+	{
+		return "reg";
 	}
 	case lcsm::verilog::ModuleDeclareKind::KW_INTEGER:
 	{
