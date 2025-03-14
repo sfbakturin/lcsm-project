@@ -2,6 +2,7 @@
 #include <lcsm/Support/Subprocesses.h>
 
 #include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -32,7 +33,16 @@ lcsm::support::CompletedProcess lcsm::support::subprocessRun(const char *exec, c
 	}
 
 	// Run subprocess.
-	return lcsm::support::subprocessRun(cmdline);
+	try
+	{
+		const lcsm::support::CompletedProcess completed = lcsm::support::subprocessRun(cmdline);
+		delete[] cmdline;
+		return completed;
+	} catch (...)
+	{
+		delete[] cmdline;
+		throw;
+	}
 }
 
 lcsm::support::CompletedProcess lcsm::support::subprocessRun(const char *exec, std::initializer_list< const char * > args)
@@ -61,5 +71,14 @@ lcsm::support::CompletedProcess lcsm::support::subprocessRun(const char *exec, s
 	}
 
 	// Run subprocess.
-	return lcsm::support::subprocessRun(cmdline);
+	try
+	{
+		const lcsm::support::CompletedProcess completed = lcsm::support::subprocessRun(cmdline);
+		delete[] cmdline;
+		return completed;
+	} catch (...)
+	{
+		delete[] cmdline;
+		throw;
+	}
 }
