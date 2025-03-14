@@ -1,4 +1,8 @@
-PROJECT(LCSM LANGUAGES CXX VERSION 1.0.0)
+PROJECT(LCSM LANGUAGES CXX
+             VERSION 1.0.0
+             DESCRIPTION "LCSM's project main library provides building and simulating simple logic circuits"
+             HOMEPAGE_URL "https://github.com/sfbakturin/lcsm-project"
+)
 
 ADD_LIBRARY(LCSM)
 LCSM_BASE_SETUP_TARGET(LCSM)
@@ -59,7 +63,6 @@ LCSM_ADD_GROUP_HEADER_FILES("lcsm/Support/Parser")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Verilog")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Verilog/ModuleDeclare")
 
-
 TARGET_INCLUDE_DIRECTORIES(LCSM
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -72,14 +75,7 @@ TARGET_SOURCES(LCSM
         ${LCSM_HEADERS}
 )
 
-SET(LCSM_PUBLIC_HEADERS "${LCSM_HEADERS}")
-SET_TARGET_PROPERTIES(LCSM PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSON ${PROJECT_VERSION_MAJOR}
-    PUBLIC_HEADER "${LCSM_PUBLIC_HEADERS}"
-)
-
-FOREACH(header ${LCSM_PUBLIC_HEADERS})
+FOREACH(header ${LCSM_HEADERS})
     FILE(RELATIVE_PATH header_file_path "${CMAKE_CURRENT_SOURCE_DIR}/lcsm" "${header}")
     GET_FILENAME_COMPONENT(header_directory_path "${header_file_path}" DIRECTORY)
     INSTALL(
@@ -90,33 +86,40 @@ ENDFOREACH()
 
 INSTALL(TARGETS LCSM
     EXPORT "LCSMTargets"
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lcsm
+    COMPONENT "LogicalCircuitStateMachine"
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# generate and install export file
-INSTALL(EXPORT "LCSMTargets"
-    FILE "LCSMTargets.cmake"
-    NAMESPACE ${namespace}::
-    DESTINATION cmake
+
+# Generate the version file for the config file.
+WRITE_BASIC_PACKAGE_VERSION_FILE(
+    "${CMAKE_CURRENT_BINARY_DIR}/LCSMConfigVersion.cmake"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY SameMajorVersion
 )
 
-# generate the version file for the config file
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/LCSMConfigVersion.cmake"
-    VERSION "${version}"
-    COMPATIBILITY AnyNewerVersion
-)
-# create config file
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
+# Create config file.
+CONFIGURE_PACKAGE_CONFIG_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/LCSMConfig.cmake"
-    INSTALL_DESTINATION cmake
+    INSTALL_DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake"
 )
-# install config files
+
+# Generate and install export file.
+INSTALL(EXPORT "LCSMTargets"
+    FILE "LCSMTargets.cmake"
+    NAMESPACE LCSM::
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake"
+)
+
+# Install config files.
 INSTALL(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/LCSMConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/LCSMConfigVersion.cmake"
-    DESTINATION cmake
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake"
 )
 
 IF(LCSM_BUILD_TESTS)

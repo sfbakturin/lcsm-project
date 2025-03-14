@@ -17,6 +17,8 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CMakePackageConfigHelpers)
 INCLUDE(CTest)
 
+ENABLE_TESTING()
+
 # Helper to setup base settings for target.
 FUNCTION(LCSM_BASE_SETUP_TARGET targetName)
     # Setup sanitizers.
@@ -89,10 +91,6 @@ FUNCTION(LCSM_ADD_TO_TARGET)
     ENDIF()
     SET(${ARG_VARLIST} "${${ARG_VARLIST}}" PARENT_SCOPE)
 ENDFUNCTION()
-
-IF(LCSM_BUILD_TESTS)
-    ENABLE_TESTING()
-ENDIF()
 
 ADD_SUBDIRECTORY(lcsm)
 

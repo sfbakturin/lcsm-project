@@ -1,5 +1,3 @@
 @PACKAGE_INIT@
-
-include("${CMAKE_CURRENT_LIST_DIR}/LCSMTargets.cmake")
-
-check_required_components(LCSM)
+INCLUDE("${CMAKE_CURRENT_LIST_DIR}/LCSMTargets.cmake")
+CHECK_REQUIRED_COMPONENTS(LCSM)
