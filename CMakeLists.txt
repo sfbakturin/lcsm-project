@@ -9,6 +9,7 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 OPTION(LCSM_BUILD_TESTS "Build LCSM's tests." OFF)
 OPTION(LCSM_BUILD_VISUAL "Build LCSM Visual application." OFF)
+OPTION(LCSM_BUILD_DOCS "Build LCSM's API documentation." OFF)
 
 OPTION(BUILD_USE_SANITIZER "Enable to build with default sanitizers." OFF)
 OPTION(BUILD_ENABLE_WERROR "Treat all warnings as compile errors." OFF)

@@ -122,6 +122,26 @@ INSTALL(FILES
     DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake"
 )
 
+IF(LCSM_BUILD_DOCS)
+    # Check, if Doxygen is installed.
+    FIND_PACKAGE(Doxygen REQUIRED)
+
+    # Set Doxygen input and output files.
+    SET(DOXYFILE_IN "${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in")
+    SET(DOXYFILE_OUT "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile.out")
+
+    # Generate DoxyFile from the input file.
+    CONFIGURE_FILE(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+
+    # Command for generating documentation from Doxygen config file.
+    ADD_CUSTOM_TARGET(docs
+        COMMAND "${DOXYGEN_EXECUTABLE}" "${DOXYFILE_OUT}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Generating LCSM API documentation with Doxygen"
+        VERBATIM
+    )
+ENDIF()
+
 IF(LCSM_BUILD_TESTS)
     ADD_SUBDIRECTORY(test)
 ENDIF()
