@@ -1,7 +1,7 @@
 # Add headers.
-LCSM_ADD_HEADER(
-    LIST LCSM_HEADERS
-    HEADERS Circuit.h Identifier.h Width.h Wire.h Verilog.h
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_HEADERS
+    COMMFILES Circuit.h Identifier.h Width.h Wire.h Verilog.h
 )
 
 # Add subdirectories headers.

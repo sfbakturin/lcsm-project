@@ -1,9 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
-PROJECT(LogicalCircuitStateMachine LANGUAGES CXX C)
-
-SET(CMAKE_C_STANDARD 99)
-SET(CMAKE_C_STANDARD_REQUIRED ON)
-SET(CMAKE_C_EXTENSIONS OFF)
+PROJECT(LogicalCircuitStateMachine LANGUAGES CXX)
 
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,12 +17,7 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CMakePackageConfigHelpers)
 INCLUDE(CTest)
 
-IF(UNIX AND NOT APPLE)
-    SET(LINUX TRUE)
-ELSE()
-    SET(LINUX FALSE)
-ENDIF()
-
+# Helper to setup base settings for target.
 FUNCTION(LCSM_BASE_SETUP_TARGET targetName)
     # Setup sanitizers.
     IF(BUILD_USE_SANITIZER)
@@ -60,6 +51,43 @@ FUNCTION(LCSM_BASE_SETUP_TARGET targetName)
     IF(WIN32)
         TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC _CRT_SECURE_NO_WARNINGS)
     ENDIF()
+ENDFUNCTION()
+
+# Helper to add to list for target.
+FUNCTION(LCSM_ADD_TO_TARGET)
+    SET(options)
+    SET(oneValueArgs VARLIST)
+    SET(multiValueArgs COMMFILES ONLYWINDOWS ONLYLINUX ONLYAPPLE)
+    CMAKE_PARSE_ARGUMENTS(ARG
+        "${options}" "${oneValueArgs}" "${multiValueArgs}"
+        ${ARGN}
+    )
+    SET(sourceAbsolutes "")
+    FOREACH(source ${ARG_COMMFILES})
+        GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
+        LIST(APPEND "${ARG_VARLIST}" "${sourceAbsolute}")
+        LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
+    ENDFOREACH()
+    IF(WIN32)
+        FOREACH(source ${ARG_ONLYWINDOWS})
+            GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
+            LIST(APPEND "${ARG_VARLIST}" "${sourceAbsolute}")
+            LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
+        ENDFOREACH()
+    ELSEIF(APPLE)
+        FOREACH(source ${ARG_ONLYAPPLE})
+            GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
+            LIST(APPEND "${ARG_VARLIST}" "${sourceAbsolute}")
+            LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
+        ENDFOREACH()
+    ELSE()
+        FOREACH(source ${ARG_ONLYLINUX})
+            GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
+            LIST(APPEND "${ARG_VARLIST}" "${sourceAbsolute}")
+            LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
+        ENDFOREACH()
+    ENDIF()
+    SET(${ARG_VARLIST} "${${ARG_VARLIST}}" PARENT_SCOPE)
 ENDFUNCTION()
 
 IF(LCSM_BUILD_TESTS)

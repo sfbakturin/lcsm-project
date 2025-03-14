@@ -1,7 +1,7 @@
 # Add headers.
-LCSM_ADD_HEADER(
-    LIST LCSM_HEADERS
-    HEADERS Bit.h Capacitive.h Module.h Port.h Strength.h Template.h Value.h
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_HEADERS
+    COMMFILES Bit.h Capacitive.h Module.h Port.h Strength.h Value.h
 )
 
 # Add headers from subdirectories.

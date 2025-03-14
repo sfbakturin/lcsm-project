@@ -1,9 +1,9 @@
 # LCSM library sources.
 
 # Add sources.
-LCSM_ADD_SOURCE(
-    LIST LCSM_SOURCES
-    SOURCES LCSM.cpp LCSMCircuit.cpp LCSMCircuitView.cpp LCSMEngine.cpp LCSMState.cpp
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_SOURCES
+    COMMFILES LCSM.cpp LCSMCircuit.cpp LCSMCircuitView.cpp LCSMEngine.cpp LCSMState.cpp
 )
 
 # Add subdirectory sources.

@@ -1,7 +1,7 @@
 # Add headers.
-LCSM_ADD_HEADER(
-    LIST LCSM_HEADERS
-    HEADERS Token.h Lexer.h Parser.h Context.h
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_HEADERS
+    COMMFILES Token.h Lexer.h Parser.h Context.h
 )
 
 # Cache variable for parent scope.

@@ -1,7 +1,7 @@
 # Add sources.
-LCSM_ADD_SOURCE(
-    LIST LCSM_SOURCES
-    SOURCES Bit.cpp Strength.cpp Value.cpp Module.cpp Port.cpp PortType.cpp PortDirectionType.cpp
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_SOURCES
+    COMMFILES Bit.cpp Strength.cpp Value.cpp Module.cpp Port.cpp PortType.cpp PortDirectionType.cpp
 )
 
 # Add sources from subdirectories.

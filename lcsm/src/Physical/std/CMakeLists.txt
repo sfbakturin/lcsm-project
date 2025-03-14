@@ -1,7 +1,7 @@
 # Add sources.
-LCSM_ADD_SOURCE(
-    LIST LCSM_SOURCES
-    SOURCES Button.cpp Clock.cpp Constant.cpp Digit.cpp Ground.cpp Pin.cpp Power.cpp Probe.cpp Splitter.cpp Transistor.cpp TransmissionGate.cpp Tunnel.cpp Wire.cpp VerilogModule.cpp
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_SOURCES
+    COMMFILES Button.cpp Clock.cpp Constant.cpp Digit.cpp Ground.cpp Pin.cpp Power.cpp Probe.cpp Splitter.cpp Transistor.cpp TransmissionGate.cpp Tunnel.cpp Wire.cpp VerilogModule.cpp
 )
 
 # Cache variable for parent scope.

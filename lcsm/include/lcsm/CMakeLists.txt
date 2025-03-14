@@ -1,7 +1,7 @@
 # Add headers.
-LCSM_ADD_HEADER(
-    LIST LCSM_HEADERS
-    HEADERS LCSM.h LCSMCircuit.h LCSMEngine.h LCSMState.h
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_HEADERS
+    COMMFILES LCSM.h LCSMCircuit.h LCSMEngine.h LCSMState.h
 )
 
 # Add subdirectories headers.

@@ -3,42 +3,6 @@ PROJECT(LCSM LANGUAGES CXX VERSION 1.0.0)
 ADD_LIBRARY(LCSM)
 LCSM_BASE_SETUP_TARGET(LCSM)
 
-# Helper to add list of sources.
-FUNCTION(LCSM_ADD_SOURCE)
-    SET(options)
-    SET(oneValueArgs LIST)
-    SET(multiValueArgs SOURCES)
-    CMAKE_PARSE_ARGUMENTS(ARG
-        "${options}" "${oneValueArgs}" "${multiValueArgs}"
-        ${ARGN}
-    )
-    SET(sourceAbsolutes "")
-    FOREACH(source ${ARG_SOURCES})
-        GET_FILENAME_COMPONENT(sourceAbsolute "${source}" ABSOLUTE)
-        LIST(APPEND "${ARG_LIST}" "${sourceAbsolute}")
-        LIST(APPEND sourceAbsolutes "${sourceAbsolute}")
-    ENDFOREACH()
-    SET(${ARG_LIST} "${${ARG_LIST}}" PARENT_SCOPE)
-ENDFUNCTION()
-
-# Helper to add list of headers.
-FUNCTION(LCSM_ADD_HEADER)
-    SET(options)
-    SET(oneValueArgs LIST)
-    SET(multiValueArgs HEADERS)
-    CMAKE_PARSE_ARGUMENTS(ARG
-        "${options}" "${oneValueArgs}" "${multiValueArgs}"
-        ${ARGN}
-    )
-    SET(headerAbsolutes "")
-    FOREACH(header ${ARG_HEADERS})
-        GET_FILENAME_COMPONENT(headerAbsolute "${header}" ABSOLUTE)
-        LIST(APPEND "${ARG_LIST}" "${headerAbsolute}")
-        LIST(APPEND headerAbsolutes "${headerAbsolute}")
-    ENDFOREACH()
-    SET(${ARG_LIST} "${${ARG_LIST}}" PARENT_SCOPE)
-ENDFUNCTION()
-
 # Helper to add to source group.
 FUNCTION(LCSM_ADD_GROUP_SOURCE_FILES group)
     SET(foundSources "")

@@ -1,21 +1,10 @@
-# Add sources.
-LCSM_ADD_SOURCE(
-    LIST LCSM_SOURCES
-    SOURCES CompletedProcess.cpp CommonSubprocessRun.cpp CommonRemoveFile.cpp
+# # Add sources.
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_SOURCES
+    COMMFILES CompletedProcess.cpp CommonSubprocessRun.cpp CommonRemoveFile.cpp
+    ONLYWINDOWS WindowsSubprocessRun.cpp WindowsRemoveFile.cpp
+    ONLYLINUX LinuxSubprocessRun.cpp LinuxRemoveFile.cpp
 )
-
-# Add system specific sources.
-IF(WIN32)
-    LCSM_ADD_SOURCE(
-        LIST LCSM_SOURCES
-        SOURCES WindowsSubprocessRun.cpp WindowsRemoveFile.cpp
-    )
-ELSEIF(LINUX)
-    LCSM_ADD_SOURCE(
-        LIST LCSM_SOURCES
-        SOURCES LinuxSubprocessRun.cpp LinuxRemoveFile.cpp
-    )
-ENDIF()
 
 # Add subdirectories sources.
 ADD_SUBDIRECTORY(Parser)

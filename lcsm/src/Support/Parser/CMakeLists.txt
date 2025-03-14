@@ -1,7 +1,7 @@
 # Add sources.
-LCSM_ADD_SOURCE(
-    LIST LCSM_SOURCES
-    SOURCES CStringSource.cpp FileSource.cpp StringSource.cpp
+LCSM_ADD_TO_TARGET(
+    VARLIST LCSM_SOURCES
+    COMMFILES CStringSource.cpp FileSource.cpp StringSource.cpp
 )
 
 # Cache variable for parent scope.
