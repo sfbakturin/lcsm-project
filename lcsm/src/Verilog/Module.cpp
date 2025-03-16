@@ -2,10 +2,10 @@
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/Files.h>
-#include <lcsm/Support/Parser/CStringSource.h>
-#include <lcsm/Support/Parser/CharSource.h>
-#include <lcsm/Support/Parser/FileSource.h>
-#include <lcsm/Support/Parser/StringSource.h>
+#include <lcsm/Support/IO/CStringReader.h>
+#include <lcsm/Support/IO/FileReader.h>
+#include <lcsm/Support/IO/Reader.h>
+#include <lcsm/Support/IO/StringReader.h>
 #include <lcsm/Support/Subprocesses.h>
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Module.h>
@@ -184,13 +184,13 @@ class TestBenchOutToken
 class TestBenchOutLexer
 {
   public:
-	TestBenchOutLexer(const std::shared_ptr< lcsm::support::CharSource > &source) noexcept;
+	TestBenchOutLexer(const std::shared_ptr< lcsm::support::Reader > &source) noexcept;
 
 	TestBenchOutToken token() const noexcept;
 	TestBenchOutToken nextToken();
 
   private:
-	std::shared_ptr< lcsm::support::CharSource > m_source;
+	std::shared_ptr< lcsm::support::Reader > m_source;
 	char m_char;
 	TestBenchOutToken m_token;
 
@@ -270,8 +270,7 @@ int TestBenchOutToken::asInteger() const noexcept
 	return m_i;
 }
 
-TestBenchOutLexer::TestBenchOutLexer(const std::shared_ptr< lcsm::support::CharSource > &source) noexcept :
-	m_source(source)
+TestBenchOutLexer::TestBenchOutLexer(const std::shared_ptr< lcsm::support::Reader > &source) noexcept : m_source(source)
 {
 	nextChar();
 }
@@ -305,7 +304,7 @@ TestBenchOutToken TestBenchOutLexer::nextToken()
 	skipBlanks();
 
 	// Check if, EOF.
-	if (m_char == lcsm::support::CharSource::EndOfSource)
+	if (m_char == lcsm::support::Reader::EndOfSource)
 	{
 		m_token.setEof();
 		goto l_finish;
@@ -358,7 +357,7 @@ void TestBenchOutLexer::buildString(std::string &builder)
 	}
 }
 
-lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::support::CharSource > &source)
+lcsm::verilog::Module lcsm::verilog::Module::parse(const std::shared_ptr< lcsm::support::Reader > &source)
 {
 	lcsm::verilog::ModuleDeclareContext context;
 	lcsm::verilog::ModuleDeclareParser parser{ source };
@@ -433,10 +432,15 @@ void lcsm::verilog::Module::swap(lcsm::verilog::Module &other) noexcept
 	std::swap(m_ports, other.m_ports);
 }
 
+const std::string &lcsm::verilog::Module::source() const noexcept
+{
+	return m_sourceModule;
+}
+
 lcsm::verilog::Module lcsm::verilog::Module::fromFile(const char *filename)
 {
 	// Create source-iterator.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::FileSource >(filename);
+	std::shared_ptr< lcsm::support::Reader > source = std::make_shared< lcsm::support::FileReader >(filename);
 
 	// Make a module.
 	lcsm::verilog::Module module = parse(source);
@@ -465,7 +469,7 @@ lcsm::verilog::Module lcsm::verilog::Module::fromFile(const std::string &filenam
 lcsm::verilog::Module lcsm::verilog::Module::fromString(const char *string)
 {
 	// Create source-iterator.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::CStringSource >(string);
+	std::shared_ptr< lcsm::support::Reader > source = std::make_shared< lcsm::support::CStringReader >(string);
 
 	// Make a module
 	lcsm::verilog::Module module = parse(source);
@@ -479,7 +483,7 @@ lcsm::verilog::Module lcsm::verilog::Module::fromString(const char *string)
 lcsm::verilog::Module lcsm::verilog::Module::fromString(const std::string &string)
 {
 	// Create source-iterator.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::StringSource >(string);
+	std::shared_ptr< lcsm::support::Reader > source = std::make_shared< lcsm::support::StringReader >(string);
 
 	// Make a module
 	lcsm::verilog::Module module = parse(source);
@@ -493,7 +497,7 @@ lcsm::verilog::Module lcsm::verilog::Module::fromString(const std::string &strin
 lcsm::verilog::Module lcsm::verilog::Module::fromString(std::string &&string)
 {
 	// Create source-iterator.
-	std::shared_ptr< lcsm::support::CharSource > source = std::make_shared< lcsm::support::CStringSource >(string.c_str());
+	std::shared_ptr< lcsm::support::Reader > source = std::make_shared< lcsm::support::CStringReader >(string.c_str());
 
 	// Make a module
 	lcsm::verilog::Module module = parse(source);
@@ -701,8 +705,7 @@ std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBit
 	lcsm::support::removeFile(sourceFilename);
 
 	// Step 5. Parse standard output and return as output data.
-	std::shared_ptr< lcsm::support::CharSource > source =
-		std::make_shared< lcsm::support::CStringSource >(vppProcCompleted.cOut());
+	std::shared_ptr< lcsm::support::Reader > source = std::make_shared< lcsm::support::CStringReader >(vppProcCompleted.cOut());
 	TestBenchOutLexer lex = source;
 
 	// Output data for physical model.

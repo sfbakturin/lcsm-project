@@ -1,5 +1,7 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -11,6 +13,7 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) :
@@ -226,6 +229,25 @@ lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Circuit *circuit) con
 lcsm::portid_t lcsm::model::Splitter::defaultPort() const noexcept
 {
 	return lcsm::model::Splitter::Port::Input;
+}
+
+void lcsm::model::Splitter::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("widthIn", static_cast< std::uint64_t >(m_widthIn));
+	writer.writeKeyValueDeclaration("widthOut", static_cast< std::uint64_t >(m_widthOut));
+	writer.writeKeyValueDeclaration("wireinid", m_wireIn->id());
+	builder.addWires(m_wireIn.get(), true);
+	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
+	{
+		const std::string key = "wireout" + std::to_string(i) + "id";
+		writer.writeKeyValueDeclaration(key.c_str(), m_wireOuts[i]->id());
+		builder.addWires(m_wireOuts[i].get(), true);
+	}
+	writer.writeEndComponent();
 }
 
 void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept

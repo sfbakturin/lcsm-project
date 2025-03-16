@@ -1,5 +1,5 @@
 #include <lcsm/Support/Algorithm.hpp>
-#include <lcsm/Support/Parser/CharSource.h>
+#include <lcsm/Support/IO/Reader.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
 #include <lcsm/Verilog/ModuleDeclare/Token.h>
 
@@ -8,14 +8,14 @@
 #include <string>
 #include <utility>
 
-lcsm::verilog::ModuleDeclareLexer::ModuleDeclareLexer(const std::shared_ptr< lcsm::support::CharSource > &source) :
-	m_source(source), m_character(lcsm::support::CharSource::EndOfSource)
+lcsm::verilog::ModuleDeclareLexer::ModuleDeclareLexer(const std::shared_ptr< lcsm::support::Reader > &source) :
+	m_source(source), m_character(lcsm::support::Reader::EndOfSource)
 {
 	nextChar();
 }
 
-lcsm::verilog::ModuleDeclareLexer::ModuleDeclareLexer(std::shared_ptr< lcsm::support::CharSource > &&source) :
-	m_source(std::move(source)), m_character(lcsm::support::CharSource::EndOfSource)
+lcsm::verilog::ModuleDeclareLexer::ModuleDeclareLexer(std::shared_ptr< lcsm::support::Reader > &&source) :
+	m_source(std::move(source)), m_character(lcsm::support::Reader::EndOfSource)
 {
 	nextChar();
 }
@@ -102,7 +102,7 @@ const lcsm::verilog::ModuleDeclareToken &lcsm::verilog::ModuleDeclareLexer::next
 	}
 
 	// Check, if EOF.
-	if (m_character == lcsm::support::CharSource::EndOfSource)
+	if (m_character == lcsm::support::Reader::EndOfSource)
 	{
 		m_token.setEof();
 		goto l_finish;
@@ -136,7 +136,7 @@ const lcsm::verilog::ModuleDeclareToken &lcsm::verilog::ModuleDeclareLexer::next
 		}
 
 		// Check, if EOF.
-		if (m_character == lcsm::support::CharSource::EndOfSource)
+		if (m_character == lcsm::support::Reader::EndOfSource)
 		{
 			nextToken.setEof();
 			// Save this token to previous for next iteration for parser.

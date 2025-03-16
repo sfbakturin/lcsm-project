@@ -2,7 +2,9 @@
 #define LCSM_MODEL_STD_PIN_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -56,6 +58,8 @@ namespace lcsm
 			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
 
 			virtual portid_t defaultPort() const noexcept override final;
+
+			virtual void dumpToLCSMFile(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
 
 		  private:
 			Identifier m_id;

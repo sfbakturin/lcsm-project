@@ -1,5 +1,5 @@
 #include <lcsm/Support/Algorithm.hpp>
-#include <lcsm/Support/Parser/CharSource.h>
+#include <lcsm/Support/IO/Reader.h>
 #include <lcsm/Verilog/ModuleDeclare/Context.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
 #include <lcsm/Verilog/ModuleDeclare/Parser.h>
@@ -10,12 +10,12 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(const std::shared_ptr< lcsm::support::CharSource > &source) :
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(const std::shared_ptr< lcsm::support::Reader > &source) :
 	m_lex(source)
 {
 }
 
-lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::shared_ptr< lcsm::support::CharSource > &&source) noexcept :
+lcsm::verilog::ModuleDeclareParser::ModuleDeclareParser(std::shared_ptr< lcsm::support::Reader > &&source) noexcept :
 	m_lex(std::move(source))
 {
 }

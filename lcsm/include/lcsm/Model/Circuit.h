@@ -2,6 +2,8 @@
 #define LCSM_MODEL_CIRCUIT_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/PointerView.hpp>
 
@@ -45,13 +47,15 @@ namespace lcsm
 
 		virtual portid_t defaultPort() const noexcept = 0;
 
+		virtual void dumpToLCSMFile(model::LCSMFileWriter &writer, model::LCSMBuilder &builder) const = 0;
+
 		void setName(const std::string &name);
 		void setName(std::string &&name) noexcept;
 		void setName(label_t name);
 		const std::string &name() const noexcept;
 		label_t c_name() const noexcept;
 
-	  private:
+	  protected:
 		std::string m_name;
 	};
 }	 // namespace lcsm

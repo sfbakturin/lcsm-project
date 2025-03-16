@@ -16,7 +16,7 @@ using namespace lcsm;
 int main()
 {
 	// Main circuit.
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("CopyTest");
 
 	// Create input and output pins.
 	model::Pin *i0 = circuit.createPin(false);

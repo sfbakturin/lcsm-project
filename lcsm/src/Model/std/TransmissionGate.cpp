@@ -1,5 +1,7 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -159,4 +161,21 @@ lcsm::portid_t lcsm::model::TransmissionGate::findPort(const lcsm::Circuit *circ
 lcsm::portid_t lcsm::model::TransmissionGate::defaultPort() const noexcept
 {
 	return lcsm::model::TransmissionGate::Port::Base;
+}
+
+void lcsm::model::TransmissionGate::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("baseid", m_base->id());
+	writer.writeKeyValueDeclaration("srcaid", m_srcA->id());
+	writer.writeKeyValueDeclaration("srcbid", m_srcB->id());
+	writer.writeKeyValueDeclaration("srccid", m_srcC->id());
+	builder.addWires(m_base.get(), true);
+	builder.addWires(m_srcA.get(), true);
+	builder.addWires(m_srcB.get(), true);
+	builder.addWires(m_srcC.get(), true);
+	writer.writeEndComponent();
 }

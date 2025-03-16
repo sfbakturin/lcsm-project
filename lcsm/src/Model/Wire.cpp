@@ -1,5 +1,7 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -139,4 +141,14 @@ lcsm::portid_t lcsm::model::Wire::findPort(const lcsm::Circuit *) const noexcept
 lcsm::portid_t lcsm::model::Wire::defaultPort() const noexcept
 {
 	return lcsm::model::Wire::Port::Wiring;
+}
+
+void lcsm::model::Wire::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	builder.addWires(this, false);
+	writer.writeEndComponent();
 }

@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_HEADERS
-    COMMFILES CharSource.h StringSource.h FileSource.h CStringSource.h
+    COMMFILES Kind.h Token.h Lexer.h Reader.h Writer.h
 )
 
 # Cache variable for parent scope.

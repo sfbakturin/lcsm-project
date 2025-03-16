@@ -2,7 +2,7 @@
 #define LCSM_VERILOG_MODULE_H
 
 #include <lcsm/Physical/DataBits.h>
-#include <lcsm/Support/Parser/CharSource.h>
+#include <lcsm/Support/IO/Reader.h>
 #include <lcsm/Verilog/Port.h>
 #include <unordered_map>
 
@@ -27,6 +27,8 @@ namespace lcsm
 			Module &operator=(Module &&other) noexcept;
 
 			void swap(Module &other) noexcept;
+
+			const std::string &source() const noexcept;
 
 			static Module fromFile(const char *filename);
 			static Module fromFile(const std::string &filename);
@@ -57,7 +59,7 @@ namespace lcsm
 		  private:
 			Module() noexcept = default;
 
-			static Module parse(const std::shared_ptr< support::CharSource > &source);
+			static Module parse(const std::shared_ptr< support::Reader > &source);
 		};
 	}	 // namespace verilog
 }	 // namespace lcsm

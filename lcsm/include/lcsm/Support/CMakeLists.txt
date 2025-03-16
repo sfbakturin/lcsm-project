@@ -5,7 +5,7 @@ LCSM_ADD_TO_TARGET(
 )
 
 # Add subdirectories headers.
-ADD_SUBDIRECTORY(Parser)
+ADD_SUBDIRECTORY(IO)
 
 # Cache variable for parent scope.
 SET(LCSM_HEADERS "${LCSM_HEADERS}" PARENT_SCOPE)

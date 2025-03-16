@@ -1,5 +1,7 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Tunnel.h>
@@ -135,4 +137,16 @@ lcsm::portid_t lcsm::model::Tunnel::findPort(const lcsm::Circuit *circuit) const
 lcsm::portid_t lcsm::model::Tunnel::defaultPort() const noexcept
 {
 	return lcsm::model::Tunnel::Port::Wiring;
+}
+
+void lcsm::model::Tunnel::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	builder.addTunnels(this);
+	writer.writeEndComponent();
 }

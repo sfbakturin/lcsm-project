@@ -21,7 +21,7 @@ using namespace lcsm::verilog;
 
 static LCSMCircuit generator1()
 {
-	LCSMCircuit circuit("TunnelCircuitTest");
+	LCSMCircuit circuit("TunnelCircuitTest1");
 
 	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
@@ -42,7 +42,7 @@ static LCSMCircuit generator1()
 
 static LCSMCircuit generator2()
 {
-	LCSMCircuit circuit("TunnelCircuitTest");
+	LCSMCircuit circuit("TunnelCircuitTest2");
 
 	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");

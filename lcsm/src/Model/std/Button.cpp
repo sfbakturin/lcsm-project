@@ -1,5 +1,7 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -118,4 +120,16 @@ lcsm::portid_t lcsm::model::Button::findPort(const lcsm::Circuit *circuit) const
 lcsm::portid_t lcsm::model::Button::defaultPort() const noexcept
 {
 	return lcsm::model::Button::Port::Wiring;
+}
+
+void lcsm::model::Button::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("activeOnPress", m_activeOnPress);
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	writer.writeEndComponent();
 }

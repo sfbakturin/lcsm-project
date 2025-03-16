@@ -31,7 +31,7 @@ const std::array< Bit, 2 > bits2 = { F, T };
 
 static LCSMCircuit generator1()
 {
-	LCSMCircuit circuit("PinCircuitTest");
+	LCSMCircuit circuit("PinCircuitTest1");
 
 	// Create all needed circuit elements.
 	model::Pin *input = circuit.createPin(false, "input");
@@ -59,7 +59,7 @@ static void checker1(LCSMCircuit &circuit)
 
 static LCSMCircuit generator2()
 {
-	LCSMCircuit circuit("PinCircuitTest");
+	LCSMCircuit circuit("PinCircuitTest2");
 
 	// Create all needed circuit elements.
 	model::Pin *input1 = circuit.createPin(false, "input1");
@@ -87,7 +87,7 @@ static void checker2(LCSMCircuit &circuit)
 
 static LCSMCircuit generator3()
 {
-	LCSMCircuit circuit("PinCircuitTest");
+	LCSMCircuit circuit("PinCircuitTest3");
 
 	// Create all needed circuit elements.
 	model::Pin *input1 = circuit.createPin(false, "input1");

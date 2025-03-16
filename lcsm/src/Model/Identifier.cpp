@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <ostream>
+#include <string>
 #include <utility>
 
 lcsm::Identifier::Identifier() noexcept : m_id(0) {}
@@ -34,6 +35,11 @@ lcsm::Identifier lcsm::Identifier::next() const noexcept
 std::size_t lcsm::Identifier::hashCode() const noexcept
 {
 	return static_cast< std::size_t >(m_id);
+}
+
+std::string lcsm::Identifier::toString() const
+{
+	return std::to_string(m_id);
 }
 
 bool lcsm::Identifier::operator<(const lcsm::Identifier &other) const noexcept

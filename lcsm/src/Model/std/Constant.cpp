@@ -1,10 +1,13 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Constant.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -132,4 +135,17 @@ lcsm::portid_t lcsm::model::Constant::findPort(const lcsm::Circuit *circuit) con
 lcsm::portid_t lcsm::model::Constant::defaultPort() const noexcept
 {
 	return lcsm::model::Constant::Port::Wiring;
+}
+
+void lcsm::model::Constant::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
+	writer.writeKeyValueDeclaration("value", m_value);
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	writer.writeEndComponent();
 }

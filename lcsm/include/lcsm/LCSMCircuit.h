@@ -3,6 +3,7 @@
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
@@ -132,6 +133,10 @@ namespace lcsm
 		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2);
 		model::Wire *connect(Circuit *circuit1, Circuit *circuit2);
 
+		std::string dumpToString() const;
+		void dumpToFile(const std::string &filename) const;
+		void dumpToFile(const char *filename) const;
+
 	  private:
 		Identifier m_globalId;
 
@@ -153,6 +158,8 @@ namespace lcsm
 
 		void copyImpl(LCSMCircuit *newCircuit, const Identifier &entryId) const;
 		LCSMCircuit copyImpl(const Identifier &entryId) const;
+
+		void dumpImpl(model::LCSMFileWriter &writer) const;
 
 		std::shared_ptr< model::Wire > createHeadlessWire(label_t name = "");
 		std::shared_ptr< model::Wire > createIdentifiedWire(label_t name = "");

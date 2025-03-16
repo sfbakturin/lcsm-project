@@ -1,5 +1,7 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -151,4 +153,21 @@ lcsm::portid_t lcsm::model::Digit::findPort(const lcsm::Circuit *circuit) const 
 lcsm::portid_t lcsm::model::Digit::defaultPort() const noexcept
 {
 	return lcsm::model::Digit::Port::WiringData;
+}
+
+void lcsm::model::Digit::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("hasDecimalPoint", m_hasDecimalPoint);
+	writer.writeKeyValueDeclaration("wiredataid", m_wireData->id());
+	writer.writeKeyValueDeclaration("wiredecimalpointid", m_wireDecimalPoint->id());
+	builder.addWires(m_wireData.get(), true);
+	if (m_hasDecimalPoint)
+	{
+		builder.addWires(m_wireDecimalPoint.get(), true);
+	}
+	writer.writeEndComponent();
 }

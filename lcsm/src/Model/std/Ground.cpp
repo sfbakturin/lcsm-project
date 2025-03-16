@@ -1,9 +1,12 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Ground.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -111,4 +114,16 @@ lcsm::portid_t lcsm::model::Ground::findPort(const lcsm::Circuit *circuit) const
 lcsm::portid_t lcsm::model::Ground::defaultPort() const noexcept
 {
 	return lcsm::model::Ground::Port::Wiring;
+}
+
+void lcsm::model::Ground::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	writer.writeEndComponent();
 }

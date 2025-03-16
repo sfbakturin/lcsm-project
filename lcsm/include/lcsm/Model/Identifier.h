@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <functional>
 #include <ostream>
+#include <string>
 
 namespace lcsm
 {
@@ -25,6 +26,7 @@ namespace lcsm
 
 		Identifier next() const noexcept;
 		std::size_t hashCode() const noexcept;
+		std::string toString() const;
 
 		bool operator<(const Identifier &other) const noexcept;
 		bool operator>(const Identifier &other) const noexcept;

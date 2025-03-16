@@ -1,5 +1,7 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Wire.h>
@@ -381,4 +383,19 @@ lcsm::portid_t lcsm::model::VerilogModule::findPort(const lcsm::Circuit *circuit
 lcsm::portid_t lcsm::model::VerilogModule::defaultPort() const noexcept
 {
 	return lcsm::model::VerilogModule::Port::Input;
+}
+
+void lcsm::model::VerilogModule::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueEscapedDeclaration("source", m_module->source());
+	for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(numOfWires()); portId++)
+	{
+		const lcsm::model::Wire *child = wire(portId);
+		builder.addWires(child, true);
+	}
+	writer.writeEndComponent();
 }

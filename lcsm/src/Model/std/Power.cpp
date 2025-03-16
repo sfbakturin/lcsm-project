@@ -1,5 +1,7 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Power.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -113,4 +115,16 @@ lcsm::portid_t lcsm::model::Power::findPort(const lcsm::Circuit *circuit) const 
 lcsm::portid_t lcsm::model::Power::defaultPort() const noexcept
 {
 	return lcsm::model::Power::Port::Wiring;
+}
+
+void lcsm::model::Power::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	writer.writeEndComponent();
 }

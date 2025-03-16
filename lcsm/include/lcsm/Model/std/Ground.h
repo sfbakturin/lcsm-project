@@ -1,8 +1,10 @@
 #ifndef LCSM_MODEL_STD_GROUND_H
 #define LCSM_MODEL_STD_GROUND_H
 
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 
@@ -51,11 +53,11 @@ namespace lcsm
 
 			virtual portid_t defaultPort() const noexcept override final;
 
+			virtual void dumpToLCSMFile(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+
 		  private:
 			Identifier m_id;
-
 			Width m_width;
-
 			std::shared_ptr< Wire > m_wire;
 		};
 	}	 // namespace model

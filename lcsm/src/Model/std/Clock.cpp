@@ -1,10 +1,13 @@
+#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Support/PointerView.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -139,4 +142,18 @@ lcsm::portid_t lcsm::model::Clock::findPort(const lcsm::Circuit *circuit) const 
 lcsm::portid_t lcsm::model::Clock::defaultPort() const noexcept
 {
 	return lcsm::model::Clock::Port::Wiring;
+}
+
+void lcsm::model::Clock::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("highDuration", static_cast< std::uint64_t >(m_highDuration));
+	writer.writeKeyValueDeclaration("lowDuration", static_cast< std::uint64_t >(m_lowDuration));
+	writer.writeKeyValueDeclaration("phaseOffset", static_cast< std::uint64_t >(m_phaseOffset));
+	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+	builder.addWires(m_wire.get(), true);
+	writer.writeEndComponent();
 }

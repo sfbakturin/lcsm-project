@@ -1,5 +1,7 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Transistor.h>
@@ -155,4 +157,20 @@ lcsm::portid_t lcsm::model::Transistor::findPort(const lcsm::Circuit *circuit) c
 lcsm::portid_t lcsm::model::Transistor::defaultPort() const noexcept
 {
 	return lcsm::model::Transistor::Port::Base;
+}
+
+void lcsm::model::Transistor::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("type", static_cast< std::uint64_t >(m_type));
+	writer.writeKeyValueDeclaration("baseid", m_base->id());
+	writer.writeKeyValueDeclaration("srcaid", m_srcA->id());
+	writer.writeKeyValueDeclaration("srcbid", m_srcB->id());
+	builder.addWires(m_base.get(), true);
+	builder.addWires(m_srcA.get(), true);
+	builder.addWires(m_srcB.get(), true);
+	writer.writeEndComponent();
 }

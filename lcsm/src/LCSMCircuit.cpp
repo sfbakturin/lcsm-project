@@ -1,6 +1,9 @@
+#include "lcsm/Support/IO/FileWriter.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/LCSMCircuit.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
@@ -18,6 +21,8 @@
 #include <lcsm/Model/std/TransmissionGate.h>
 #include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Support/Algorithm.hpp>
+#include <lcsm/Support/IO/StringWriter.h>
+#include <lcsm/Support/IO/Writer.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
 #include <unordered_map>
@@ -579,6 +584,26 @@ static void
 	}
 }
 
+std::string lcsm::LCSMCircuit::dumpToString() const
+{
+	std::shared_ptr< lcsm::support::Writer > w = std::make_shared< lcsm::support::StringWriter >();
+	lcsm::model::LCSMFileWriter writer(w);
+	dumpImpl(writer);
+	return static_cast< lcsm::support::StringWriter * >(w.get())->toString();
+}
+
+void lcsm::LCSMCircuit::dumpToFile(const std::string &filename) const
+{
+	dumpToFile(filename.c_str());
+}
+
+void lcsm::LCSMCircuit::dumpToFile(const char *filename) const
+{
+	std::shared_ptr< lcsm::support::Writer > w = std::make_shared< lcsm::support::FileWriter >(filename);
+	lcsm::model::LCSMFileWriter writer(w);
+	dumpImpl(writer);
+}
+
 void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, const Identifier &entryId) const
 {
 	// Re-entry global Id.
@@ -854,6 +879,45 @@ lcsm::LCSMCircuit lcsm::LCSMCircuit::copyImpl(const lcsm::Identifier &entryId) c
 	lcsm::LCSMCircuit newCircuit(c_name());
 	copyImpl(std::addressof(newCircuit), entryId);
 	return newCircuit;
+}
+
+void lcsm::LCSMCircuit::dumpImpl(lcsm::model::LCSMFileWriter &writer) const
+{
+	// Builder helper.
+	lcsm::model::LCSMBuilder builder;
+
+	// 'begincircuit'
+	writer.writeBeginCircuit();
+
+	// 'id <ID>;'
+	writer.writeIdDeclaration(m_globalId);
+
+	// 'name <NAME>;'
+	writer.writeNameDeclaration(m_name);
+
+	// Dump all components.
+	for (auto it = m_components.begin(); it != m_components.end(); it++)
+	{
+		it->second->dumpToLCSMFile(writer, builder);
+	}
+
+	// Dump all connectors.
+	for (auto it = m_connectorWires.begin(); it != m_connectorWires.end(); it++)
+	{
+		it->second->dumpToLCSMFile(writer, builder);
+	}
+
+	// Dump all circuits.
+	for (auto it = m_circuits.begin(); it != m_circuits.end(); it++)
+	{
+		it->second->dumpImpl(writer);
+	}
+
+	// Dump all connections.
+	builder.dumpToLCSMFile(writer);
+
+	// 'endcircuit'
+	writer.writeEndCircuit();
 }
 
 std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createHeadlessWire(lcsm::label_t name)

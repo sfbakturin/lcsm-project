@@ -14,7 +14,7 @@ using namespace lcsm;
 
 static LCSMCircuit getCircuit()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("CircuitInCircuitTest");
 
 	model::Pin *input = circuit.createPin(false, "circ0_input");
 	model::Pin *output = circuit.createPin(true, "circ0_output");
@@ -26,7 +26,7 @@ static LCSMCircuit getCircuit()
 
 int main()
 {
-	LCSMCircuit circuit;
+	LCSMCircuit circuit("CircuitTest");
 
 	model::Pin *input = circuit.createPin(false, "circ1_input");
 	model::Pin *output = circuit.createPin(true, "circ1_output");
@@ -38,6 +38,10 @@ int main()
 
 	circuit.connect(input, model::Pin::Port::Internal, input0, model::Pin::Port::External);
 	circuit.connect(output0, model::Pin::Port::External, output, model::Pin::Port::Internal);
+
+	std::cout << "Dumping '" << circuit.name() << "'...\n";
+	std::cout << circuit.dumpToString();
+	std::cout << "... end of dumping\n";
 
 	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);
 

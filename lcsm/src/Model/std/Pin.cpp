@@ -1,11 +1,14 @@
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -139,4 +142,19 @@ lcsm::portid_t lcsm::model::Pin::findPort(const lcsm::Circuit *circuit) const no
 lcsm::portid_t lcsm::model::Pin::defaultPort() const noexcept
 {
 	return lcsm::model::Pin::Port::Internal;
+}
+
+void lcsm::model::Pin::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+{
+	writer.writeBeginComponent();
+	writer.writeCircuitTypeDeclaration(circuitType());
+	writer.writeIdDeclaration(m_id);
+	writer.writeNameDeclaration(m_name);
+	writer.writeKeyValueDeclaration("output", m_output);
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
+	writer.writeKeyValueDeclaration("internalid", m_internal->id());
+	writer.writeKeyValueDeclaration("externalid", m_external->id());
+	builder.addWires(m_internal.get(), true);
+	builder.addWires(m_external.get(), true);
+	writer.writeEndComponent();
 }

@@ -279,7 +279,7 @@ static void test2_badVerilogModuleDeclareParse()
 
 static LCSMCircuit generator1()
 {
-	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	LCSMCircuit circuit("VerilogModuleCircuitTest1");
 
 	// Create all needed circuit elements.
 	model::Pin *a = circuit.createPin(false, "a");
@@ -302,7 +302,7 @@ static LCSMCircuit generator1()
 
 static LCSMCircuit generator2()
 {
-	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	LCSMCircuit circuit("VerilogModuleCircuitTest2");
 
 	// Create all needed circuit elements.
 	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
@@ -323,7 +323,7 @@ static LCSMCircuit generator2()
 
 static LCSMCircuit generator3()
 {
-	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	LCSMCircuit circuit("VerilogModuleCircuitTest3");
 
 	// Create all needed circuit elements.
 	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
@@ -344,7 +344,7 @@ static LCSMCircuit generator3()
 
 static LCSMCircuit generator4()
 {
-	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	LCSMCircuit circuit("VerilogModuleCircuitTest4");
 
 	// Create all needed circuit elements.
 	model::Pin *in = circuit.createPin(false, "in", Width::Bit2);
@@ -368,7 +368,7 @@ static LCSMCircuit generator4()
 
 static LCSMCircuit generator5()
 {
-	LCSMCircuit circuit("VerilogModuleCircuitTest");
+	LCSMCircuit circuit("VerilogModuleCircuitTest5");
 
 	// Create all needed circuit elements.
 	model::Pin *in = circuit.createPin(false, "in");
