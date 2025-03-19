@@ -38,6 +38,8 @@ namespace lcsm
 		Width::QuadWord
 	};
 	// clang-format on
+
+	Width StrongToWidth(unsigned long long width);
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */

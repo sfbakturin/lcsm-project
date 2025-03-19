@@ -9,8 +9,6 @@
 
 #include <cstddef>
 #include <deque>
-#include <map>
-#include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -23,8 +21,28 @@ void lcsm::model::LCSMBuilder::addWires(const lcsm::model::Wire *wire, bool isFi
 		const lcsm::model::Wire *w = static_cast< const lcsm::model::Wire * >(child.get());
 		const lcsm::Identifier id2 = child->id();
 		const bool isSecondComp = w->connect().hasValue();
-		m_wires.emplace_back(id1, id2, isFirstComp, isSecondComp);
+		addWire(id1, id2, isFirstComp, isSecondComp);
 	}
+}
+
+void lcsm::model::LCSMBuilder::addWire(const std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > &connect)
+{
+	m_wires.push_back(connect);
+}
+
+void lcsm::model::LCSMBuilder::addWire(std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > &&connect)
+{
+	m_wires.push_back(std::move(connect));
+}
+
+void lcsm::model::LCSMBuilder::addWire(lcsm::Identifier id1, lcsm::Identifier id2, bool isFirstComp, bool isSecondComp)
+{
+	m_wires.emplace_back(id1, id2, isFirstComp, isSecondComp);
+}
+
+void lcsm::model::LCSMBuilder::addWire(unsigned long long id1, unsigned long long id2, bool isFirstComp, bool isSecondComp)
+{
+	addWire(lcsm::Identifier(id1), lcsm::Identifier(id2), isFirstComp, isSecondComp);
 }
 
 void lcsm::model::LCSMBuilder::addTunnels(const lcsm::model::Tunnel *tunnel)
@@ -34,8 +52,23 @@ void lcsm::model::LCSMBuilder::addTunnels(const lcsm::model::Tunnel *tunnel)
 	for (lcsm::Circuit *child : tunnels)
 	{
 		const lcsm::Identifier childId = child->id();
-		m_tunnels.emplace_back(id, childId);
+		addTunnel(id, childId);
 	}
+}
+
+void lcsm::model::LCSMBuilder::addTunnel(const std::pair< lcsm::Identifier, lcsm::Identifier > &tunnel)
+{
+	m_tunnels.push_back(tunnel);
+}
+
+void lcsm::model::LCSMBuilder::addTunnel(std::pair< lcsm::Identifier, lcsm::Identifier > &&tunnel)
+{
+	m_tunnels.push_back(std::move(tunnel));
+}
+
+void lcsm::model::LCSMBuilder::addTunnel(lcsm::Identifier id1, lcsm::Identifier id2)
+{
+	m_tunnels.emplace_back(id1, id2);
 }
 
 void lcsm::model::LCSMBuilder::oldToNew(lcsm::Identifier oldId, lcsm::Identifier newId)
@@ -106,14 +139,7 @@ void lcsm::model::LCSMBuilder::finalize(lcsm::LCSMCircuit *circuit)
 
 		if (isFirstComp)
 		{
-			const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found =
-				circuit->m_componentWires.find(wireId1);
-			if (found == circuit->m_componentWires.end())
-			{
-				m_wires.push_back(std::move(edge));
-				continue;
-			}
-			wire1 = static_cast< lcsm::model::Wire * >(found->second.get());
+			wire1 = static_cast< lcsm::model::Wire * >(circuit->findGloballyComponentWire(wireId1));
 		}
 		else
 		{
@@ -122,14 +148,7 @@ void lcsm::model::LCSMBuilder::finalize(lcsm::LCSMCircuit *circuit)
 
 		if (isSecondComp)
 		{
-			const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found =
-				circuit->m_componentWires.find(wireId2);
-			if (found == circuit->m_componentWires.end())
-			{
-				m_wires.push_back(std::move(edge));
-				continue;
-			}
-			wire2 = static_cast< lcsm::model::Wire * >(found->second.get());
+			wire2 = static_cast< lcsm::model::Wire * >(circuit->findGloballyComponentWire(wireId2));
 		}
 		else
 		{

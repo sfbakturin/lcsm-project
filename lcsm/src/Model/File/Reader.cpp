@@ -29,9 +29,27 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileReader::curr() const noex
 	return m_lexer.token();
 }
 
-void lcsm::model::LCSMFileReader::parseBeginCircuit()
+void lcsm::model::LCSMFileReader::back()
+{
+	m_lexer.backToken();
+}
+
+bool lcsm::model::LCSMFileReader::tryParseBeginCircuit()
 {
 	if (next() != lcsm::model::LCSMFileKind::BeginCircuitKeyword)
+	{
+		back();
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void lcsm::model::LCSMFileReader::parseBeginCircuit()
+{
+	if (!tryParseBeginCircuit())
 	{
 		throw std::logic_error("Excepted 'begincircuit', but got something else.");
 	}
@@ -49,7 +67,7 @@ bool lcsm::model::LCSMFileReader::tryParseBeginComponent()
 {
 	if (next() != lcsm::model::LCSMFileKind::BeginComponentKeyword)
 	{
-		m_lexer.backToken();
+		back();
 		return false;
 	}
 	else
@@ -66,24 +84,27 @@ void lcsm::model::LCSMFileReader::parseEndComponent()
 	}
 }
 
-bool lcsm::model::LCSMFileReader::tryParseBeginConnections()
+void lcsm::model::LCSMFileReader::parseBeginConnections()
 {
 	if (next() != lcsm::model::LCSMFileKind::BeginConnectionsKeyword)
 	{
-		m_lexer.backToken();
-		return false;
-	}
-	else
-	{
-		return true;
+		throw std::logic_error("Excepted 'beginconnections', but got something else.");
 	}
 }
 
-bool lcsm::model::LCSMFileReader::tryParseEndConnections()
+void lcsm::model::LCSMFileReader::parseEndConnections()
 {
 	if (next() != lcsm::model::LCSMFileKind::EndConnectionsKeyword)
 	{
-		m_lexer.backToken();
+		throw std::logic_error("Excepted 'endconnections', but got something else.");
+	}
+}
+
+bool lcsm::model::LCSMFileReader::tryParseConnect()
+{
+	if (next() != lcsm::model::LCSMFileKind::ConnectKeyword)
+	{
+		back();
 		return false;
 	}
 	else
@@ -92,24 +113,27 @@ bool lcsm::model::LCSMFileReader::tryParseEndConnections()
 	}
 }
 
-bool lcsm::model::LCSMFileReader::tryParseBeginTunnels()
+void lcsm::model::LCSMFileReader::parseBeginTunnels()
 {
 	if (next() != lcsm::model::LCSMFileKind::BeginTunnelsKeyword)
 	{
-		m_lexer.backToken();
-		return false;
-	}
-	else
-	{
-		return true;
+		throw std::logic_error("Excepted 'begintunnels', but got something else.");
 	}
 }
 
-bool lcsm::model::LCSMFileReader::tryParseEndTunnels()
+void lcsm::model::LCSMFileReader::parseEndTunnels()
 {
 	if (next() != lcsm::model::LCSMFileKind::EndTunnelsKeyword)
 	{
-		m_lexer.backToken();
+		throw std::logic_error("Excepted 'endtunnels', but got something else.");
+	}
+}
+
+bool lcsm::model::LCSMFileReader::tryParseTunnel()
+{
+	if (next() != lcsm::model::LCSMFileKind::TunnelKeyword)
+	{
+		back();
 		return false;
 	}
 	else
@@ -326,4 +350,64 @@ std::string lcsm::model::LCSMFileReader::exceptEscapedKeyValue(const char *key)
 		throw std::logic_error(message);
 	}
 	return parsed.second;
+}
+
+std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > lcsm::model::LCSMFileReader::exceptConnect()
+{
+	// connect --> 'connect' IDENTIFIER IDENTIFIER BOOLEAN BOOLEAN ';'
+	if (next() != lcsm::model::LCSMFileKind::ConnectKeyword)
+	{
+		throw std::logic_error("Expected 'connect', but got something else.");
+	}
+	if (next() != lcsm::model::LCSMFileKind::IntegerToken)
+	{
+		throw std::logic_error("Expected integer, but got something else.");
+	}
+	const lcsm::Identifier id1 = curr().asInteger();
+	if (next() != lcsm::model::LCSMFileKind::IntegerToken)
+	{
+		throw std::logic_error("Expected integer, but got something else.");
+	}
+	const lcsm::Identifier id2 = curr().asInteger();
+	next();
+	if (curr() != lcsm::model::LCSMFileKind::TrueKeyword && curr() != lcsm::model::LCSMFileKind::FalseKeyword)
+	{
+		throw std::logic_error("Excepted 'true' or 'false', but got something else.");
+	}
+	const bool isFirstComp = curr() == lcsm::model::LCSMFileKind::TrueKeyword;
+	next();
+	if (curr() != lcsm::model::LCSMFileKind::TrueKeyword && curr() != lcsm::model::LCSMFileKind::FalseKeyword)
+	{
+		throw std::logic_error("Excepted 'true' or 'false', but got something else.");
+	}
+	const bool isSecondComp = curr() == lcsm::model::LCSMFileKind::TrueKeyword;
+	if (next() != lcsm::model::LCSMFileKind::SemicolonCharKeyword)
+	{
+		throw std::logic_error("Excepted ';', but got something else.");
+	}
+	return { id1, id2, isFirstComp, isSecondComp };
+}
+
+std::pair< lcsm::Identifier, lcsm::Identifier > lcsm::model::LCSMFileReader::exceptTunnel()
+{
+	// tunnel --> 'tunnel' IDENTIFIER IDENTIFIER ';'
+	if (next() != lcsm::model::LCSMFileKind::TunnelKeyword)
+	{
+		throw std::logic_error("Expected 'connect', but got something else.");
+	}
+	if (next() != lcsm::model::LCSMFileKind::IntegerToken)
+	{
+		throw std::logic_error("Expected integer, but got something else.");
+	}
+	const lcsm::Identifier id1 = curr().asInteger();
+	if (next() != lcsm::model::LCSMFileKind::IntegerToken)
+	{
+		throw std::logic_error("Expected integer, but got something else.");
+	}
+	const lcsm::Identifier id2 = curr().asInteger();
+	if (next() != lcsm::model::LCSMFileKind::SemicolonCharKeyword)
+	{
+		throw std::logic_error("Excepted ';', but got something else.");
+	}
+	return { id1, id2 };
 }

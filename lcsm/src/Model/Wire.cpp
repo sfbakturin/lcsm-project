@@ -148,8 +148,8 @@ void lcsm::model::Wire::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::L
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
 	builder.addWires(this, false);
 	writer.writeEndComponent();
 }

@@ -45,13 +45,6 @@ static void checker(LCSMCircuit &circuit)
 	assertType(pin, CircuitType::Pin);
 }
 
-static void test0_pretest()
-{
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
 static void test(LCSMState &state, const Circuit *clock, const Circuit *pin, const std::vector< TestData > &testdatas)
 {
 	for (const TestData &testdata : testdatas)
@@ -72,10 +65,8 @@ static void test(LCSMState &state, const Circuit *clock, const Circuit *pin, con
 	}
 }
 
-static void test1_low1high1()
+static void test1_low1high1(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *clock = circuit.find("clock");
 	Circuit *pin = circuit.find("pin");
@@ -100,10 +91,8 @@ static void test1_low1high1()
 	test(state, clock, pin, testdatas);
 }
 
-static void test2_low2high1()
+static void test2_low2high1(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *clock = circuit.find("clock");
 	Circuit *pin = circuit.find("pin");
@@ -136,10 +125,8 @@ static void test2_low2high1()
 	test(state, clock, pin, testdatas);
 }
 
-static void test3_low2high2()
+static void test3_low2high2(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *clock = circuit.find("clock");
 	Circuit *pin = circuit.find("pin");
@@ -173,10 +160,8 @@ static void test3_low2high2()
 	test(state, clock, pin, testdatas);
 }
 
-static void test4_low1high0()
+static void test4_low1high0(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *clock = circuit.find("clock");
 	Circuit *pin = circuit.find("pin");
@@ -206,10 +191,8 @@ static void test4_low1high0()
 	test(state, clock, pin, testdatas);
 }
 
-static void test5_low0high2()
+static void test5_low0high2(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *clock = circuit.find("clock");
 	Circuit *pin = circuit.find("pin");
@@ -242,10 +225,9 @@ static void test5_low0high2()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_low1high1();
-	test2_low2high1();
-	test3_low2high2();
-	test4_low1high0();
-	test5_low0high2();
+	PerformTest(generator, checker, test1_low1high1);
+	PerformTest(generator, checker, test2_low2high1);
+	PerformTest(generator, checker, test3_low2high2);
+	PerformTest(generator, checker, test4_low1high0);
+	PerformTest(generator, checker, test5_low0high2);
 }

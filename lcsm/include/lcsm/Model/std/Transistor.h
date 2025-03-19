@@ -36,6 +36,7 @@ namespace lcsm
 			};
 
 		  public:
+			Transistor() = default;
 			Transistor(Type type);
 			Transistor(label_t name, Type type);
 			~Transistor() noexcept;

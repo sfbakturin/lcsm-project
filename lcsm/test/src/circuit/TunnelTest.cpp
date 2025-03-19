@@ -75,6 +75,25 @@ static LCSMCircuit generator2()
 	return circuit;
 }
 
+static void checker1(LCSMCircuit &circuit)
+{
+	// Find circuits.
+	Circuit *input = circuit.find("input");
+	Circuit *output = circuit.find("output");
+	Circuit *tunnel1 = circuit.find("tunnel1");
+	Circuit *tunnel2 = circuit.find("tunnel2");
+	Circuit *wire1 = circuit.find("wire1");
+	Circuit *wire2 = circuit.find("wire2");
+
+	// Check element's types.
+	assertType(input, CircuitType::Pin);
+	assertType(output, CircuitType::Pin);
+	assertType(tunnel1, CircuitType::Tunnel);
+	assertType(tunnel2, CircuitType::Tunnel);
+	assertType(wire1, CircuitType::Wire);
+	assertType(wire2, CircuitType::Wire);
+}
+
 static void checker2(LCSMCircuit &circuit)
 {
 	// Find circuits.
@@ -105,45 +124,8 @@ static void checker2(LCSMCircuit &circuit)
 	assertType(wire3, CircuitType::Wire);
 	assertType(wire4, CircuitType::Wire);
 }
-
-static void checker1(LCSMCircuit &circuit)
+static void test1(LCSMCircuit &circuit)
 {
-	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *tunnel1 = circuit.find("tunnel1");
-	Circuit *tunnel2 = circuit.find("tunnel2");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
-
-	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(tunnel1, CircuitType::Tunnel);
-	assertType(tunnel2, CircuitType::Tunnel);
-	assertType(wire1, CircuitType::Wire);
-	assertType(wire2, CircuitType::Wire);
-}
-
-static void test0_pretest()
-{
-	// Generators.
-	const GeneratorTy g1 = generator1;
-	const GeneratorTy g2 = generator2;
-
-	// Checkers.
-	const CheckerTy c1 = checker1;
-	const CheckerTy c2 = checker2;
-
-	// Pre-test.
-	preTest(g1, c1);
-	preTest(g2, c2);
-}
-
-static void test1()
-{
-	LCSMCircuit circuit = generator1();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output = circuit.find("output");
@@ -210,10 +192,8 @@ static void test1()
 	}
 }
 
-static void test2()
+static void test2(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator2();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output1 = circuit.find("output1");
@@ -304,10 +284,8 @@ static void test2()
 	}
 }
 
-static void test3()
+static void test3(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator2();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output1 = circuit.find("output1");
@@ -409,10 +387,8 @@ static void test3()
 	}
 }
 
-static void test4()
+static void test4(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator2();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output1 = circuit.find("output1");
@@ -509,9 +485,8 @@ static void test4()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1();
-	test2();
-	test3();
-	test4();
+	PerformTest(generator1, checker1, test1);
+	PerformTest(generator2, checker2, test2);
+	PerformTest(generator2, checker2, test3);
+	PerformTest(generator2, checker2, test4);
 }

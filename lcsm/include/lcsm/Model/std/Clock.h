@@ -26,6 +26,7 @@ namespace lcsm
 			};
 
 		  public:
+			Clock() = default;
 			Clock(unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 			Clock(label_t name, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);
 			~Clock() noexcept;

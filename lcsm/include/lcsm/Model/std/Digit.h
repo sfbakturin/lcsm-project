@@ -27,6 +27,7 @@ namespace lcsm
 			};
 
 		  public:
+			Digit() = default;
 			Digit(bool hasDecimalPoint);
 			Digit(label_t name, bool hasDecimalPoint);
 			~Digit() noexcept;

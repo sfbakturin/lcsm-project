@@ -143,7 +143,7 @@ void lcsm::model::Button::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model:
 	writer.writeKeyValueDeclaration("wireid", wire()->id());
 
 	// Initialize wires.
-	builder.addWires(m_wire.get(), true);
+	builder.addWires(wire(), true);
 
 	// 'endcomponent'
 	writer.writeEndComponent();

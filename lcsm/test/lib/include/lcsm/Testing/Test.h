@@ -11,8 +11,9 @@ namespace lcsm
 	{
 		using GeneratorTy = std::function< LCSMCircuit() >;
 		using CheckerTy = std::function< void(LCSMCircuit &) >;
+		using TestTy = std::function< void(LCSMCircuit &) >;
 
-		void preTest(const GeneratorTy &generator, const CheckerTy &checker);
+		void PerformTest(const GeneratorTy &generator, const CheckerTy &checker, const TestTy &test);
 	}	 // namespace testing
 }	 // namespace lcsm
 

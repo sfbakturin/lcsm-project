@@ -110,6 +110,7 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 				throw std::logic_error("Lexing error: expected string value, but found end of source.");
 			}
 			builder.push_back(m_character);
+			nextChar();
 		}
 
 		// Set token to string, skip char and return token.

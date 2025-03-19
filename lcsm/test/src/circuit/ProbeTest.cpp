@@ -62,15 +62,8 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire2, CircuitType::Wire);
 }
 
-static void test0()
-{
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
 static void
-	test1(LCSMState &state, const Circuit *input, const Circuit *output, const Circuit *probe, const Circuit *wire1, const Circuit *wire2, const DataBits &expected)
+	testImpl(LCSMState &state, const Circuit *input, const Circuit *output, const Circuit *probe, const Circuit *wire1, const Circuit *wire2, const DataBits &expected)
 {
 	// Indexes.
 	const Identifier inputId = input->id();
@@ -99,10 +92,8 @@ static void
 	std::cout << "<input = " << actualInput << "> --> <wire1 = " << actualWire1 << "> --> <output = " << actualOutput << ">\n";
 }
 
-static void test1()
+static void test1(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output = circuit.find("output");
@@ -145,13 +136,12 @@ static void test1()
 		LCSMState state = engine.fork();
 
 		// Run single test.
-		test1(state, input, output, probe, wire1, wire2, expected);
+		testImpl(state, input, output, probe, wire1, wire2, expected);
 	}
 }
 
 int main()
 {
 	// Run all tests.
-	test0();
-	test1();
+	PerformTest(generator, checker, test1);
 }

@@ -244,19 +244,28 @@ lcsm::portid_t lcsm::model::Splitter::defaultPort() const noexcept
 void lcsm::model::Splitter::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
+
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
+
+	writer.writeIdDeclaration(id());
+
+	writer.writeNameDeclaration(name());
+
 	writer.writeKeyValueDeclaration("widthIn", static_cast< std::uint64_t >(widthIn()));
+
 	writer.writeKeyValueDeclaration("widthOut", static_cast< std::uint64_t >(widthOut()));
+
 	writer.writeKeyValueDeclaration("wireinid", wireIn()->id());
+
 	builder.addWires(wireIn(), true);
+
 	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
 	{
 		const std::string key = "wireout" + std::to_string(i) + "id";
 		writer.writeKeyValueDeclaration(key.c_str(), m_wireOuts[i]->id());
 		builder.addWires(m_wireOuts[i].get(), true);
 	}
+
 	writer.writeEndComponent();
 }
 
@@ -295,7 +304,7 @@ void lcsm::model::Splitter::from(lcsm::model::LCSMFileReader &reader, lcsm::mode
 	setName(reader.exceptName());
 
 	// keyvalue widthIn <INTEGER>;
-	setWidthIn(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("widthIn")));
+	setWidthIn(lcsm::StrongToWidth(reader.exceptIntegerKeyValue("widthIn")));
 
 	// keyvalue widthOut <INTEGER>;
 	setWidthOut(static_cast< lcsm::width_t >(reader.exceptIntegerKeyValue("widthOut")));

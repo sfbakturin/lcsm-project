@@ -12,7 +12,6 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 lcsm::model::Constant::Constant(lcsm::Width width, lcsm::value_t value) : lcsm::model::Constant("", width, value) {}
@@ -141,14 +140,30 @@ lcsm::portid_t lcsm::model::Constant::defaultPort() const noexcept
 
 void lcsm::model::Constant::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
+
+	// id <IDENTIFIER>;
 	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
 	writer.writeNameDeclaration(name());
+
+	// keyvalue width <INTEGER>;
 	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(width()));
+
+	// keyvalue value <INTEGER>;
 	writer.writeKeyValueDeclaration("value", value());
+
+	// keyvalue wireid <INTEGER>;
 	writer.writeKeyValueDeclaration("wireid", wire()->id());
+
 	builder.addWires(wire(), true);
+
+	// endcomponent
 	writer.writeEndComponent();
 }
 
@@ -181,8 +196,7 @@ void lcsm::model::Constant::from(lcsm::model::LCSMFileReader &reader, lcsm::mode
 	setName(reader.exceptName());
 
 	// keyvalue width <INTEGER>;
-	const std::pair< std::string, unsigned long long > width = reader.exceptIntegerKeyValue();
-	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+	setWidth(lcsm::StrongToWidth(reader.exceptIntegerKeyValue("width")));
 
 	// keyvalue value <INTEGER>;
 	setValue(static_cast< lcsm::value_t >(reader.exceptIntegerKeyValue("value")));

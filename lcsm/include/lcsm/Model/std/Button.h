@@ -28,6 +28,7 @@ namespace lcsm
 			};
 
 		  public:
+			Button() = default;
 			Button(bool activeOnPress);
 			Button(label_t name, bool activeOnPress);
 			~Button() noexcept;

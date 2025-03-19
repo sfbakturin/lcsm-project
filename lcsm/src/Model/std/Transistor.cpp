@@ -164,15 +164,15 @@ void lcsm::model::Transistor::dump(lcsm::model::LCSMFileWriter &writer, lcsm::mo
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("type", static_cast< std::uint64_t >(m_type));
-	writer.writeKeyValueDeclaration("baseid", m_base->id());
-	writer.writeKeyValueDeclaration("srcaid", m_srcA->id());
-	writer.writeKeyValueDeclaration("srcbid", m_srcB->id());
-	builder.addWires(m_base.get(), true);
-	builder.addWires(m_srcA.get(), true);
-	builder.addWires(m_srcB.get(), true);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
+	writer.writeKeyValueDeclaration("type", static_cast< std::uint64_t >(type()));
+	writer.writeKeyValueDeclaration("baseid", wireBase()->id());
+	writer.writeKeyValueDeclaration("srcaid", wireSrcA()->id());
+	writer.writeKeyValueDeclaration("srcbid", wireSrcB()->id());
+	builder.addWires(wireBase(), true);
+	builder.addWires(wireSrcA(), true);
+	builder.addWires(wireSrcB(), true);
 	writer.writeEndComponent();
 }
 
@@ -208,7 +208,12 @@ void lcsm::model::Transistor::from(lcsm::model::LCSMFileReader &reader, lcsm::mo
 	setName(reader.exceptName());
 
 	// keyvalue type <INTEGER>;
-	setType(static_cast< lcsm::model::Transistor::Type >(reader.exceptIntegerKeyValue("type")));
+	const unsigned long long type = reader.exceptIntegerKeyValue("type");
+	if (type != lcsm::model::Transistor::Type::P && type != lcsm::model::Transistor::Type::N)
+	{
+		throw std::logic_error("Mistaken Transistor's type.");
+	}
+	setType(static_cast< lcsm::model::Transistor::Type >(type));
 
 	// keyvalue baseid <INTEGER>;
 	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("baseid")), wireBase()->id());

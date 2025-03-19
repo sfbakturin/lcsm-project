@@ -53,7 +53,7 @@ bool lcsm::model::LCSMFileToken::operator==(lcsm::model::LCSMFileKind kind) cons
 
 bool lcsm::model::LCSMFileToken::operator!=(lcsm::model::LCSMFileKind kind) const noexcept
 {
-	return m_kind == kind;
+	return m_kind != kind;
 }
 
 void lcsm::model::LCSMFileToken::swap(lcsm::model::LCSMFileToken &other) noexcept

@@ -205,7 +205,7 @@ void lcsm::model::LCSMFileWriter::writeTunnelDeclaration(lcsm::Identifier lhs, l
 	writeIndents();
 	// clang-format off
 	m_writer->writeln({
-		lcsm::model::KindToKeyword(lcsm::model::LCSMFileKind::ConnectKeyword),
+		lcsm::model::KindToKeyword(lcsm::model::LCSMFileKind::TunnelKeyword),
 		" ",
 		l.c_str(),
 		" ",

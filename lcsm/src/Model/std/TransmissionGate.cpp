@@ -168,16 +168,16 @@ void lcsm::model::TransmissionGate::dump(lcsm::model::LCSMFileWriter &writer, lc
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("baseid", m_base->id());
-	writer.writeKeyValueDeclaration("srcaid", m_srcA->id());
-	writer.writeKeyValueDeclaration("srcbid", m_srcB->id());
-	writer.writeKeyValueDeclaration("srccid", m_srcC->id());
-	builder.addWires(m_base.get(), true);
-	builder.addWires(m_srcA.get(), true);
-	builder.addWires(m_srcB.get(), true);
-	builder.addWires(m_srcC.get(), true);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
+	writer.writeKeyValueDeclaration("baseid", wireBase()->id());
+	writer.writeKeyValueDeclaration("srcaid", wireSrcA()->id());
+	writer.writeKeyValueDeclaration("srcbid", wireSrcB()->id());
+	writer.writeKeyValueDeclaration("srccid", wireSrcC()->id());
+	builder.addWires(wireBase(), true);
+	builder.addWires(wireSrcA(), true);
+	builder.addWires(wireSrcB(), true);
+	builder.addWires(wireSrcC(), true);
 	writer.writeEndComponent();
 }
 

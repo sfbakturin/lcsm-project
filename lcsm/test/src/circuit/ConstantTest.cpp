@@ -55,13 +55,6 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire, CircuitType::Wire);
 }
 
-static void test0_pretest()
-{
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
 static void test1(LCSMState &state, const Circuit *constant, const Circuit *pin, const Circuit *wire, Width width)
 {
 	// Indexes.
@@ -83,10 +76,8 @@ static void test1(LCSMState &state, const Circuit *constant, const Circuit *pin,
 	std::cout << "<constant=" << actualConstant << "> --> <wire=" << actualWire << "> --> <pin=" << actualPin << ">\n";
 }
 
-static void test1_widths()
+static void test1_widths(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *constant = circuit.find("constant");
 	Circuit *pin = circuit.find("pin");
@@ -144,10 +135,8 @@ static void test2(LCSMState &state, const Circuit *constant, const Circuit *pin,
 	std::cout << "<constant=" << actualConstant << "> --> <wire=" << actualWire << "> --> <pin=" << actualPin << ">\n";
 }
 
-static void test2_values()
+static void test2_values(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *constant = circuit.find("constant");
 	Circuit *pin = circuit.find("pin");
@@ -197,7 +186,6 @@ static void test2_values()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_widths();
-	test2_values();
+	PerformTest(generator, checker, test1_widths);
+	PerformTest(generator, checker, test2_values);
 }

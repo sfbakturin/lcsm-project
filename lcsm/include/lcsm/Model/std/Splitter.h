@@ -93,6 +93,7 @@ namespace lcsm
 			};
 
 		  public:
+			Splitter() = default;
 			Splitter(Width widthIn, width_t widthOut);
 			Splitter(label_t name, Width widthIn, width_t widthOut);
 			~Splitter() noexcept;

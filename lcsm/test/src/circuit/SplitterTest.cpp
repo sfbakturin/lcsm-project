@@ -60,13 +60,6 @@ static void checker(LCSMCircuit &circuit)
 	assertType(output2, CircuitType::Pin);
 }
 
-static void test0_pretest()
-{
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
 static void
 	test2bit(LCSMState &state, const Circuit *input, const Circuit *output1, const Circuit *output2, const std::vector< TestData2bit > &testdatas)
 {
@@ -99,10 +92,8 @@ static void
 	}
 }
 
-static void test1_2bitTo2bit()
+static void test1_2bitTo2bit(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output1 = circuit.find("output1");
@@ -132,10 +123,8 @@ static void test1_2bitTo2bit()
 	test2bit(state, input, output1, output2, testdatas);
 }
 
-static void test2_3bitTo2bit()
+static void test2_3bitTo2bit(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *splitter = circuit.find("splitter");
@@ -174,10 +163,8 @@ static void test2_3bitTo2bit()
 	test2bit(state, input, output1, output2, testdatas);
 }
 
-static void test3_4bitTo2bit()
+static void test3_4bitTo2bit(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *splitter = circuit.find("splitter");
@@ -263,10 +250,8 @@ static void
 	}
 }
 
-static void test4_4bitTo3bit()
+static void test4_4bitTo3bit(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *splitter = circuit.find("splitter");
@@ -321,9 +306,8 @@ static void test4_4bitTo3bit()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_2bitTo2bit();
-	test2_3bitTo2bit();
-	test3_4bitTo2bit();
-	test4_4bitTo3bit();
+	PerformTest(generator, checker, test1_2bitTo2bit);
+	PerformTest(generator, checker, test2_3bitTo2bit);
+	PerformTest(generator, checker, test3_4bitTo2bit);
+	PerformTest(generator, checker, test4_4bitTo3bit);
 }

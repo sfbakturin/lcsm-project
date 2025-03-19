@@ -24,6 +24,7 @@ namespace lcsm
 			};
 
 		  public:
+			Ground() = default;
 			Ground(Width width);
 			Ground(label_t name, Width width);
 			~Ground() noexcept;

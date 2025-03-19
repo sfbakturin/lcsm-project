@@ -6,6 +6,8 @@
 #include <unordered_map>
 
 #include <deque>
+#include <tuple>
+#include <utility>
 
 namespace lcsm
 {
@@ -22,7 +24,18 @@ namespace lcsm
 			LCSMBuilder() = default;
 
 			void addWires(const Wire *wire, bool isFirstComp);
+
+			void addWire(const std::tuple< Identifier, Identifier, bool, bool > &connect);
+			void addWire(std::tuple< Identifier, Identifier, bool, bool > &&connect);
+			void addWire(Identifier id1, Identifier id2, bool isFirstComp, bool isSecondComp);
+			void addWire(unsigned long long id1, unsigned long long id2, bool isFirstComp, bool isSecondComp);
+
 			void addTunnels(const Tunnel *tunnel);
+
+			void addTunnel(const std::pair< Identifier, Identifier > &tunnel);
+			void addTunnel(std::pair< Identifier, Identifier > &&tunnel);
+			void addTunnel(Identifier id1, Identifier id2);
+
 			void oldToNew(Identifier oldId, Identifier newId);
 
 			void dump(LCSMFileWriter &writer);
@@ -30,8 +43,8 @@ namespace lcsm
 			void check();
 
 		  private:
-			std::deque< std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > > m_wires;
-			std::deque< std::pair< lcsm::Identifier, lcsm::Identifier > > m_tunnels;
+			std::deque< std::tuple< Identifier, Identifier, bool, bool > > m_wires;
+			std::deque< std::pair< Identifier, Identifier > > m_tunnels;
 			std::unordered_map< Identifier, Identifier > m_oldToNewId;
 		};
 	}	 // namespace model

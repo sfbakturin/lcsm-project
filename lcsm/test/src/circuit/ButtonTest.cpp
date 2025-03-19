@@ -49,17 +49,8 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire, CircuitType::Wire);
 }
 
-static void test0_pretest()
+static void test1_activeOnPress(LCSMCircuit &circuit)
 {
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
-static void test1_activeOnPress()
-{
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *button = circuit.find("button");
 	Circuit *pin = circuit.find("pin");
@@ -124,10 +115,8 @@ static void test1_activeOnPress()
 	}
 }
 
-static void test2_nonActiveOnPress()
+static void test2_nonActiveOnPress(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *button = circuit.find("button");
 	Circuit *pin = circuit.find("pin");
@@ -201,7 +190,6 @@ static void test2_nonActiveOnPress()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_activeOnPress();
-	test2_nonActiveOnPress();
+	PerformTest(generator, checker, test1_activeOnPress);
+	PerformTest(generator, checker, test2_nonActiveOnPress);
 }

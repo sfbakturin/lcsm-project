@@ -46,7 +46,6 @@ namespace lcsm
 		LastNodeType = Dynamic + 1
 	};
 
-	/* All available physical object types. */
 	/// Represents object properties in circuit for the flags. They can be combined using the bitwise OR operator.
 	enum ObjectType : object_type_t
 	{

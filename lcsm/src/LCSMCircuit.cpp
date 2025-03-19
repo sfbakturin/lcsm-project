@@ -43,12 +43,26 @@
 
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::label_t name) : m_name(name) {}
 
+lcsm::LCSMCircuit::LCSMCircuit(const std::string &name) : m_name(name) {}
+
+lcsm::LCSMCircuit::LCSMCircuit(const lcsm::LCSMCircuit &other) : m_name(other.m_name)
+{
+	static const lcsm::Identifier entryId;
+	lcsm::model::LCSMBuilder builder;
+	other.copyImpl(this, builder, entryId);
+}
+
 lcsm::LCSMCircuit::LCSMCircuit(lcsm::LCSMCircuit &&other) noexcept :
 	m_globalId(std::move(other.m_globalId)), m_components(std::move(other.m_components)), m_inputs(std::move(other.m_inputs)),
 	m_outputs(std::move(other.m_outputs)), m_componentWires(std::move(other.m_componentWires)),
 	m_connectorWires(std::move(other.m_connectorWires)), m_circuits(std::move(other.m_circuits)),
 	m_verilogModules(std::move(other.m_verilogModules)), m_name(std::move(other.m_name))
 {
+}
+
+lcsm::LCSMCircuit &lcsm::LCSMCircuit::operator=(const lcsm::LCSMCircuit &other)
+{
+	return lcsm::support::CopyAssign< lcsm::LCSMCircuit >(this, other);
 }
 
 lcsm::LCSMCircuit &lcsm::LCSMCircuit::operator=(lcsm::LCSMCircuit &&other) noexcept
@@ -85,11 +99,6 @@ const std::string &lcsm::LCSMCircuit::name() const noexcept
 	return m_name;
 }
 
-lcsm::label_t lcsm::LCSMCircuit::c_name() const noexcept
-{
-	return m_name.c_str();
-}
-
 const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::components() const noexcept
 {
 	return m_components;
@@ -108,90 +117,90 @@ const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSM
 lcsm::Circuit *lcsm::LCSMCircuit::create(lcsm::Circuit *circuit)
 {
 	std::shared_ptr< lcsm::Circuit > element(circuit);
-	return registerElement(std::move(element));
+	return registerComponent(element);
 }
 
 lcsm::model::Constant *lcsm::LCSMCircuit::createConstant(lcsm::label_t name, lcsm::Width width, lcsm::value_t value)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Constant >(name, width, value);
-	lcsm::model::Constant *circuit = static_cast< lcsm::model::Constant * >(registerElement(std::move(element)));
+	lcsm::model::Constant *circuit = static_cast< lcsm::model::Constant * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Ground *lcsm::LCSMCircuit::createGround(lcsm::label_t name, lcsm::Width width)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Ground >(name, width);
-	lcsm::model::Ground *circuit = static_cast< lcsm::model::Ground * >(registerElement(std::move(element)));
+	lcsm::model::Ground *circuit = static_cast< lcsm::model::Ground * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Power *lcsm::LCSMCircuit::createPower(lcsm::label_t name, lcsm::Width width)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Power >(name, width);
-	lcsm::model::Power *circuit = static_cast< lcsm::model::Power * >(registerElement(std::move(element)));
+	lcsm::model::Power *circuit = static_cast< lcsm::model::Power * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Pin *lcsm::LCSMCircuit::createPin(bool output, lcsm::label_t name, lcsm::Width width)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Pin >(name, output, width);
-	lcsm::model::Pin *circuit = static_cast< lcsm::model::Pin * >(registerElement(std::move(element)));
+	lcsm::model::Pin *circuit = static_cast< lcsm::model::Pin * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Transistor *lcsm::LCSMCircuit::createTransistor(lcsm::label_t name, lcsm::model::Transistor::Type type)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Transistor >(name, type);
-	lcsm::model::Transistor *circuit = static_cast< lcsm::model::Transistor * >(registerElement(std::move(element)));
+	lcsm::model::Transistor *circuit = static_cast< lcsm::model::Transistor * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::TransmissionGate *lcsm::LCSMCircuit::createTransmissionGate(lcsm::label_t name)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::TransmissionGate >(name);
-	lcsm::model::TransmissionGate *circuit = static_cast< lcsm::model::TransmissionGate * >(registerElement(std::move(element)));
+	lcsm::model::TransmissionGate *circuit = static_cast< lcsm::model::TransmissionGate * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Tunnel *lcsm::LCSMCircuit::createTunnel(lcsm::label_t name)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Tunnel >(name);
-	lcsm::model::Tunnel *circuit = static_cast< lcsm::model::Tunnel * >(registerElement(std::move(element)));
+	lcsm::model::Tunnel *circuit = static_cast< lcsm::model::Tunnel * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Clock *lcsm::LCSMCircuit::createClock(lcsm::label_t name, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Clock >(name, highDuration, lowDuration, phaseOffset);
-	lcsm::model::Clock *circuit = static_cast< lcsm::model::Clock * >(registerElement(std::move(element)));
+	lcsm::model::Clock *circuit = static_cast< lcsm::model::Clock * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Button *lcsm::LCSMCircuit::createButton(lcsm::label_t name, bool activeOnPress)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Button >(name, activeOnPress);
-	lcsm::model::Button *circuit = static_cast< lcsm::model::Button * >(registerElement(std::move(element)));
+	lcsm::model::Button *circuit = static_cast< lcsm::model::Button * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Digit *lcsm::LCSMCircuit::createDigit(lcsm::label_t name, bool hasDecimalPoint)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Digit >(name, hasDecimalPoint);
-	lcsm::model::Digit *circuit = static_cast< lcsm::model::Digit * >(registerElement(std::move(element)));
+	lcsm::model::Digit *circuit = static_cast< lcsm::model::Digit * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Probe *lcsm::LCSMCircuit::createProbe(lcsm::label_t name)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Probe >(name);
-	lcsm::model::Probe *circuit = static_cast< lcsm::model::Probe * >(registerElement(std::move(element)));
+	lcsm::model::Probe *circuit = static_cast< lcsm::model::Probe * >(registerComponent(element));
 	return circuit;
 }
 
 lcsm::model::Splitter *lcsm::LCSMCircuit::createSplitter(lcsm::label_t name, lcsm::Width widthIn, lcsm::width_t widthOut)
 {
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::Splitter >(name, widthIn, widthOut);
-	lcsm::model::Splitter *circuit = static_cast< lcsm::model::Splitter * >(registerElement(std::move(element)));
+	lcsm::model::Splitter *circuit = static_cast< lcsm::model::Splitter * >(registerComponent(element));
 	return circuit;
 }
 
@@ -206,7 +215,7 @@ lcsm::model::VerilogModule *lcsm::LCSMCircuit::createVerilogModule(const lcsm::v
 
 	// Create element.
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::VerilogModule >(circuitModule);
-	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerElement(std::move(element)));
+	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerComponent(element));
 
 	return circuit;
 }
@@ -222,7 +231,7 @@ lcsm::model::VerilogModule *lcsm::LCSMCircuit::createVerilogModule(lcsm::verilog
 
 	// Create element.
 	std::shared_ptr< lcsm::Circuit > element = std::make_shared< lcsm::model::VerilogModule >(circuitModule);
-	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerElement(std::move(element)));
+	lcsm::model::VerilogModule *circuit = static_cast< lcsm::model::VerilogModule * >(registerComponent(element));
 
 	return circuit;
 }
@@ -368,6 +377,21 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Circuit *circuit) noexcept
 		return found->second.get();
 	}
 
+	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &inner : m_circuits)
+	{
+		lcsm::Circuit *foundInner = inner.second->findInput(circuit);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+
+		foundInner = inner.second->findOutput(circuit);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+	}
+
 	return nullptr;
 }
 
@@ -387,6 +411,21 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::Identifier id) noexcept
 		return found->second.get();
 	}
 
+	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &inner : m_circuits)
+	{
+		lcsm::Circuit *foundInner = inner.second->findInput(id);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+
+		foundInner = inner.second->findOutput(id);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+	}
+
 	return nullptr;
 }
 
@@ -396,7 +435,7 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::label_t name) noexcept
 		m_components.begin(),
 		m_components.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
-		{ return std::strcmp(i.second->c_name(), name) == 0; });
+		{ return i.second->name() == name; });
 
 	if (found != m_components.end())
 	{
@@ -407,11 +446,26 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::label_t name) noexcept
 		m_connectorWires.begin(),
 		m_connectorWires.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
-		{ return std::strcmp(i.second->c_name(), name) == 0; });
+		{ return i.second->name() == name; });
 
 	if (found != m_connectorWires.end())
 	{
 		return found->second.get();
+	}
+
+	for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &inner : m_circuits)
+	{
+		lcsm::Circuit *foundInner = inner.second->findInput(name);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+
+		foundInner = inner.second->findOutput(name);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
 	}
 
 	return nullptr;
@@ -420,6 +474,102 @@ lcsm::Circuit *lcsm::LCSMCircuit::find(lcsm::label_t name) noexcept
 lcsm::Circuit *lcsm::LCSMCircuit::find(const std::string &name) noexcept
 {
 	return find(name.c_str());
+}
+
+static inline std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator
+	FindByPtr(const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &m, const lcsm::Circuit *circuit)
+{
+	return std::find_if(
+		m.begin(),
+		m.end(),
+		[circuit](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return i.second.get() == circuit; });
+}
+
+static inline std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator
+	FindByName(const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &m, lcsm::label_t name)
+{
+	return std::find_if(
+		m.begin(),
+		m.end(),
+		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &i)
+		{ return i.second->name() == name; });
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findInput(lcsm::Circuit *circuit) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const auto found = FindByPtr(m_inputs, circuit);
+	if (found == m_inputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findInput(lcsm::Identifier id) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = m_inputs.find(id);
+	if (found == m_inputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findInput(lcsm::label_t name) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const auto found = FindByName(m_inputs, name);
+	if (found == m_inputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findInput(const std::string &name) noexcept
+{
+	return findInput(name.c_str());
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findOutput(lcsm::Circuit *circuit) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const auto found = FindByPtr(m_outputs, circuit);
+	if (found == m_outputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findOutput(lcsm::Identifier id) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = m_outputs.find(id);
+	if (found == m_outputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findOutput(lcsm::label_t name) noexcept
+{
+	// Find this circuit, if not found - nullptr.
+	const auto found = FindByName(m_outputs, name);
+	if (found == m_outputs.end())
+	{
+		return nullptr;
+	}
+	return found->second.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findOutput(const std::string &name) noexcept
+{
+	return findOutput(name.c_str());
 }
 
 bool lcsm::LCSMCircuit::remove(lcsm::Circuit *circuit)
@@ -500,7 +650,7 @@ lcsm::LCSMCircuitView lcsm::LCSMCircuit::findCircuit(lcsm::label_t name) noexcep
 		m_circuits.begin(),
 		m_circuits.end(),
 		[name](const std::pair< lcsm::Identifier, std::shared_ptr< lcsm::LCSMCircuit > > &i)
-		{ return std::strcmp(i.second->c_name(), name) == 0; });
+		{ return i.second->name() == name; });
 	if (found == m_circuits.end())
 	{
 		return {};
@@ -555,39 +705,9 @@ bool lcsm::LCSMCircuit::removeCircuit(const std::string &name)
 	return removeCircuit(circuit);
 }
 
-lcsm::Circuit *lcsm::LCSMCircuit::registerElement(std::shared_ptr< lcsm::Circuit > &&circuit)
-{
-	const std::size_t numOfWires = circuit->numOfWires();
-	std::vector< std::shared_ptr< lcsm::model::Wire > > wires;
-	for (std::size_t i = 0; i < numOfWires; i++)
-	{
-		wires.push_back(std::make_shared< lcsm::model::Wire >());
-	}
-	circuit->provideWires(wires);
-	const lcsm::Identifier prev = m_globalId;
-	m_globalId = circuit->identify(prev);
-	m_components[prev] = circuit;
-	for (std::size_t i = 0; i < numOfWires; i++)
-	{
-		const lcsm::Identifier id = wires[i]->id();
-		m_componentWires[id] = wires[i];
-	}
-	const lcsm::object_type_t objectType = circuit->objectType();
-	const lcsm::Identifier id = circuit->id();
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
-	{
-		m_inputs[id] = circuit;
-	}
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Output))
-	{
-		m_outputs[id] = circuit;
-	}
-	return circuit.get();
-}
-
 lcsm::LCSMCircuitView lcsm::LCSMCircuit::addCircuit(const lcsm::LCSMCircuit &other, lcsm::model::LCSMBuilder &builder, std::size_t depth)
 {
-	std::shared_ptr< lcsm::LCSMCircuit > circuit = std::make_shared< lcsm::LCSMCircuit >();
+	std::shared_ptr< lcsm::LCSMCircuit > circuit = std::make_shared< lcsm::LCSMCircuit >(other.m_name);
 	const lcsm::Identifier circuitId = m_globalId;
 	other.copyImpl(circuit.get(), builder, m_globalId, depth);
 	m_circuits[circuitId] = circuit;
@@ -615,30 +735,30 @@ void lcsm::LCSMCircuit::dumpToFile(const char *filename) const
 	dumpImpl(writer);
 }
 
-lcsm::LCSMCircuit lcsm::LCSMCircuit::fromDumpString(const std::string &string)
+lcsm::LCSMCircuit lcsm::LCSMCircuit::fromString(const std::string &string)
 {
-	return lcsm::LCSMCircuit::fromDumpString(string.c_str());
+	return lcsm::LCSMCircuit::fromString(string.c_str());
 }
 
-lcsm::LCSMCircuit lcsm::LCSMCircuit::fromDumpString(const char *string)
+lcsm::LCSMCircuit lcsm::LCSMCircuit::fromString(const char *string)
 {
 	std::shared_ptr< lcsm::support::Reader > r = std::make_shared< lcsm::support::CStringReader >(string);
 	lcsm::model::LCSMFileReader reader(r);
 	lcsm::model::LCSMBuilder builder;
-	return fromDumpImpl(reader, builder);
+	return lcsm::LCSMCircuit::fromImpl(reader, builder);
 }
 
-lcsm::LCSMCircuit lcsm::LCSMCircuit::fromDumpFile(const std::string &filename)
+lcsm::LCSMCircuit lcsm::LCSMCircuit::fromFile(const std::string &filename)
 {
-	return lcsm::LCSMCircuit::fromDumpFile(filename.c_str());
+	return lcsm::LCSMCircuit::fromFile(filename.c_str());
 }
 
-lcsm::LCSMCircuit lcsm::LCSMCircuit::fromDumpFile(const char *filename)
+lcsm::LCSMCircuit lcsm::LCSMCircuit::fromFile(const char *filename)
 {
 	std::shared_ptr< lcsm::support::Reader > r = std::make_shared< lcsm::support::FileReader >(filename);
 	lcsm::model::LCSMFileReader reader(r);
 	lcsm::model::LCSMBuilder builder;
-	return fromDumpImpl(reader, builder);
+	return lcsm::LCSMCircuit::fromImpl(reader, builder);
 }
 
 void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, lcsm::model::LCSMBuilder &builder, const Identifier &entryId, std::size_t depth) const
@@ -758,7 +878,7 @@ void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, lcsm::model::LCS
 
 lcsm::LCSMCircuit lcsm::LCSMCircuit::copyImpl(const lcsm::Identifier &entryId) const
 {
-	lcsm::LCSMCircuit newCircuit(c_name());
+	lcsm::LCSMCircuit newCircuit(name());
 	lcsm::model::LCSMBuilder builder;
 	copyImpl(std::addressof(newCircuit), builder, entryId);
 	return newCircuit;
@@ -803,8 +923,7 @@ void lcsm::LCSMCircuit::dumpImpl(lcsm::model::LCSMFileWriter &writer) const
 	writer.writeEndCircuit();
 }
 
-lcsm::LCSMCircuit
-	lcsm::LCSMCircuit::fromDumpImpl(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder, std::size_t depth)
+lcsm::LCSMCircuit lcsm::LCSMCircuit::fromImpl(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder, std::size_t depth)
 {
 	lcsm::LCSMCircuit circuit;
 
@@ -813,7 +932,10 @@ lcsm::LCSMCircuit
 
 	// 'id <ID>;'
 	const lcsm::Identifier id = reader.exceptIdentifier();
-	circuit.m_globalId = id;
+	if (depth != 0)
+	{
+		circuit.m_globalId = id;
+	}
 
 	// 'name <NAME>;'
 	std::string name = reader.exceptName();
@@ -828,21 +950,201 @@ lcsm::LCSMCircuit
 		// Choose.
 		switch (circuitType)
 		{
+		case lcsm::CircuitType::Wire:
+		{
+			// Create Wire component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > wire = circuit.preRegisterComponent(new lcsm::model::Wire);
+			// Fill the component and builder from reader.
+			wire->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(wire);
+			break;
+		}
+		case lcsm::CircuitType::Tunnel:
+		{
+			// Create Tunnel component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > tunnel = circuit.preRegisterComponent(new lcsm::model::Tunnel);
+			// Fill the component and builder from reader.
+			tunnel->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(tunnel);
+			break;
+		}
 		case lcsm::CircuitType::Pin:
 		{
-			lcsm::model::Pin *pin = circuit.createPin(false);
+			// Create Pin component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > pin = circuit.preRegisterComponent(new lcsm::model::Pin);
+			// Fill the component and builder from reader.
 			pin->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(pin);
+			break;
+		}
+		case lcsm::CircuitType::Constant:
+		{
+			// Create Constant component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > constant = circuit.preRegisterComponent(new lcsm::model::Constant);
+			// Fill the component and builder from reader.
+			constant->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(constant);
+			break;
+		}
+		case lcsm::CircuitType::Power:
+		{
+			// Create Power component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > power = circuit.preRegisterComponent(new lcsm::model::Power);
+			// Fill the component and builder from reader.
+			power->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(power);
+			break;
+		}
+		case lcsm::CircuitType::Ground:
+		{
+			// Create Ground component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > ground = circuit.preRegisterComponent(new lcsm::model::Ground);
+			// Fill the component and builder from reader.
+			ground->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(ground);
+			break;
+		}
+		case lcsm::CircuitType::Clock:
+		{
+			// Create Clock component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > clock = circuit.preRegisterComponent(new lcsm::model::Clock);
+			// Fill the component and builder from reader.
+			clock->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(clock);
+			break;
+		}
+		case lcsm::CircuitType::Transistor:
+		{
+			// Create Transistor component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > transistor = circuit.preRegisterComponent(new lcsm::model::Transistor);
+			// Fill the component and builder from reader.
+			transistor->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(transistor);
+			break;
+		}
+		case lcsm::CircuitType::TransmissionGate:
+		{
+			// Create TransmissionGate component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > transistor = circuit.preRegisterComponent(new lcsm::model::TransmissionGate);
+			// Fill the component and builder from reader.
+			transistor->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(transistor);
+			break;
+		}
+		case lcsm::CircuitType::Button:
+		{
+			// Create Button component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > button = circuit.preRegisterComponent(new lcsm::model::Button);
+			// Fill the component and builder from reader.
+			button->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(button);
+			break;
+		}
+		case lcsm::CircuitType::Digit:
+		{
+			// Create Digit component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > digit = circuit.preRegisterComponent(new lcsm::model::Digit);
+			// Fill the component and builder from reader.
+			digit->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(digit);
+			break;
+		}
+		case lcsm::CircuitType::Probe:
+		{
+			// Create Probe component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > probe = circuit.preRegisterComponent(new lcsm::model::Probe);
+			// Fill the component and builder from reader.
+			probe->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(probe);
+			break;
+		}
+		case lcsm::CircuitType::Splitter:
+		{
+			// Create Splitter component and PRE-register it to circuit.
+			std::shared_ptr< lcsm::Circuit > splitter = circuit.preRegisterComponent(new lcsm::model::Splitter);
+			// Fill the component and builder from reader.
+			splitter->from(reader, builder);
+			// Perform POST-registration.
+			circuit.postRegisterComponent(splitter);
+			break;
+		}
+		case lcsm::CircuitType::VerilogModule:
+		{
+			// Create Verilog's Module from parsed source.
+			lcsm::verilog::Module module = lcsm::verilog::Module::fromString(reader.exceptEscapedKeyValue("source"));
+
+			// Create Verilog's Module component.
+			lcsm::model::VerilogModule *verilogModule = circuit.createVerilogModule(std::move(module));
+
+			// Fill the component and builder from reader.
+			verilogModule->from(reader, builder);
+
+			// No need to perform POST-registration.
 			break;
 		}
 		default:
 		{
-			break;
+			throw std::logic_error("Found unknown circuit type!");
 		}
 		}
 
 		// 'endcomponent'
-		reader.parseEndCircuit();
+		reader.parseEndComponent();
 	}
+
+	// Parse inner circuits, if presented.
+	while (reader.tryParseBeginCircuit())
+	{
+		// Back 'begincircuit' to lexer for reading inner circuit.
+		reader.back();
+
+		// Parse inner circuit and add to circuits.
+		std::shared_ptr< lcsm::LCSMCircuit > inner =
+			std::make_shared< lcsm::LCSMCircuit >(lcsm::LCSMCircuit::fromImpl(reader, builder, depth + 1));
+		circuit.m_circuits[inner->globalId()] = inner;
+	}
+
+	// 'beginconnections'
+	reader.parseBeginConnections();
+
+	while (reader.tryParseConnect())
+	{
+		// Back 'connect' to lexer for reading connect.
+		reader.back();
+
+		// Parse connection.
+		builder.addWire(reader.exceptConnect());
+	}
+
+	// 'endconnections'
+	reader.parseEndConnections();
+
+	// 'begintunnels'
+	reader.parseBeginTunnels();
+
+	while (reader.tryParseTunnel())
+	{
+		// Back 'connect' to lexer for reading connect.
+		reader.back();
+
+		// Parse connection.
+		builder.addTunnel(reader.exceptTunnel());
+	}
+
+	// 'endtunnels'
+	reader.parseEndTunnels();
 
 	// 'endcircuit'
 	reader.parseEndCircuit();
@@ -875,4 +1177,76 @@ std::shared_ptr< lcsm::model::Wire > lcsm::LCSMCircuit::createConnectorWire(lcsm
 	std::shared_ptr< lcsm::model::Wire > wire = createIdentifiedWire(name);
 	m_connectorWires[wire->id()] = wire;
 	return wire;
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::registerComponent(std::shared_ptr< lcsm::Circuit > &circuit)
+{
+	preRegisterComponent(circuit);
+	return postRegisterComponent(circuit);
+}
+
+std::shared_ptr< lcsm::Circuit > lcsm::LCSMCircuit::preRegisterComponent(lcsm::Circuit *circuit)
+{
+	std::shared_ptr< lcsm::Circuit > ptr(circuit);
+	return preRegisterComponent(ptr);
+}
+
+std::shared_ptr< lcsm::Circuit > lcsm::LCSMCircuit::preRegisterComponent(std::shared_ptr< lcsm::Circuit > &circuit)
+{
+	const std::size_t numOfWires = circuit->numOfWires();
+	std::vector< std::shared_ptr< lcsm::model::Wire > > wires;
+	for (std::size_t i = 0; i < numOfWires; i++)
+	{
+		wires.push_back(std::make_shared< lcsm::model::Wire >());
+	}
+	circuit->provideWires(wires);
+	const lcsm::Identifier prev = m_globalId;
+	m_globalId = circuit->identify(prev);
+	m_components[prev] = circuit;
+	for (std::size_t i = 0; i < numOfWires; i++)
+	{
+		const lcsm::Identifier id = wires[i]->id();
+		m_componentWires[id] = wires[i];
+	}
+	return circuit;
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::postRegisterComponent(lcsm::Circuit *circuit)
+{
+	return postRegisterComponent(m_components.at(circuit->id()));
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::postRegisterComponent(std::shared_ptr< lcsm::Circuit > &circuit)
+{
+	const lcsm::object_type_t objectType = circuit->objectType();
+	const lcsm::Identifier id = circuit->id();
+	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
+	{
+		m_inputs[id] = circuit;
+	}
+	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Output))
+	{
+		m_outputs[id] = circuit;
+	}
+	return circuit.get();
+}
+
+lcsm::Circuit *lcsm::LCSMCircuit::findGloballyComponentWire(lcsm::Identifier id) noexcept
+{
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::const_iterator found = m_componentWires.find(id);
+	if (found != m_componentWires.end())
+	{
+		return found->second.get();
+	}
+
+	for (const auto &inner : m_circuits)
+	{
+		lcsm::Circuit *foundInner = inner.second->findGloballyComponentWire(id);
+		if (foundInner != nullptr)
+		{
+			return foundInner;
+		}
+	}
+
+	return nullptr;
 }

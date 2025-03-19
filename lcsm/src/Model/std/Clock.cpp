@@ -148,7 +148,7 @@ lcsm::portid_t lcsm::model::Clock::defaultPort() const noexcept
 
 void lcsm::model::Clock::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	// begincomponent
+	// 'begincomponent'
 	writer.writeBeginComponent();
 
 	// circuittype <INTEGER>;
@@ -174,7 +174,7 @@ void lcsm::model::Clock::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::
 
 	builder.addWires(wire(), true);
 
-	// endcomponent
+	// 'endcomponent'
 	writer.writeEndComponent();
 }
 

@@ -456,33 +456,9 @@ static void checker5(LCSMCircuit &circuit)
 	assertType(reg_test, CircuitType::VerilogModule);
 }
 
-static void test3_pretest()
+static void test3_runTheVerilogModule(LCSMCircuit &circuit)
 {
-	// Generators.
-	const GeneratorTy g1 = generator1;
-	const GeneratorTy g2 = generator2;
-	const GeneratorTy g3 = generator3;
-	const GeneratorTy g4 = generator4;
-	const GeneratorTy g5 = generator5;
-
-	// Checkers.
-	const CheckerTy c1 = checker1;
-	const CheckerTy c2 = checker2;
-	const CheckerTy c3 = checker3;
-	const CheckerTy c4 = checker4;
-	const CheckerTy c5 = checker5;
-
-	// Pre-test.
-	preTest(g1, c1);
-	preTest(g2, c2);
-	preTest(g3, c3);
-	preTest(g4, c4);
-	preTest(g5, c5);
-}
-
-static void test3_runTheVerilogModule()
-{
-	LCSMCircuit circuit = generator1();
+	// LCSMCircuit circuit = generator1();
 
 	// Find circuits.
 	Circuit *a = circuit.find("a");
@@ -554,10 +530,8 @@ static void test3_runTheVerilogModule()
 	}
 }
 
-static void test4_runTheVerilogModuleWithWideWires1()
+static void test4_runTheVerilogModuleWithWideWires1(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator2();
-
 	// Find circuits.
 	Circuit *in = circuit.find("in");
 	Circuit *out = circuit.find("out");
@@ -623,10 +597,8 @@ static void test4_runTheVerilogModuleWithWideWires1()
 	}
 }
 
-static void test4_runTheVerilogModuleWithWideWires2()
+static void test4_runTheVerilogModuleWithWideWires2(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator3();
-
 	// Find circuits.
 	Circuit *in = circuit.find("in");
 	Circuit *out = circuit.find("out");
@@ -692,10 +664,8 @@ static void test4_runTheVerilogModuleWithWideWires2()
 	}
 }
 
-static void test5_runTheVerilogModuleWithWideOut()
+static void test5_runTheVerilogModuleWithWideOut(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator4();
-
 	// Find circuits.
 	Circuit *in = circuit.find("in");
 	Circuit *out = circuit.find("out");
@@ -761,10 +731,8 @@ static void test5_runTheVerilogModuleWithWideOut()
 	}
 }
 
-static void test6_runTheVerilogModuleWithRegs()
+static void test6_runTheVerilogModuleWithRegs(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator5();
-
 	// Find circuits.
 	Circuit *in = circuit.find("in");
 	Circuit *out = circuit.find("out");
@@ -856,10 +824,9 @@ int main()
 	// Run all tests.
 	test1_verilogModuleDeclareParse();
 	test2_badVerilogModuleDeclareParse();
-	test3_pretest();
-	test3_runTheVerilogModule();
-	test4_runTheVerilogModuleWithWideWires1();
-	test4_runTheVerilogModuleWithWideWires2();
-	test5_runTheVerilogModuleWithWideOut();
-	test6_runTheVerilogModuleWithRegs();
+	PerformTest(generator1, checker1, test3_runTheVerilogModule);
+	PerformTest(generator2, checker2, test4_runTheVerilogModuleWithWideWires1);
+	PerformTest(generator3, checker3, test4_runTheVerilogModuleWithWideWires2);
+	PerformTest(generator4, checker4, test5_runTheVerilogModuleWithWideOut);
+	PerformTest(generator5, checker5, test6_runTheVerilogModuleWithRegs);
 }

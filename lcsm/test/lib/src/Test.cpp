@@ -8,44 +8,8 @@
 #include <string>
 #include <utility>
 
-void lcsm::testing::preTest(const lcsm::testing::GeneratorTy &generator, const lcsm::testing::CheckerTy &checker)
+void lcsm::testing::PerformTest(const lcsm::testing::GeneratorTy &generator, const lcsm::testing::CheckerTy &checker, const lcsm::testing::TestTy &test)
 {
-	// Pre-test: copy part.
-	{
-		// Generate original via generator.
-		const lcsm::LCSMCircuit original = generator();
-
-		// Make copy.
-		lcsm::LCSMCircuit circuit = original.copy();
-
-		// Pre-test.
-		checker(circuit);
-	}
-
-	// Pre-test: move part.
-	{
-		// Generate original via generator.
-		lcsm::LCSMCircuit original = generator();
-
-		// Make copy.
-		lcsm::LCSMCircuit circuit = std::move(original);
-
-		// Pre-test.
-		checker(circuit);
-	}
-
-	// Pre-test: must successfully created engine.
-	{
-		// Generate original via generator.
-		const lcsm::LCSMCircuit original = generator();
-
-		// Generate physical engine.
-		lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(original);
-
-		// Fork.
-		lcsm::LCSMState state = engine.fork();
-	}
-
 	// Pre-test: must successfully dump to file.
 	std::string dump;
 	{
@@ -59,15 +23,65 @@ void lcsm::testing::preTest(const lcsm::testing::GeneratorTy &generator, const l
 		std::cout << "... end of dumping\n";
 	}
 
-	// Pre-test: must successfully construct from dump and successfully creatable engine.
+	// Test: as original circuit.
+	std::cout << "-- TESTING AS ORIGINAL CIRCUIT --\n";
+	{
+		// Generate original via generator.
+		lcsm::LCSMCircuit original = generator();
+
+		// Pre-test.
+		checker(original);
+
+		// Test.
+		test(original);
+	}
+	std::cout << "-- END OF TESTING --\n";
+
+	// Test: as copied circuit.
+	std::cout << "-- TESTING AS COPIED CIRCUIT --\n";
+	{
+		// Generate original via generator.
+		lcsm::LCSMCircuit original = generator();
+
+		// Make copy.
+		lcsm::LCSMCircuit circuit = original;
+
+		// Pre-test.
+		checker(circuit);
+
+		// Test.
+		test(circuit);
+	}
+	std::cout << "-- END OF TESTING --\n";
+
+	// Test: as moved circuit.
+	std::cout << "-- TESTING AS MOVED CIRCUIT --\n";
+	{
+		// Generate original via generator.
+		lcsm::LCSMCircuit original = generator();
+
+		// Make move.
+		lcsm::LCSMCircuit circuit = std::move(original);
+
+		// Pre-test.
+		checker(circuit);
+
+		// Test.
+		test(circuit);
+	}
+	std::cout << "-- END OF TESTING --\n";
+
+	// Test: as constructed from dump.
+	std::cout << "-- TESTING AS CONSTRUCTED FROM DUMP --\n";
 	{
 		// Generate circuit from dump.
-		const lcsm::LCSMCircuit original = lcsm::LCSMCircuit::fromDumpString(dump);
+		lcsm::LCSMCircuit original = lcsm::LCSMCircuit::fromString(dump);
 
-		// Generate physical engine.
-		lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(original);
+		// Pre-test.
+		checker(original);
 
-		// Fork.
-		lcsm::LCSMState state = engine.fork();
+		// Test.
+		test(original);
 	}
+	std::cout << "-- END OF TESTING --\n";
 }

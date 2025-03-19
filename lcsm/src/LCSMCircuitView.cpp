@@ -52,11 +52,6 @@ const std::string &lcsm::LCSMCircuitView::name() const noexcept
 	return m_circuit->name();
 }
 
-lcsm::label_t lcsm::LCSMCircuitView::c_name() const noexcept
-{
-	return m_circuit->c_name();
-}
-
 const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuitView::components() const noexcept
 {
 	return m_circuit->components();
@@ -90,4 +85,44 @@ lcsm::Circuit *lcsm::LCSMCircuitView::find(lcsm::label_t name) noexcept
 lcsm::Circuit *lcsm::LCSMCircuitView::find(const std::string &name) noexcept
 {
 	return m_circuit->find(name);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findInput(lcsm::Circuit *circuit) noexcept
+{
+	return m_circuit->findInput(circuit);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findInput(lcsm::Identifier id) noexcept
+{
+	return m_circuit->findInput(id);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findInput(lcsm::label_t name) noexcept
+{
+	return m_circuit->findInput(name);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findInput(const std::string &name) noexcept
+{
+	return m_circuit->findInput(name);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findOutput(lcsm::Circuit *circuit) noexcept
+{
+	return m_circuit->findOutput(circuit);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findOutput(lcsm::Identifier id) noexcept
+{
+	return m_circuit->findOutput(id);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findOutput(lcsm::label_t name) noexcept
+{
+	return m_circuit->findOutput(name);
+}
+
+lcsm::Circuit *lcsm::LCSMCircuitView::findOutput(const std::string &name) noexcept
+{
+	return m_circuit->findOutput(name);
 }

@@ -1,7 +1,7 @@
 #ifndef LCSM_MODEL_FILE_READER_H
 #define LCSM_MODEL_FILE_READER_H
 
-#include "lcsm/LCSM.h"
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/File/Lexer.h>
 #include <lcsm/Model/File/Token.h>
 #include <lcsm/Model/Identifier.h>
@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace lcsm
@@ -23,18 +24,24 @@ namespace lcsm
 
 			const LCSMFileToken &next();
 			const LCSMFileToken &curr() const noexcept;
+			void back();
 
+			bool tryParseBeginCircuit();
 			void parseBeginCircuit();
 			void parseEndCircuit();
 
 			bool tryParseBeginComponent();
 			void parseEndComponent();
 
-			bool tryParseBeginConnections();
-			bool tryParseEndConnections();
+			void parseBeginConnections();
+			void parseEndConnections();
 
-			bool tryParseBeginTunnels();
-			bool tryParseEndTunnels();
+			bool tryParseConnect();
+
+			void parseBeginTunnels();
+			void parseEndTunnels();
+
+			bool tryParseTunnel();
 
 			target_t exceptCircuitType();
 			Identifier exceptIdentifier();
@@ -47,6 +54,8 @@ namespace lcsm
 			std::string exceptKeyValue(const char *key);
 			std::pair< std::string, std::string > exceptEscapedKeyValue();
 			std::string exceptEscapedKeyValue(const char *key);
+			std::tuple< Identifier, Identifier, bool, bool > exceptConnect();
+			std::pair< Identifier, Identifier > exceptTunnel();
 
 		  private:
 			LCSMFileLexer m_lexer;

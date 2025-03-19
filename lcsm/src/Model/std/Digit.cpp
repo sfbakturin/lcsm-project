@@ -158,18 +158,35 @@ lcsm::portid_t lcsm::model::Digit::defaultPort() const noexcept
 
 void lcsm::model::Digit::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("hasDecimalPoint", m_hasDecimalPoint);
-	writer.writeKeyValueDeclaration("wiredataid", m_wireData->id());
-	writer.writeKeyValueDeclaration("wiredecimalpointid", m_wireDecimalPoint->id());
+
+	// id <IDENTIFIER>;
+	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
+	writer.writeNameDeclaration(name());
+
+	// keyvalue hasDecimalPoint <BOOLEAN>;
+	writer.writeKeyValueDeclaration("hasDecimalPoint", hasDecimalPoint());
+
+	// keyvalue wiredataid <INTEGER>;
+	writer.writeKeyValueDeclaration("wiredataid", wireData()->id());
+
+	// keyvalue wiredecimalpointid <INTEGER>;
+	writer.writeKeyValueDeclaration("wiredecimalpointid", wireDecimalPoint()->id());
+
 	builder.addWires(m_wireData.get(), true);
+
 	if (m_hasDecimalPoint)
 	{
 		builder.addWires(m_wireDecimalPoint.get(), true);
 	}
+
+	// endcomponent
 	writer.writeEndComponent();
 }
 

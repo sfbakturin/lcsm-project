@@ -121,13 +121,27 @@ lcsm::portid_t lcsm::model::Power::defaultPort() const noexcept
 
 void lcsm::model::Power::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
-	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+
+	// id <IDENTIFIER>;
+	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
+	writer.writeNameDeclaration(name());
+
+	// keyvalue width <INTEGER>;
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(width()));
+
+	// keyvalue wireid <INTEGER>;
+	writer.writeKeyValueDeclaration("wireid", wire()->id());
+
 	builder.addWires(m_wire.get(), true);
+
+	// endcomponent
 	writer.writeEndComponent();
 }
 
@@ -159,7 +173,7 @@ void lcsm::model::Power::from(lcsm::model::LCSMFileReader &reader, lcsm::model::
 	setName(reader.exceptName());
 
 	// keyvalue width <INTEGER>;
-	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+	setWidth(lcsm::StrongToWidth(reader.exceptIntegerKeyValue("width")));
 
 	// keyvalue wireid <INTEGER>;
 	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());

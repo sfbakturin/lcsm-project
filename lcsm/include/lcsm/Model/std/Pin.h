@@ -28,6 +28,7 @@ namespace lcsm
 			};
 
 		  public:
+			Pin() = default;
 			Pin(bool output, Width width);
 			Pin(label_t name, bool output, Width width);
 			~Pin() noexcept;

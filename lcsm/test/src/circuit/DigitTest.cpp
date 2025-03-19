@@ -63,13 +63,6 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire2, CircuitType::Wire);
 }
 
-static void test0_pretest()
-{
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
 static void
 	test1(LCSMState &state, const Circuit *input, const Circuit *output, const Circuit *digit, const Circuit *wire1, const Circuit *wire2, const DataBits &expected)
 {
@@ -100,10 +93,8 @@ static void
 	std::cout << "<input = " << actualInput << "> --> <wire1 = " << actualWire1 << "> --> <output = " << actualOutput << ">\n";
 }
 
-static void test1_withoutDecimalPoint()
+static void test1_withoutDecimalPoint(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output = circuit.find("output");
@@ -197,10 +188,8 @@ static void test2(
 	std::cout << "<input = " << actualInput << "> --> <wire1 = " << actualWire1 << "> --> <output = " << actualOutput << ">\n";
 }
 
-static void test2_withDecimalPoint()
+static void test2_withDecimalPoint(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output = circuit.find("output");
@@ -255,7 +244,6 @@ static void test2_withDecimalPoint()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_withoutDecimalPoint();
-	test2_withDecimalPoint();
+	PerformTest(generator, checker, test1_withoutDecimalPoint);
+	PerformTest(generator, checker, test2_withDecimalPoint);
 }

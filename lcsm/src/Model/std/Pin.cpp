@@ -146,16 +146,34 @@ lcsm::portid_t lcsm::model::Pin::defaultPort() const noexcept
 
 void lcsm::model::Pin::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
+
+	// id <IDENTIFIER>;
 	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
 	writer.writeNameDeclaration(name());
+
+	// keyvalue output <BOOLEAN>;
 	writer.writeKeyValueDeclaration("output", output());
+
+	// keyvalue width <INTEGER>;
 	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(width()));
+
+	// keyvalue internalid <INTEGER>;
 	writer.writeKeyValueDeclaration("internalid", internal()->id());
+
+	// keyvalue externalid <INTEGER>;
 	writer.writeKeyValueDeclaration("externalid", external()->id());
+
 	builder.addWires(internal(), true);
 	builder.addWires(external(), true);
+
+	// endcomponent
 	writer.writeEndComponent();
 }
 
@@ -194,11 +212,11 @@ void lcsm::model::Pin::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LC
 	setOutput(reader.exceptBooleanKeyValue("output"));
 
 	// keyvalue width <INTEGER>;
-	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+	setWidth(lcsm::StrongToWidth(reader.exceptIntegerKeyValue("width")));
 
 	// keyvalue externalid <INTEGER>;
-	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("externalid")), external()->id());
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("internalid")), internal()->id());
 
 	// keyvalue internalid <INTEGER>;
-	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("internalid")), internal()->id());
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("externalid")), external()->id());
 }

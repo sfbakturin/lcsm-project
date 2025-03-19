@@ -27,6 +27,7 @@ namespace lcsm
 			};
 
 		  public:
+			Constant() = default;
 			Constant(Width width, value_t value);
 			Constant(label_t name, Width width, value_t value);
 			~Constant() noexcept;

@@ -26,6 +26,7 @@ namespace lcsm
 			};
 
 		  public:
+			Power() = default;
 			Power(Width width);
 			Power(label_t name, Width width);
 			~Power() noexcept;

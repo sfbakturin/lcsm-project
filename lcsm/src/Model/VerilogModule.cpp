@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -388,16 +389,50 @@ lcsm::portid_t lcsm::model::VerilogModule::defaultPort() const noexcept
 
 void lcsm::model::VerilogModule::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
+
+	// We're force to break the rules and make 'source' being the first.
+	// keyvalue source <STRING>;
 	writer.writeKeyValueEscapedDeclaration("source", m_module->source());
-	for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(numOfWires()); portId++)
+
+	// id <IDENTIFIER>;
+	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
+	writer.writeNameDeclaration(name());
+
+	for (lcsm::portid_t portId = 0; portId < numOfInputs(); portId++)
 	{
-		const lcsm::model::Wire *child = wire(portId);
+		const lcsm::model::Wire *child = input(portId);
+		const std::string key = "input" + std::to_string(portId);
 		builder.addWires(child, true);
+		// keyvalue input<id> <IDENTIFIER>;
+		writer.writeKeyValueDeclaration(key.c_str(), child->id());
 	}
+
+	for (lcsm::portid_t portId = 0; portId < numOfOutputs(); portId++)
+	{
+		const lcsm::model::Wire *child = output(portId);
+		const std::string key = "output" + std::to_string(portId);
+		builder.addWires(child, true);
+		// keyvalue output<id> <IDENTIFIER>;
+		writer.writeKeyValueDeclaration(key.c_str(), child->id());
+	}
+
+	for (lcsm::portid_t portId = 0; portId < numOfInouts(); portId++)
+	{
+		const lcsm::model::Wire *child = inout(portId);
+		const std::string key = "inout" + std::to_string(portId);
+		builder.addWires(child, true);
+		// keyvalue inout<id> <IDENTIFIER>;
+		writer.writeKeyValueDeclaration(key.c_str(), child->id());
+	}
+
+	// endcomponent
 	writer.writeEndComponent();
 }
 
@@ -425,7 +460,7 @@ void lcsm::model::VerilogModule::copy(lcsm::Circuit *circuit, lcsm::model::LCSMB
 
 void lcsm::model::VerilogModule::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+	// 'circuittype' and 'source' is already parsed, so we continue to 'endcomponent'
 
 	// id <IDENTIFIER>;
 	builder.oldToNew(reader.exceptIdentifier(), id());
@@ -433,6 +468,24 @@ void lcsm::model::VerilogModule::from(lcsm::model::LCSMFileReader &reader, lcsm:
 	// name <STRING>;
 	setName(reader.exceptName());
 
-	// keyvalue source <STRING>;
-	// TODO
+	for (lcsm::portid_t portId = 0; portId < numOfInputs(); portId++)
+	{
+		const std::string key = "input" + std::to_string(portId);
+		// keyvalue input<id> <IDENTIFIER>;
+		builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue(key.c_str())), input(portId)->id());
+	}
+
+	for (lcsm::portid_t portId = 0; portId < numOfOutputs(); portId++)
+	{
+		const std::string key = "output" + std::to_string(portId);
+		// keyvalue output<id> <IDENTIFIER>;
+		builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue(key.c_str())), output(portId)->id());
+	}
+
+	for (lcsm::portid_t portId = 0; portId < numOfInouts(); portId++)
+	{
+		const std::string key = "inout" + std::to_string(portId);
+		// keyvalue inout<id> <IDENTIFIER>;
+		builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue(key.c_str())), inout(portId)->id());
+	}
 }

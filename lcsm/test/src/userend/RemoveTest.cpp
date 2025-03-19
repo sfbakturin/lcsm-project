@@ -52,17 +52,8 @@ static void checker(LCSMCircuit &circuit)
 	assertType(wire, CircuitType::Wire);
 }
 
-static void test0_pretest()
+static void test1_removeOutput(LCSMCircuit &circuit)
 {
-	const GeneratorTy g = generator;
-	const CheckerTy c = checker;
-	preTest(g, c);
-}
-
-static void test1_removeOutput()
-{
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 	Circuit *output = circuit.find("output");
@@ -117,10 +108,8 @@ static void test1_removeOutput()
 	}
 }
 
-void test2_removeInput()
+void test2_removeInput(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *input = circuit.find("input");
 
@@ -139,10 +128,8 @@ void test2_removeInput()
 	assertEquals(numOfRoots, 0);
 }
 
-void test3_removeWire()
+void test3_removeWire(LCSMCircuit &circuit)
 {
-	LCSMCircuit circuit = generator();
-
 	// Find circuits.
 	Circuit *wire = circuit.find("wire");
 
@@ -164,8 +151,7 @@ void test3_removeWire()
 int main()
 {
 	// Run all tests.
-	test0_pretest();
-	test1_removeOutput();
-	test2_removeInput();
-	test3_removeWire();
+	PerformTest(generator, checker, test1_removeOutput);
+	PerformTest(generator, checker, test2_removeInput);
+	PerformTest(generator, checker, test3_removeWire);
 }

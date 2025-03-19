@@ -1,7 +1,7 @@
 # Add sources.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_SOURCES
-    COMMFILES Circuit.cpp Identifier.cpp Wire.cpp VerilogModule.cpp Builder.cpp
+    COMMFILES Circuit.cpp Identifier.cpp Wire.cpp VerilogModule.cpp Builder.cpp Width.cpp
 )
 
 # Add subdirectory sources.
