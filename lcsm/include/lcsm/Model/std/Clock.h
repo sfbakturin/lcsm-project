@@ -4,6 +4,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -61,7 +62,9 @@ namespace lcsm
 
 			virtual portid_t defaultPort() const noexcept override final;
 
-			virtual void dumpToLCSMFile(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void dump(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void copy(Circuit *circuit, LCSMBuilder &builder) const override final;
+			virtual void from(LCSMFileReader &reader, LCSMBuilder &builder) override final;
 
 		  private:
 			Identifier m_id;

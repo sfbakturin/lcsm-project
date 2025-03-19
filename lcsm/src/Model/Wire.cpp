@@ -1,6 +1,7 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
@@ -143,7 +144,7 @@ lcsm::portid_t lcsm::model::Wire::defaultPort() const noexcept
 	return lcsm::model::Wire::Port::Wiring;
 }
 
-void lcsm::model::Wire::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Wire::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -151,4 +152,20 @@ void lcsm::model::Wire::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm
 	writer.writeNameDeclaration(m_name);
 	builder.addWires(this, false);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Wire::copy(lcsm::Circuit *, lcsm::model::LCSMBuilder &) const
+{
+	// Do nothing.
+}
+
+void lcsm::model::Wire::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
 }

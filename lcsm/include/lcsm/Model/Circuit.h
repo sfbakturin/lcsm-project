@@ -3,6 +3,7 @@
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -47,7 +48,9 @@ namespace lcsm
 
 		virtual portid_t defaultPort() const noexcept = 0;
 
-		virtual void dumpToLCSMFile(model::LCSMFileWriter &writer, model::LCSMBuilder &builder) const = 0;
+		virtual void dump(model::LCSMFileWriter &writer, model::LCSMBuilder &builder) const = 0;
+		virtual void copy(Circuit *circuit, model::LCSMBuilder &builder) const = 0;
+		virtual void from(model::LCSMFileReader &reader, model::LCSMBuilder &builder) = 0;
 
 		void setName(const std::string &name);
 		void setName(std::string &&name) noexcept;

@@ -1,5 +1,5 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -139,14 +139,45 @@ lcsm::portid_t lcsm::model::Tunnel::defaultPort() const noexcept
 	return lcsm::model::Tunnel::Port::Wiring;
 }
 
-void lcsm::model::Tunnel::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Tunnel::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("wireid", m_wire->id());
-	builder.addWires(m_wire.get(), true);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
+	writer.writeKeyValueDeclaration("wireid", wire()->id());
+	builder.addWires(wire(), true);
 	builder.addTunnels(this);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Tunnel::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Tunnel *tunnel = static_cast< lcsm::model::Tunnel * >(circuit);
+	tunnel->setName(name());
+
+	builder.oldToNew(id(), tunnel->id());
+	builder.oldToNew(wire()->id(), tunnel->wire()->id());
+
+	builder.addWires(wire(), true);
+	builder.addTunnels(this);
+}
+
+void lcsm::model::Tunnel::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIdentifier()), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

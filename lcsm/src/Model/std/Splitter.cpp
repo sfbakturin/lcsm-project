@@ -1,6 +1,7 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -51,6 +52,15 @@ void lcsm::model::Splitter::setWidthOut(lcsm::width_t widthOut)
 {
 	if (widthOut == 0 || widthOut > 64)
 		throw std::logic_error("Integer too big!");
+	m_widthOut = widthOut;
+	resetBitsOuts();
+}
+
+void lcsm::model::Splitter::setWidths(lcsm::Width widthIn, lcsm::width_t widthOut)
+{
+	if (widthOut == 0 || widthOut > 64)
+		throw std::logic_error("Integer too big!");
+	m_widthIn = widthIn;
 	m_widthOut = widthOut;
 	resetBitsOuts();
 }
@@ -231,16 +241,16 @@ lcsm::portid_t lcsm::model::Splitter::defaultPort() const noexcept
 	return lcsm::model::Splitter::Port::Input;
 }
 
-void lcsm::model::Splitter::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Splitter::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
 	writer.writeIdDeclaration(m_id);
 	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("widthIn", static_cast< std::uint64_t >(m_widthIn));
-	writer.writeKeyValueDeclaration("widthOut", static_cast< std::uint64_t >(m_widthOut));
-	writer.writeKeyValueDeclaration("wireinid", m_wireIn->id());
-	builder.addWires(m_wireIn.get(), true);
+	writer.writeKeyValueDeclaration("widthIn", static_cast< std::uint64_t >(widthIn()));
+	writer.writeKeyValueDeclaration("widthOut", static_cast< std::uint64_t >(widthOut()));
+	writer.writeKeyValueDeclaration("wireinid", wireIn()->id());
+	builder.addWires(wireIn(), true);
 	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
 	{
 		const std::string key = "wireout" + std::to_string(i) + "id";
@@ -248,6 +258,57 @@ void lcsm::model::Splitter::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, 
 		builder.addWires(m_wireOuts[i].get(), true);
 	}
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Splitter::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Splitter *splitter = static_cast< lcsm::model::Splitter * >(circuit);
+	splitter->setName(name());
+	splitter->setWidths(widthIn(), widthOut());
+
+	builder.oldToNew(id(), splitter->id());
+	builder.oldToNew(wireIn()->id(), splitter->wireIn()->id());
+
+	builder.addWires(wireIn(), true);
+
+	for (lcsm::portid_t portId = 0; portId < static_cast< lcsm::portid_t >(widthOut()); portId++)
+	{
+		const lcsm::model::Wire *wire = wireOut(portId);
+		builder.oldToNew(wire->id(), splitter->wireOut(portId)->id());
+		builder.addWires(wire, true);
+	}
+}
+
+void lcsm::model::Splitter::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIdentifier()), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue widthIn <INTEGER>;
+	setWidthIn(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("widthIn")));
+
+	// keyvalue widthOut <INTEGER>;
+	setWidthOut(static_cast< lcsm::width_t >(reader.exceptIntegerKeyValue("widthOut")));
+
+	// keyvalue wireinid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireinid")), wireIn()->id());
+
+	// keyvalue wireout<i>id <INTEGER>;
+	for (std::size_t i = 0; i < m_wireOuts.size(); i++)
+	{
+		const std::string key = "wireout" + std::to_string(i) + "id";
+		builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue(key.c_str())), m_wireOuts[i]->id());
+	}
 }
 
 void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept

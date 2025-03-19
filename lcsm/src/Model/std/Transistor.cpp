@@ -1,6 +1,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
@@ -159,7 +160,7 @@ lcsm::portid_t lcsm::model::Transistor::defaultPort() const noexcept
 	return lcsm::model::Transistor::Port::Base;
 }
 
-void lcsm::model::Transistor::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Transistor::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -173,4 +174,48 @@ void lcsm::model::Transistor::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer
 	builder.addWires(m_srcA.get(), true);
 	builder.addWires(m_srcB.get(), true);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Transistor::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Transistor *transistor = static_cast< lcsm::model::Transistor * >(circuit);
+	transistor->setName(name());
+	transistor->setType(type());
+
+	builder.oldToNew(id(), transistor->id());
+	builder.oldToNew(wireBase()->id(), transistor->wireBase()->id());
+	builder.oldToNew(wireSrcA()->id(), transistor->wireSrcA()->id());
+	builder.oldToNew(wireSrcB()->id(), transistor->wireSrcB()->id());
+
+	builder.addWires(wireBase(), true);
+	builder.addWires(wireSrcA(), true);
+	builder.addWires(wireSrcB(), true);
+}
+
+void lcsm::model::Transistor::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue type <INTEGER>;
+	setType(static_cast< lcsm::model::Transistor::Type >(reader.exceptIntegerKeyValue("type")));
+
+	// keyvalue baseid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("baseid")), wireBase()->id());
+
+	// keyvalue srcaid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("srcaid")), wireSrcA()->id());
+
+	// keyvalue srcbid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("srcbid")), wireSrcB()->id());
 }

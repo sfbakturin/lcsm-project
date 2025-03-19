@@ -1,6 +1,7 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -11,6 +12,7 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 lcsm::model::Constant::Constant(lcsm::Width width, lcsm::value_t value) : lcsm::model::Constant("", width, value) {}
@@ -137,15 +139,54 @@ lcsm::portid_t lcsm::model::Constant::defaultPort() const noexcept
 	return lcsm::model::Constant::Port::Wiring;
 }
 
-void lcsm::model::Constant::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Constant::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
-	writer.writeKeyValueDeclaration("value", m_value);
-	writer.writeKeyValueDeclaration("wireid", m_wire->id());
-	builder.addWires(m_wire.get(), true);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(width()));
+	writer.writeKeyValueDeclaration("value", value());
+	writer.writeKeyValueDeclaration("wireid", wire()->id());
+	builder.addWires(wire(), true);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Constant::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Constant *constant = static_cast< lcsm::model::Constant * >(circuit);
+	constant->setName(name());
+	constant->setWidth(width());
+	constant->setValue(value());
+
+	builder.oldToNew(id(), constant->id());
+	builder.oldToNew(wire()->id(), constant->wire()->id());
+
+	builder.addWires(wire(), true);
+}
+
+void lcsm::model::Constant::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue width <INTEGER>;
+	const std::pair< std::string, unsigned long long > width = reader.exceptIntegerKeyValue();
+	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+
+	// keyvalue value <INTEGER>;
+	setValue(static_cast< lcsm::value_t >(reader.exceptIntegerKeyValue("value")));
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

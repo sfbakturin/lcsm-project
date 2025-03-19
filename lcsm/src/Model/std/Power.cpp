@@ -1,7 +1,9 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
+#include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Power.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -117,7 +119,7 @@ lcsm::portid_t lcsm::model::Power::defaultPort() const noexcept
 	return lcsm::model::Power::Port::Wiring;
 }
 
-void lcsm::model::Power::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Power::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -127,4 +129,38 @@ void lcsm::model::Power::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcs
 	writer.writeKeyValueDeclaration("wireid", m_wire->id());
 	builder.addWires(m_wire.get(), true);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Power::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Power *power = static_cast< lcsm::model::Power * >(circuit);
+	power->setName(name());
+	power->setWidth(width());
+
+	builder.oldToNew(id(), power->id());
+	builder.oldToNew(wire()->id(), power->wire()->id());
+
+	builder.addWires(wire(), true);
+}
+
+void lcsm::model::Power::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIdentifier()), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue width <INTEGER>;
+	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

@@ -6,6 +6,7 @@
 
 #include <deque>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -39,17 +40,17 @@ void lcsm::model::LCSMFileLexer::swap(lcsm::model::LCSMFileLexer &other)
 	std::swap(m_previousTokens, other.m_previousTokens);
 }
 
-// static bool IsNumber(const std::string &s) noexcept
-// {
-// 	for (char c : s)
-// 	{
-// 		if (!('0' <= c && c <= '9'))
-// 		{
-// 			return false;
-// 		}
-// 	}
-// 	return true;
-// }
+static inline bool IsNumber(const std::string &s) noexcept
+{
+	for (char c : s)
+	{
+		if (!('0' <= c && c <= '9'))
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 static inline bool isBlank(char C) noexcept
 {
@@ -61,20 +62,20 @@ static inline bool isValid(char C) noexcept
 	return std::isalnum(C) || C == '_';
 }
 
-// static void buildIntegerOrIdentifier(std::string &builder, lcsm::model::LCSMFileToken &token)
-// {
-// 	// Check, if built string is actually integer.
-// 	// Otherwise, it's identifier.
-// 	if (IsNumber(builder))
-// 	{
-// 		const int i = std::stoi(builder);
-// 		token.setToken(i);
-// 	}
-// 	else
-// 	{
-// 		token.setToken(std::move(builder));
-// 	}
-// }
+static void buildIntegerOrIdentifier(std::string &builder, lcsm::model::LCSMFileToken &token)
+{
+	// Check, if built string is actually integer.
+	// Otherwise, it's identifier.
+	if (IsNumber(builder))
+	{
+		const unsigned long long i = std::stoull(builder);
+		token.setToken(i);
+	}
+	else
+	{
+		token.setToken(std::move(builder), true);
+	}
+}
 
 const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 {
@@ -94,6 +95,30 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 
 	// Check, if this character is just single kind.
 	lcsm::model::LCSMFileKind kind = lcsm::model::IsKeyword(m_character);
+
+	// Quotation mark - is special case, when there is escaped string (not identifier) value.
+	if (kind == lcsm::model::LCSMFileKind::QuotationMarkKeyword)
+	{
+		// Skip '"'.
+		nextChar();
+
+		// Collect string.
+		while (m_character != '"')
+		{
+			if (m_character == lcsm::support::Reader::EndOfSource)
+			{
+				throw std::logic_error("Lexing error: expected string value, but found end of source.");
+			}
+			builder.push_back(m_character);
+		}
+
+		// Set token to string, skip char and return token.
+		nextChar();
+		m_token.setToken(std::move(builder), false);
+		goto l_finish;
+	}
+
+	// Otherwise, that might be any other char.
 	if (kind >= 0)
 	{
 		m_token.setToken(kind);
@@ -120,7 +145,7 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 	}
 
 	// Otherwise, build this string as integer or identifier.
-	// buildIntegerOrIdentifier(builder, m_token);
+	buildIntegerOrIdentifier(builder, m_token);
 
 l_finish:
 	return m_token;

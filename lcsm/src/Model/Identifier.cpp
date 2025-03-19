@@ -8,6 +8,8 @@
 
 lcsm::Identifier::Identifier() noexcept : m_id(0) {}
 
+lcsm::Identifier::Identifier(lcsm::Identifier::value_type startId) noexcept : m_id(startId) {}
+
 lcsm::Identifier::Identifier(const Identifier &other) noexcept : m_id(other.m_id) {}
 
 lcsm::Identifier::Identifier(Identifier &&other) noexcept : m_id(other.m_id) {}
@@ -79,5 +81,3 @@ namespace lcsm
 		return os << id.m_id;
 	}
 }	 // namespace lcsm
-
-lcsm::Identifier::Identifier(lcsm::Identifier::value_type id) noexcept : m_id(id) {}

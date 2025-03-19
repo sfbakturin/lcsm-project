@@ -1,9 +1,10 @@
 #ifndef LCSM_MODEL_WIRE_H
 #define LCSM_MODEL_WIRE_H
 
-#include "Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -53,7 +54,9 @@ namespace lcsm
 
 			virtual portid_t defaultPort() const noexcept override final;
 
-			virtual void dumpToLCSMFile(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void dump(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void copy(Circuit *circuit, LCSMBuilder &builder) const override final;
+			virtual void from(LCSMFileReader &reader, LCSMBuilder &builder) override final;
 
 		  private:
 			std::vector< support::PointerView< Circuit > > m_wires;

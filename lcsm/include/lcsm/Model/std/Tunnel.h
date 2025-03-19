@@ -1,6 +1,7 @@
 #ifndef LCSM_MODEL_TUNNEL_H
 #define LCSM_MODEL_TUNNEL_H
 
+#include "lcsm/Model/File/Reader.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
@@ -56,7 +57,9 @@ namespace lcsm
 
 			virtual portid_t defaultPort() const noexcept override final;
 
-			virtual void dumpToLCSMFile(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void dump(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
+			virtual void copy(Circuit *circuit, LCSMBuilder &builder) const override final;
+			virtual void from(LCSMFileReader &reader, LCSMBuilder &builder) override final;
 
 		  private:
 			std::shared_ptr< Wire > m_wire;

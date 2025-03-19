@@ -1,13 +1,19 @@
+#include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Tunnel.h>
+#include <unordered_map>
 
+#include <cstddef>
+#include <deque>
+#include <map>
+#include <memory>
+#include <stdexcept>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 void lcsm::model::LCSMBuilder::addWires(const lcsm::model::Wire *wire, bool isFirstComp)
 {
@@ -32,7 +38,16 @@ void lcsm::model::LCSMBuilder::addTunnels(const lcsm::model::Tunnel *tunnel)
 	}
 }
 
-void lcsm::model::LCSMBuilder::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer)
+void lcsm::model::LCSMBuilder::oldToNew(lcsm::Identifier oldId, lcsm::Identifier newId)
+{
+	if (m_oldToNewId.find(oldId) != m_oldToNewId.cend())
+	{
+		throw std::logic_error("This id is already in set!");
+	}
+	m_oldToNewId[oldId] = newId;
+}
+
+void lcsm::model::LCSMBuilder::dump(lcsm::model::LCSMFileWriter &writer)
 {
 	// 'beginconnections'
 	writer.writeBeginConnections();
@@ -58,4 +73,119 @@ void lcsm::model::LCSMBuilder::dumpToLCSMFile(lcsm::model::LCSMFileWriter &write
 	}
 	// 'endtunnels'
 	writer.writeEndTunnels();
+}
+
+void lcsm::model::LCSMBuilder::finalize(lcsm::LCSMCircuit *circuit)
+{
+	// Make wire's connections.
+	const std::size_t wiresSize = m_wires.size();
+	for (std::size_t i = 0; i < wiresSize; i++)
+	{
+		// Extract edge.
+		std::tuple< lcsm::Identifier, lcsm::Identifier, bool, bool > edge = m_wires.front();
+		m_wires.pop_front();
+
+		// Find old to new identifier.
+		const lcsm::Identifier wireOldId1 = std::get< 0 >(edge);
+		const lcsm::Identifier wireOldId2 = std::get< 1 >(edge);
+		const std::unordered_map< lcsm::Identifier, lcsm::Identifier >::const_iterator foundId1 = m_oldToNewId.find(wireOldId1);
+		const std::unordered_map< lcsm::Identifier, lcsm::Identifier >::const_iterator foundId2 = m_oldToNewId.find(wireOldId2);
+		if (foundId1 == m_oldToNewId.cend() || foundId2 == m_oldToNewId.cend())
+		{
+			m_wires.push_back(std::move(edge));
+			continue;
+		}
+
+		// Try to find in circuit.
+		const lcsm::Identifier wireId1 = foundId1->second;
+		const lcsm::Identifier wireId2 = foundId2->second;
+		const bool isFirstComp = std::get< 2 >(edge);
+		const bool isSecondComp = std::get< 3 >(edge);
+		lcsm::model::Wire *wire1 = nullptr;
+		lcsm::model::Wire *wire2 = nullptr;
+
+		if (isFirstComp)
+		{
+			const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found =
+				circuit->m_componentWires.find(wireId1);
+			if (found == circuit->m_componentWires.end())
+			{
+				m_wires.push_back(std::move(edge));
+				continue;
+			}
+			wire1 = static_cast< lcsm::model::Wire * >(found->second.get());
+		}
+		else
+		{
+			wire1 = static_cast< lcsm::model::Wire * >(circuit->find(wireId1));
+		}
+
+		if (isSecondComp)
+		{
+			const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > >::iterator found =
+				circuit->m_componentWires.find(wireId2);
+			if (found == circuit->m_componentWires.end())
+			{
+				m_wires.push_back(std::move(edge));
+				continue;
+			}
+			wire2 = static_cast< lcsm::model::Wire * >(found->second.get());
+		}
+		else
+		{
+			wire2 = static_cast< lcsm::model::Wire * >(circuit->find(wireId2));
+		}
+
+		if (wire1 == nullptr || wire2 == nullptr)
+		{
+			m_wires.push_back(std::move(edge));
+			continue;
+		}
+
+		// Make connect.
+		wire1->connectToWire(wire2);
+	}
+
+	// Make tunnel's connections.
+	const std::size_t tunnelSizes = m_tunnels.size();
+	for (std::size_t i = 0; i < tunnelSizes; i++)
+	{
+		// Extract edge.
+		std::pair< lcsm::Identifier, lcsm::Identifier > edge = m_tunnels.front();
+		m_tunnels.pop_front();
+
+		// Find old to new identifier.
+		const lcsm::Identifier tunnelOldId1 = std::get< 0 >(edge);
+		const lcsm::Identifier tunnelOldId2 = std::get< 1 >(edge);
+		const std::unordered_map< lcsm::Identifier, lcsm::Identifier >::const_iterator foundId1 = m_oldToNewId.find(tunnelOldId1);
+		const std::unordered_map< lcsm::Identifier, lcsm::Identifier >::const_iterator foundId2 = m_oldToNewId.find(tunnelOldId2);
+		if (foundId1 == m_oldToNewId.cend() || foundId2 == m_oldToNewId.cend())
+		{
+			m_tunnels.push_back(std::move(edge));
+			continue;
+		}
+
+		// Try to find tunnels.
+		const lcsm::Identifier tunnelId1 = foundId1->second;
+		const lcsm::Identifier tunnelId2 = foundId2->second;
+		lcsm::model::Tunnel *tunnel1 = static_cast< lcsm::model::Tunnel * >(circuit->find(tunnelId1));
+		lcsm::model::Tunnel *tunnel2 = static_cast< lcsm::model::Tunnel * >(circuit->find(tunnelId2));
+		if (tunnel1 == nullptr || tunnel2 == nullptr)
+		{
+			m_tunnels.push_back(std::move(edge));
+			continue;
+		}
+
+		// Make connect.
+		tunnel1->connectTunnel(tunnel2);
+		tunnel2->connectTunnel(tunnel1);
+	}
+}
+
+void lcsm::model::LCSMBuilder::check()
+{
+	if (!m_tunnels.empty() || !m_wires.empty())
+	{
+		throw std::logic_error("Found non empty tunnels and wires");
+	}
 }

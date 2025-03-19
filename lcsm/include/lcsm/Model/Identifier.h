@@ -16,6 +16,7 @@ namespace lcsm
 		using value_type = id_t;
 
 		Identifier() noexcept;
+		Identifier(value_type startId) noexcept;
 		Identifier(const Identifier &other) noexcept;
 		Identifier(Identifier &&other) noexcept;
 
@@ -38,8 +39,6 @@ namespace lcsm
 		friend std::ostream &operator<<(std::ostream &os, const Identifier &id);
 
 	  private:
-		Identifier(value_type id) noexcept;
-
 		value_type m_id;
 	};
 }	 // namespace lcsm

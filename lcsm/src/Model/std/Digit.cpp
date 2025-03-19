@@ -1,5 +1,6 @@
-#include "lcsm/Model/Builder.h"
+#include "lcsm/Model/File/Reader.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -155,7 +156,7 @@ lcsm::portid_t lcsm::model::Digit::defaultPort() const noexcept
 	return lcsm::model::Digit::Port::WiringData;
 }
 
-void lcsm::model::Digit::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Digit::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -170,4 +171,43 @@ void lcsm::model::Digit::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcs
 		builder.addWires(m_wireDecimalPoint.get(), true);
 	}
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Digit::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Digit *digit = static_cast< lcsm::model::Digit * >(circuit);
+	digit->setName(name());
+	digit->setHasDecimalPoint(hasDecimalPoint());
+
+	builder.oldToNew(id(), digit->id());
+	builder.oldToNew(wireData()->id(), digit->wireData()->id());
+	builder.oldToNew(wireDecimalPoint()->id(), digit->wireDecimalPoint()->id());
+
+	builder.addWires(wireData(), true);
+	builder.addWires(wireDecimalPoint(), true);
+}
+
+void lcsm::model::Digit::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue hasDecimalPoint BOOLEAN;
+	setHasDecimalPoint(reader.exceptBooleanKeyValue("hasDecimalPoint"));
+
+	// keyvalue wiredataid INTEGER;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wiredataid")), wireData()->id());
+
+	// keyvalue wiredecimalpointid INTEGER:
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wiredecimalpointid")), wireDecimalPoint()->id());
 }

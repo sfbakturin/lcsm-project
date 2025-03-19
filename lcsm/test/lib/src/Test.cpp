@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <iostream>
+#include <string>
 #include <utility>
 
 void lcsm::testing::preTest(const lcsm::testing::GeneratorTy &generator, const lcsm::testing::CheckerTy &checker)
@@ -46,13 +47,27 @@ void lcsm::testing::preTest(const lcsm::testing::GeneratorTy &generator, const l
 	}
 
 	// Pre-test: must successfully dump to file.
+	std::string dump;
 	{
 		// Generate original via generator.
 		const lcsm::LCSMCircuit original = generator();
 
 		// Dump and output.
+		dump = original.dumpToString();
 		std::cout << "Dumping '" << original.name() << "'...\n";
-		std::cout << original.dumpToString();
+		std::cout << dump << '\n';
 		std::cout << "... end of dumping\n";
+	}
+
+	// Pre-test: must successfully construct from dump and successfully creatable engine.
+	{
+		// Generate circuit from dump.
+		const lcsm::LCSMCircuit original = lcsm::LCSMCircuit::fromDumpString(dump);
+
+		// Generate physical engine.
+		lcsm::LCSMEngine engine = lcsm::LCSMEngine::fromCircuit(original);
+
+		// Fork.
+		lcsm::LCSMState state = engine.fork();
 	}
 }

@@ -1,6 +1,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -106,7 +107,7 @@ lcsm::portid_t lcsm::model::Probe::defaultPort() const noexcept
 	return lcsm::model::Probe::Port::Wiring;
 }
 
-void lcsm::model::Probe::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Probe::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -115,4 +116,34 @@ void lcsm::model::Probe::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcs
 	writer.writeKeyValueDeclaration("wireid", m_wire->id());
 	builder.addWires(m_wire.get(), true);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Probe::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Probe *probe = static_cast< lcsm::model::Probe * >(circuit);
+	probe->setName(name());
+
+	builder.oldToNew(id(), probe->id());
+	builder.oldToNew(wire()->id(), probe->wire()->id());
+
+	builder.addWires(wire(), true);
+}
+
+void lcsm::model::Probe::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

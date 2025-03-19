@@ -2,7 +2,9 @@
 #define LCSM_LCSMCIRCUIT_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
@@ -24,6 +26,7 @@
 #include <lcsm/Verilog/Module.h>
 #include <unordered_map>
 
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <string>
@@ -89,6 +92,7 @@ namespace lcsm
 		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
 
+		Circuit *create(Circuit *circuit);
 		model::Constant *createConstant(label_t name = "", Width width = Width::Bit1, value_t value = 0x1);
 		model::Ground *createGround(label_t name = "", Width width = Width::Bit1);
 		model::Power *createPower(label_t name = "", Width width = Width::Bit1);
@@ -137,7 +141,16 @@ namespace lcsm
 		void dumpToFile(const std::string &filename) const;
 		void dumpToFile(const char *filename) const;
 
+		static LCSMCircuit fromDumpString(const std::string &string);
+		static LCSMCircuit fromDumpString(const char *string);
+		static LCSMCircuit fromDumpFile(const std::string &filename);
+		static LCSMCircuit fromDumpFile(const char *filename);
+
 	  private:
+		// God, I swear WE NEED THIS.
+		// FIXME: Somehow this need to be dead...
+		friend class model::LCSMBuilder;
+
 		Identifier m_globalId;
 
 		std::map< Identifier, std::shared_ptr< Circuit > > m_components;
@@ -156,10 +169,13 @@ namespace lcsm
 	  private:
 		Circuit *registerElement(std::shared_ptr< Circuit > &&circuit);
 
-		void copyImpl(LCSMCircuit *newCircuit, const Identifier &entryId) const;
+		LCSMCircuitView addCircuit(const LCSMCircuit &other, model::LCSMBuilder &builder, std::size_t depth = 0);
+
+		void copyImpl(LCSMCircuit *newCircuit, model::LCSMBuilder &builder, const Identifier &entryId, std::size_t depth = 0) const;
 		LCSMCircuit copyImpl(const Identifier &entryId) const;
 
 		void dumpImpl(model::LCSMFileWriter &writer) const;
+		static LCSMCircuit fromDumpImpl(model::LCSMFileReader &reader, model::LCSMBuilder &builder, std::size_t depth = 0);
 
 		std::shared_ptr< model::Wire > createHeadlessWire(label_t name = "");
 		std::shared_ptr< model::Wire > createIdentifiedWire(label_t name = "");

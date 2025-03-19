@@ -1,5 +1,5 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -122,14 +122,63 @@ lcsm::portid_t lcsm::model::Button::defaultPort() const noexcept
 	return lcsm::model::Button::Port::Wiring;
 }
 
-void lcsm::model::Button::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Button::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// 'begincomponent'
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("activeOnPress", m_activeOnPress);
-	writer.writeKeyValueDeclaration("wireid", m_wire->id());
+
+	// id <IDENTIFIER>;
+	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
+	writer.writeNameDeclaration(name());
+
+	// keyvalue activeOnPress <BOOLEAN>;
+	writer.writeKeyValueDeclaration("activeOnPress", activeOnPress());
+
+	// keyvalue wireid <INTEGER>;
+	writer.writeKeyValueDeclaration("wireid", wire()->id());
+
+	// Initialize wires.
 	builder.addWires(m_wire.get(), true);
+
+	// 'endcomponent'
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Button::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Button *button = static_cast< lcsm::model::Button * >(circuit);
+	button->setName(name());
+	button->setActiveOnPress(activeOnPress());
+
+	builder.oldToNew(id(), button->id());
+	builder.oldToNew(wire()->id(), button->wire()->id());
+
+	builder.addWires(wire(), true);
+}
+
+void lcsm::model::Button::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue activeOnPress <BOOLEAN>;
+	setActiveOnPress(reader.exceptBooleanKeyValue("activeOnPress"));
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

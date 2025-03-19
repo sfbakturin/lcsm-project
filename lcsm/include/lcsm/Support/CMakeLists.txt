@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_HEADERS
-    COMMFILES Algorithm.hpp Meta.hpp Numbers.hpp PointerView.hpp StaticArray.hpp Subprocesses.h Files.h
+    COMMFILES Algorithm.hpp Meta.hpp Numbers.hpp PointerView.hpp StaticArray.hpp Subprocesses.h Files.h Strings.h
 )
 
 # Add subdirectories headers.

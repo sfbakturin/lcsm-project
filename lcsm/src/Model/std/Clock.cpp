@@ -1,7 +1,9 @@
-#include "lcsm/Model/Builder.h"
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
+#include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -144,16 +146,76 @@ lcsm::portid_t lcsm::model::Clock::defaultPort() const noexcept
 	return lcsm::model::Clock::Port::Wiring;
 }
 
-void lcsm::model::Clock::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Clock::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
+	// begincomponent
 	writer.writeBeginComponent();
+
+	// circuittype <INTEGER>;
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("highDuration", static_cast< std::uint64_t >(m_highDuration));
-	writer.writeKeyValueDeclaration("lowDuration", static_cast< std::uint64_t >(m_lowDuration));
-	writer.writeKeyValueDeclaration("phaseOffset", static_cast< std::uint64_t >(m_phaseOffset));
-	writer.writeKeyValueDeclaration("wireid", m_wire->id());
-	builder.addWires(m_wire.get(), true);
+
+	// id <INTEGER>;
+	writer.writeIdDeclaration(id());
+
+	// name <STRING>;
+	writer.writeNameDeclaration(name());
+
+	// keyvalue highDuration <INTEGER>;
+	writer.writeKeyValueDeclaration("highDuration", static_cast< std::uint64_t >(highDuration()));
+
+	// keyvalue lowDuration <INTEGER>;
+	writer.writeKeyValueDeclaration("lowDuration", static_cast< std::uint64_t >(lowDuration()));
+
+	// keyvalue phaseOffset <INTEGER>;
+	writer.writeKeyValueDeclaration("phaseOffset", static_cast< std::uint64_t >(phaseOffset()));
+
+	// keyvalue wireid <INTEGER>;
+	writer.writeKeyValueDeclaration("wireid", wire()->id());
+
+	builder.addWires(wire(), true);
+
+	// endcomponent
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Clock::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Clock *clock = static_cast< lcsm::model::Clock * >(circuit);
+	clock->setName(name());
+	clock->setHighDuration(highDuration());
+	clock->setLowDuration(lowDuration());
+	clock->setPhaseOffset(phaseOffset());
+
+	builder.oldToNew(id(), clock->id());
+	builder.oldToNew(wire()->id(), clock->wire()->id());
+
+	builder.addWires(wire(), true);
+}
+
+void lcsm::model::Clock::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue highDuration <INTEGER>;
+	setHighDuration(static_cast< unsigned int >(reader.exceptIntegerKeyValue("highDuration")));
+
+	// keyvalue lowDuration <INTEGER>;
+	setLowDuration(static_cast< unsigned int >(reader.exceptIntegerKeyValue("lowDuration")));
+
+	// keyvalue phaseOffset <INTEGER>;
+	setPhaseOffset(static_cast< unsigned int >(reader.exceptIntegerKeyValue("phaseOffset")));
+
+	// keyvalue wireid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("wireid")), wire()->id());
 }

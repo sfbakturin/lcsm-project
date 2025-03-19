@@ -1,6 +1,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
@@ -385,7 +386,7 @@ lcsm::portid_t lcsm::model::VerilogModule::defaultPort() const noexcept
 	return lcsm::model::VerilogModule::Port::Input;
 }
 
-void lcsm::model::VerilogModule::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::VerilogModule::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
@@ -398,4 +399,40 @@ void lcsm::model::VerilogModule::dumpToLCSMFile(lcsm::model::LCSMFileWriter &wri
 		builder.addWires(child, true);
 	}
 	writer.writeEndComponent();
+}
+
+void lcsm::model::VerilogModule::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::VerilogModule *verilogModule = static_cast< lcsm::model::VerilogModule * >(circuit);
+	verilogModule->setName(name());
+
+	builder.oldToNew(id(), verilogModule->id());
+
+	for (std::size_t i = 0; i < numOfWires(); i++)
+	{
+		const lcsm::portid_t portId = static_cast< lcsm::portid_t >(i);
+		const lcsm::model::Wire *oldWire = wire(portId);
+		const lcsm::model::Wire *newWire = verilogModule->wire(portId);
+		builder.oldToNew(oldWire->id(), newWire->id());
+		builder.addWires(oldWire, true);
+	}
+}
+
+void lcsm::model::VerilogModule::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	builder.oldToNew(reader.exceptIdentifier(), id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue source <STRING>;
+	// TODO
 }

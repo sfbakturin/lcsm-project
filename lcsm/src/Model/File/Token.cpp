@@ -10,7 +10,10 @@ lcsm::model::LCSMFileToken::LCSMFileToken() : m_kind(lcsm::model::LCSMFileKind::
 
 lcsm::model::LCSMFileToken::LCSMFileToken(lcsm::model::LCSMFileKind kind) : m_kind(kind), m_i(0) {}
 
-lcsm::model::LCSMFileToken::LCSMFileToken(int i) : m_kind(lcsm::model::LCSMFileKind::IntegerToken), m_i(i) {}
+lcsm::model::LCSMFileToken::LCSMFileToken(unsigned long long i) :
+	m_kind(lcsm::model::LCSMFileKind::IntegerToken), m_i(i)
+{
+}
 
 lcsm::model::LCSMFileToken::LCSMFileToken(const std::string &s, bool isIdentifier) :
 	m_kind(isIdentifier ? lcsm::model::LCSMFileKind::IdentifierToken : lcsm::model::LCSMFileKind::StringToken), m_i(0), m_s(s)
@@ -72,7 +75,7 @@ void lcsm::model::LCSMFileToken::setToken(lcsm::model::LCSMFileKind kind) noexce
 	m_s.clear();
 }
 
-void lcsm::model::LCSMFileToken::setToken(int i) noexcept
+void lcsm::model::LCSMFileToken::setToken(unsigned long long i) noexcept
 {
 	m_kind = lcsm::model::LCSMFileKind::IntegerToken;
 	m_i = i;
@@ -124,7 +127,7 @@ bool lcsm::model::LCSMFileToken::isEof() const noexcept
 	return m_kind == lcsm::model::LCSMFileKind::EndOfFileToken;
 }
 
-int lcsm::model::LCSMFileToken::asInteger() const noexcept
+unsigned long long lcsm::model::LCSMFileToken::asInteger() const noexcept
 {
 	return m_i;
 }

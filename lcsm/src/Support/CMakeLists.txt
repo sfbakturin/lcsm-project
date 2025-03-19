@@ -1,7 +1,7 @@
 # # Add sources.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_SOURCES
-    COMMFILES CompletedProcess.cpp CommonSubprocessRun.cpp CommonRemoveFile.cpp
+    COMMFILES CompletedProcess.cpp CommonSubprocessRun.cpp CommonRemoveFile.cpp Strings.cpp
     ONLYWINDOWS WindowsSubprocessRun.cpp WindowsRemoveFile.cpp
     ONLYLINUX LinuxSubprocessRun.cpp LinuxRemoveFile.cpp
 )

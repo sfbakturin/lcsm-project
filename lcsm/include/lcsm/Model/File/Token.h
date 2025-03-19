@@ -14,7 +14,7 @@ namespace lcsm
 		  public:
 			LCSMFileToken();
 			LCSMFileToken(LCSMFileKind kind);
-			LCSMFileToken(int i);
+			LCSMFileToken(unsigned long long i);
 			LCSMFileToken(const std::string &s, bool isIdentifier);
 			LCSMFileToken(std::string &&s, bool isIdentifier) noexcept;
 
@@ -32,7 +32,7 @@ namespace lcsm
 			LCSMFileKind kind();
 
 			void setToken(LCSMFileKind kind) noexcept;
-			void setToken(int i) noexcept;
+			void setToken(unsigned long long i) noexcept;
 			void setToken(const std::string &s, bool isIdentifier);
 			void setToken(std::string &&s, bool isIdentifier) noexcept;
 
@@ -44,13 +44,13 @@ namespace lcsm
 			bool isString() const noexcept;
 			bool isEof() const noexcept;
 
-			int asInteger() const noexcept;
+			unsigned long long asInteger() const noexcept;
 			const std::string &asIdentifier() const noexcept;
 			const std::string &asString() const noexcept;
 
 		  private:
 			LCSMFileKind m_kind;
-			int m_i;
+			unsigned long long m_i;
 			std::string m_s;
 		};
 	}	 // namespace model

@@ -144,17 +144,61 @@ lcsm::portid_t lcsm::model::Pin::defaultPort() const noexcept
 	return lcsm::model::Pin::Port::Internal;
 }
 
-void lcsm::model::Pin::dumpToLCSMFile(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Pin::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
 	writer.writeBeginComponent();
 	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(m_id);
-	writer.writeNameDeclaration(m_name);
-	writer.writeKeyValueDeclaration("output", m_output);
-	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(m_width));
-	writer.writeKeyValueDeclaration("internalid", m_internal->id());
-	writer.writeKeyValueDeclaration("externalid", m_external->id());
-	builder.addWires(m_internal.get(), true);
-	builder.addWires(m_external.get(), true);
+	writer.writeIdDeclaration(id());
+	writer.writeNameDeclaration(name());
+	writer.writeKeyValueDeclaration("output", output());
+	writer.writeKeyValueDeclaration("width", static_cast< std::uint64_t >(width()));
+	writer.writeKeyValueDeclaration("internalid", internal()->id());
+	writer.writeKeyValueDeclaration("externalid", external()->id());
+	builder.addWires(internal(), true);
+	builder.addWires(external(), true);
 	writer.writeEndComponent();
+}
+
+void lcsm::model::Pin::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+{
+	if (circuitType() != circuit->circuitType())
+	{
+		throw std::logic_error("Bad circuit type!");
+	}
+
+	lcsm::model::Pin *pin = static_cast< lcsm::model::Pin * >(circuit);
+	pin->setName(name());
+	pin->setOutput(output());
+	pin->setWidth(width());
+
+	builder.oldToNew(id(), pin->id());
+	builder.oldToNew(internal()->id(), pin->internal()->id());
+	builder.oldToNew(external()->id(), pin->external()->id());
+
+	builder.addWires(internal(), true);
+	builder.addWires(external(), true);
+}
+
+void lcsm::model::Pin::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+{
+	// 'circuittype' is already parsed, so we continue to 'endcomponent'
+
+	// id <IDENTIFIER>;
+	const lcsm::Identifier oldId = reader.exceptIdentifier();
+	builder.oldToNew(oldId, id());
+
+	// name <STRING>;
+	setName(reader.exceptName());
+
+	// keyvalue output <BOOLEAN>;
+	setOutput(reader.exceptBooleanKeyValue("output"));
+
+	// keyvalue width <INTEGER>;
+	setWidth(static_cast< lcsm::Width >(reader.exceptIntegerKeyValue("width")));
+
+	// keyvalue externalid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("externalid")), external()->id());
+
+	// keyvalue internalid <INTEGER>;
+	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("internalid")), internal()->id());
 }
