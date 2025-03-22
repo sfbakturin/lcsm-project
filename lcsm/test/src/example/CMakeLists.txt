@@ -1,0 +1,5 @@
+LCSM_ADD_TEST(LogicalNot)
+LCSM_ADD_TEST(LogicalOrNot)
+LCSM_ADD_TEST(LogicalAndNot)
+LCSM_ADD_TEST(LogicalOr)
+LCSM_ADD_TEST(LogicalAnd)

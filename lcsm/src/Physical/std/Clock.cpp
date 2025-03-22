@@ -202,8 +202,8 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 l_write:
 	// Write value to Wire.
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
-	events.emplace_back(std::move(i));
+	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
+	events.emplace_back(std::move(I));
 
 	// Save value to context.
 	m_context->updateValues(now, { value });

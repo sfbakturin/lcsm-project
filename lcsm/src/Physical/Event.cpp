@@ -9,23 +9,13 @@ lcsm::Event::Event(const lcsm::Instruction &instruction) noexcept : m_instructio
 
 lcsm::Event::Event(lcsm::Instruction &&instruction) noexcept : m_instruction(std::move(instruction)) {}
 
-lcsm::Event::Event(const lcsm::Instruction &instruction, const lcsm::Timestamp &diff) noexcept :
+lcsm::Event::Event(const lcsm::Instruction &instruction, lcsm::Timestamp diff) noexcept :
 	m_instruction(instruction), m_diff(diff)
 {
 }
 
-lcsm::Event::Event(lcsm::Instruction &&instruction, const lcsm::Timestamp &diff) noexcept :
+lcsm::Event::Event(lcsm::Instruction &&instruction, lcsm::Timestamp diff) noexcept :
 	m_instruction(std::move(instruction)), m_diff(diff)
-{
-}
-
-lcsm::Event::Event(const lcsm::Instruction &instruction, lcsm::Timestamp &&diff) noexcept :
-	m_instruction(instruction), m_diff(std::move(diff))
-{
-}
-
-lcsm::Event::Event(lcsm::Instruction &&instruction, lcsm::Timestamp &&diff) noexcept :
-	m_instruction(std::move(instruction)), m_diff(std::move(diff))
 {
 }
 
@@ -72,12 +62,12 @@ bool lcsm::Event::isFuture() const noexcept
 	return !isInstant();
 }
 
-lcsm::Event lcsm::Event::toInstant() const noexcept
+void lcsm::Event::toInstant() noexcept
 {
-	return lcsm::Event(m_instruction);
+	m_diff.reset();
 }
 
-const lcsm::Timestamp &lcsm::Event::diff() const noexcept
+lcsm::Timestamp lcsm::Event::diff() const noexcept
 {
 	return m_diff;
 }

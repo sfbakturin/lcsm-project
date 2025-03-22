@@ -5,6 +5,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Physical/Instruction.h>
+#include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Physical/std/Button.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Value.h>
@@ -80,7 +81,29 @@ void lcsm::physical::Button::addInstant(const lcsm::Instruction &instruction)
 	const lcsm::EvaluatorNode *target = instruction.target();
 	const lcsm::InstructionType type = instruction.type();
 
-	if (target != this || m_wire != caller || type != lcsm::InstructionType::WriteValue)
+	// Check, if target is this circuit.
+	if (target != this)
+	{
+		throw std::logic_error("Bad this circuit in instruction!");
+	}
+
+	// Check, if caller is wire.
+	if (m_wire != caller)
+	{
+		throw std::logic_error("Bad caller in instruction!");
+	}
+
+	// Check, if instruction type is supported. If it's WriteValue - ignore, otherwise, if PolluteValue, then remember
+	// and return new clean value.
+	if (type == lcsm::InstructionType::WriteValue)
+	{
+		return;
+	}
+	else if (type == lcsm::InstructionType::PolluteValue)
+	{
+		m_instants.push_back(instruction);
+	}
+	else
 	{
 		throw std::logic_error("Bad instruction!");
 	}
@@ -92,7 +115,29 @@ void lcsm::physical::Button::addInstant(lcsm::Instruction &&instruction)
 	const lcsm::EvaluatorNode *target = instruction.target();
 	const lcsm::InstructionType type = instruction.type();
 
-	if (target != this || m_wire != caller || type != lcsm::InstructionType::WriteValue)
+	// Check, if target is this circuit.
+	if (target != this)
+	{
+		throw std::logic_error("Bad this circuit in instruction!");
+	}
+
+	// Check, if caller is wire.
+	if (m_wire != caller)
+	{
+		throw std::logic_error("Bad caller in instruction!");
+	}
+
+	// Check, if instruction type is supported. If it's WriteValue - ignore, otherwise, if PolluteValue, then remember
+	// and return new clean value.
+	if (type == lcsm::InstructionType::WriteValue)
+	{
+		return;
+	}
+	else if (type == lcsm::InstructionType::PolluteValue)
+	{
+		m_instants.push_back(std::move(instruction));
+	}
+	else
 	{
 		throw std::logic_error("Bad instruction!");
 	}
@@ -100,8 +145,12 @@ void lcsm::physical::Button::addInstant(lcsm::Instruction &&instruction)
 
 std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Timestamp &now)
 {
+	// As now there is only PolluteValue is supported in instants, then we should just check size of m_instants and
+	// clean circuit.
+	const bool wasPolluted = !m_instants.empty();
+	m_instants.clear();
+
 	// Constants.
-	const lcsm::InstructionType type = lcsm::InstructionType::WriteValue;
 	lcsm::EvaluatorNode *target = m_wire.get();
 	static const lcsm::DataBits T = lcsm::verilog::Bit::True;
 	static const lcsm::DataBits F = lcsm::verilog::Bit::False;
@@ -111,7 +160,7 @@ std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Ti
 
 	// Extract context.
 	const lcsm::DataBits &databits = m_context->getValue();
-	const lcsm::verilog::Value &value = databits.value(0);
+	const lcsm::verilog::Value value = databits.value(0);
 	lcsm::DataBits pushed;
 
 	// Generate pushed value by bit in value.
@@ -132,10 +181,16 @@ std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Ti
 	}
 	}
 
+	// Construct new timestamp with maybe pollution situation.
+	const lcsm::Timestamp diff = lcsm::Timestamp(0, static_cast< lcsm::timescale_t >(wasPolluted));
+
 	// Save context and generate event.
 	m_context->updateValues(now, { pushed });
-	lcsm::Instruction I = { type, this, target, std::move(pushed) };
-	events.emplace_back(std::move(I));
+
+	// Create new instruction with difference. If there was pollution, then diff will be non-zero.
+	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, target, std::move(pushed));
+	lcsm::Event E(std::move(I), diff);
+	events.push_back(std::move(E));
 
 	return events;
 }

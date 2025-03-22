@@ -10,6 +10,7 @@
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <deque>
 #include <vector>
 
 namespace lcsm
@@ -39,6 +40,7 @@ namespace lcsm
 			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;
 
 		  private:
+			bool m_wasPolluteInstant;
 			support::PointerView< EvaluatorNode > m_connect;
 			support::PointerView< Context > m_context;
 			DataBits m_databits;

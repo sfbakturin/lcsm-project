@@ -3,6 +3,7 @@
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
+#include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Physical/std/Constant.h>
 #include <lcsm/Support/PointerView.hpp>
@@ -11,12 +12,12 @@
 #include <utility>
 
 lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, const lcsm::DataBits &databits) :
-	lcsm::EvaluatorNode(objectType), m_databits(databits)
+	lcsm::EvaluatorNode(objectType), m_wasPolluteInstant(false), m_databits(databits)
 {
 }
 
 lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, lcsm::DataBits &&databits) :
-	lcsm::EvaluatorNode(objectType), m_databits(std::move(databits))
+	lcsm::EvaluatorNode(objectType), m_wasPolluteInstant(false), m_databits(std::move(databits))
 {
 }
 
@@ -79,18 +80,54 @@ void lcsm::physical::Constant::verifyContext()
 
 void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
 {
-	// No instructions can be provided to Constant.
-	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check for supported instruction. If its WriteValue - ignore, if its PolluteValue, then remember to answer on
+	// pollution.
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
+	{
 		return;
-	throw std::logic_error("Attempt to instant instruction for Constant");
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		m_wasPolluteInstant = true;
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction type!");
 }
 
 void lcsm::physical::Constant::addInstant(lcsm::Instruction &&instruction)
 {
-	// No instructions can be provided to Constant.
-	if (instruction.caller() == m_connect && instruction.type() == lcsm::InstructionType::WriteValue)
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check for supported instruction. If its WriteValue - ignore, if its PolluteValue, then remember to answer on
+	// pollution.
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
+	{
 		return;
-	throw std::logic_error("Attempt to instant instruction for Constant");
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		m_wasPolluteInstant = true;
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction type!");
 }
 
 std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::Timestamp &now)
@@ -104,9 +141,18 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 	// Resulting events for future mini-steps.
 	std::vector< lcsm::Event > events;
 
+	// There might be pollution.
+	const lcsm::Timestamp diff(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
+	if (m_wasPolluteInstant)
+	{
+		int x = 1;
+	}
+	m_wasPolluteInstant = false;
+
 	// Write value to Wire.
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits);
-	events.emplace_back(std::move(i));
+	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits);
+	lcsm::Event E(std::move(I), diff);
+	events.push_back(std::move(E));
 
 	return events;
 }

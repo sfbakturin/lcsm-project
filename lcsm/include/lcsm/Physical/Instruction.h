@@ -45,6 +45,9 @@ namespace lcsm
 
 	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
 	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
+	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, DataBits &&value) noexcept;
+
+	Instruction CreatePolluteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
 }	 // namespace lcsm
 
 #endif /* LCSM_PHYSICAL_INSTRUCTION_H */

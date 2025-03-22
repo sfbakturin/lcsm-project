@@ -103,3 +103,13 @@ lcsm::Instruction
 {
 	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target, value);
 }
+
+lcsm::Instruction lcsm::CreateWriteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::DataBits &&value) noexcept
+{
+	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target, std::move(value));
+}
+
+lcsm::Instruction lcsm::CreatePolluteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
+{
+	return lcsm::Instruction(lcsm::InstructionType::PolluteValue, caller, target);
+}

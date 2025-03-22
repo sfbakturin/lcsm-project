@@ -7,6 +7,8 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <deque>
+
 namespace lcsm
 {
 	namespace physical
@@ -36,6 +38,7 @@ namespace lcsm
 			bool m_activeOnPress;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_wire;
+			std::deque< Instruction > m_instants;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

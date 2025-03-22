@@ -35,6 +35,7 @@ namespace lcsm
 
 		  private:
 			std::deque< Instruction > m_instants;
+			std::deque< Instruction > m_pollutes;
 			support::PointerView< Context > m_context;
 			std::vector< support::PointerView< EvaluatorNode > > m_children;
 		};

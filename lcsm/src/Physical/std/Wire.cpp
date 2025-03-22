@@ -61,28 +61,76 @@ void lcsm::physical::Wire::verifyContext()
 
 void lcsm::physical::Wire::addInstant(const lcsm::Instruction &instruction)
 {
-	// Only WriteValue instruction is available.
-	if (instruction.type() == lcsm::InstructionType::WriteValue)
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check, if target is this circuit element.
+	if (target != this)
+	{
+		throw std::logic_error("Bad this target element!");
+	}
+
+	// Check, if instruction is supported.
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
+	{
 		m_instants.push_back(instruction);
-	else
-		throw std::logic_error("Attempt to instant non BroadcastValue for wire");
+		return;
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		m_pollutes.push_back(instruction);
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
 void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
 {
-	// Only WriteValue instruction is available.
-	if (instruction.type() == lcsm::InstructionType::WriteValue)
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::InstructionType type = instruction.type();
+
+	// Check, if target is this circuit element.
+	if (target != this)
+	{
+		throw std::logic_error("Bad this target element!");
+	}
+
+	// Check, if instruction is supported.
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
+	{
 		m_instants.push_back(std::move(instruction));
-	else
-		throw std::logic_error("Attempt to instant non BroadcastValue for wire");
+		return;
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		m_pollutes.push_back(std::move(instruction));
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
 static inline void
 	WireNeighbourInstructions(lcsm::EvaluatorNode *targetFrom, lcsm::EvaluatorNode *targetTo, const lcsm::DataBits &value, std::vector< lcsm::Event > &events)
 {
 	/* Write wire's value to target. */
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(targetFrom, targetTo, value);
-	events.emplace_back(std::move(i));
+	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(targetFrom, targetTo, value);
+	events.emplace_back(std::move(I));
 }
 
 static inline void WireNeighbourInstructions(
@@ -100,48 +148,88 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	std::vector< lcsm::Event > events;
 	lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = this;
 
-	/* Extract context. */
-	lcsm::DataBits value = m_context->getValue();
-	const lcsm::Timestamp &then = m_context->lastUpdate();
-	const bool takeFirst = now > then;
-
-	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+	/* Check, if there is pollution - then, pollute on all non-callings for pollute. */
+	const bool wasPolution = !m_pollutes.empty();
 	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
-	if (takeFirst && !m_instants.empty())
+
+	if (wasPolution)
 	{
-		lcsm::Instruction instant = m_instants.front();
-		m_instants.pop_front();
-		value = instant.value();
-		callings.emplace(instant.caller());
+		for (lcsm::Instruction &pollute : m_pollutes)
+		{
+			callings.emplace(pollute.caller());
+		}
+
+		/* Go through all objects-neighbour and create a new events to all non callings. */
+		for (lcsm::support::PointerView< lcsm::EvaluatorNode > &child : m_children)
+		{
+			if (callings.find(child) != callings.end())
+			{
+				continue;
+			}
+
+			lcsm::Instruction I = lcsm::CreatePolluteValueInstruction(targetFrom.get(), child.get());
+			events.emplace_back(std::move(I));
+		}
+
+		/* Clear after pollution. */
+		callings.clear();
+		m_pollutes.clear();
+
+		m_context->setPolluted(true);
 	}
 
-	/* Invoke all instructions. */
-	for (lcsm::Instruction &instant : m_instants)
+	/* Don't write value on wires, if there is no need to. */
+	const bool wasWrite = !m_instants.empty();
+
+	if (wasWrite)
 	{
-		value |= instant.value();
-		callings.emplace(instant.caller());
+		/* Extract context. */
+		lcsm::DataBits value = m_context->getValue();
+		const lcsm::Timestamp &then = m_context->lastUpdate();
+		const bool takeFirst = now > then;
+
+		/* If NOW is later, then THEN, then we should take first value as not-dirty. */
+		if (takeFirst && !m_instants.empty())
+		{
+			lcsm::Instruction instant = m_instants.front();
+			m_instants.pop_front();
+			value = instant.value();
+			callings.emplace(instant.caller());
+		}
+
+		/* Invoke all instructions. */
+		for (lcsm::Instruction &instant : m_instants)
+		{
+			value |= instant.value();
+			callings.emplace(instant.caller());
+		}
+
+		/* Go through all objects-neighbour and create a new events to all non callings. */
+		for (lcsm::support::PointerView< lcsm::EvaluatorNode > &child : m_children)
+		{
+			if (callings.count(child))
+			{
+				continue;
+			}
+			WireNeighbourInstructions(targetFrom, child, value, events);
+		}
+
+		/* Go through all objects-neighbour and create a new events to all callings, where instant::value() != value. */
+		for (lcsm::Instruction &instant : m_instants)
+		{
+			if (value != instant.value())
+			{
+				WireNeighbourInstructions(this, instant.caller(), value, events);
+			}
+		}
+
+		/* Save last value. */
+		m_context->updateValues(now, { value });
+		m_context->setPolluted(false);
+
+		/* Clear instants. */
+		m_instants.clear();
 	}
-
-	/* Go through all objects-neighbour and create a new events to all non callings. */
-	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &child : m_children)
-	{
-		if (callings.count(child))
-			continue;
-		WireNeighbourInstructions(targetFrom, child, value, events);
-	}
-
-	/* Go through all objects-neighbour and create a new events to all callings, where instant::value() != value. */
-	for (lcsm::Instruction &instant : m_instants)
-	{
-		if (value != instant.value())
-			WireNeighbourInstructions(this, instant.caller(), value, events);
-	}
-
-	/* Save last value. */
-	m_context->updateValues(now, { value });
-
-	/* Clear instants. */
-	m_instants.clear();
 
 	return events;
 }

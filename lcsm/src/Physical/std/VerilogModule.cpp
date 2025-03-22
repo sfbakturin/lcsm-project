@@ -271,14 +271,13 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 	GenerateEvents(this, m_outputs, outputData, events, lcsm::verilog::PortDirectionType::OutputPortDirection);
 
 	// Save inputs values to context.
-	m_context->beginUpdate(now);
 	std::size_t i = 0;
 	if (!m_inputs.empty())
 	{
 		// Algorithm above make guarantees, that m_inputs would be used to generate testBenchData.
 		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::InputPortDirection])
 		{
-			m_context->updateValue(i++, std::move(databits));
+			m_context->updateValue(i++, std::move(databits), now, true);
 		}
 	}
 	if (!m_inouts.empty())
@@ -286,7 +285,7 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 		// Algorithm above make guarantees, that m_inouts would be used to generate testBenchData.
 		for (lcsm::DataBits &databits : testBenchData[lcsm::verilog::PortDirectionType::InoutPortDirection])
 		{
-			m_context->updateValue(i++, std::move(databits));
+			m_context->updateValue(i++, std::move(databits), now, true);
 		}
 	}
 	if (!m_outputs.empty())
@@ -294,10 +293,9 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const l
 		// Algorithm above make guarantees, that m_outputs would be used to generate outputData.
 		for (lcsm::DataBits &databits : outputData[lcsm::verilog::PortDirectionType::OutputPortDirection])
 		{
-			m_context->updateValue(i++, std::move(databits));
+			m_context->updateValue(i++, std::move(databits), now, true);
 		}
 	}
-	m_context->endUpdate();
 
 	// Clear instants.
 	m_inputsInstants.clear();

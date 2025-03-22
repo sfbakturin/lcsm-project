@@ -41,6 +41,8 @@ namespace lcsm
 
 		  private:
 			model::Transistor::Type m_type;
+			bool m_wasPollutedFromSrcA;
+			bool m_wasPollutedFromSrcB;
 			std::deque< Instruction > m_instantsBase;
 			std::deque< Instruction > m_instantsSrcA;
 			std::deque< Instruction > m_instantsSrcB;

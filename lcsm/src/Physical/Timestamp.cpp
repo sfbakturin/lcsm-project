@@ -4,11 +4,16 @@
 #include <cstddef>
 #include <utility>
 
-lcsm::Timestamp::Timestamp() noexcept : m_tick(0) {}
+lcsm::Timestamp::Timestamp() noexcept : lcsm::Timestamp(0, 0) {}
 
-lcsm::Timestamp::Timestamp(const lcsm::Timestamp &other) noexcept : m_tick(other.m_tick) {}
+lcsm::Timestamp::Timestamp(lcsm::timescale_t tick, lcsm::timescale_t subtick) noexcept :
+	m_tick(tick), m_subtick(subtick)
+{
+}
 
-lcsm::Timestamp::Timestamp(lcsm::Timestamp &&other) noexcept : m_tick(other.m_tick) {}
+lcsm::Timestamp::Timestamp(const lcsm::Timestamp &other) noexcept : m_tick(other.m_tick), m_subtick(other.m_subtick) {}
+
+lcsm::Timestamp::Timestamp(lcsm::Timestamp &&other) noexcept : m_tick(other.m_tick), m_subtick(other.m_subtick) {}
 
 lcsm::Timestamp &lcsm::Timestamp::operator=(const lcsm::Timestamp &other) noexcept
 {
@@ -23,6 +28,17 @@ lcsm::Timestamp &lcsm::Timestamp::operator=(lcsm::Timestamp &&other) noexcept
 void lcsm::Timestamp::swap(lcsm::Timestamp &other) noexcept
 {
 	std::swap(m_tick, other.m_tick);
+	std::swap(m_subtick, other.m_subtick);
+}
+
+lcsm::timescale_t lcsm::Timestamp::ticks() const noexcept
+{
+	return m_tick;
+}
+
+lcsm::timescale_t lcsm::Timestamp::subticks() const noexcept
+{
+	return m_subtick;
 }
 
 lcsm::Timestamp lcsm::Timestamp::next() const noexcept
@@ -32,15 +48,28 @@ lcsm::Timestamp lcsm::Timestamp::next() const noexcept
 	return next;
 }
 
+lcsm::Timestamp lcsm::Timestamp::subnext() const noexcept
+{
+	lcsm::Timestamp subnext = *this;
+	subnext.m_subtick++;
+	return subnext;
+}
+
 bool lcsm::Timestamp::isReset() const noexcept
 {
-	return m_tick == 0;
+	return m_tick == 0 && m_subtick == 0;
+}
+
+void lcsm::Timestamp::reset() noexcept
+{
+	m_tick = 0;
+	m_subtick = 0;
 }
 
 bool lcsm::Timestamp::operator<(const lcsm::Timestamp &other) const noexcept
 {
 	/* Compare simulator ticks. */
-	return m_tick < other.m_tick;
+	return m_tick < other.m_tick && m_subtick < other.m_subtick;
 }
 
 bool lcsm::Timestamp::operator<=(const lcsm::Timestamp &other) const noexcept
@@ -51,7 +80,7 @@ bool lcsm::Timestamp::operator<=(const lcsm::Timestamp &other) const noexcept
 bool lcsm::Timestamp::operator==(const lcsm::Timestamp &other) const noexcept
 {
 	/* Compare simulator ticks. */
-	return m_tick == other.m_tick;
+	return m_tick == other.m_tick && m_subtick == other.m_subtick;
 }
 
 bool lcsm::Timestamp::operator!=(const lcsm::Timestamp &other) const noexcept
@@ -73,6 +102,7 @@ lcsm::Timestamp lcsm::Timestamp::operator+(const lcsm::Timestamp &other) const n
 {
 	lcsm::Timestamp sum = *this;
 	sum.m_tick += other.m_tick;
+	sum.m_subtick += other.m_subtick;
 	return sum;
 }
 

@@ -51,9 +51,6 @@ namespace lcsm
 
 	  private:
 		LCSMState(LCSMEngine *engine);
-
-		void scheduleEvent(const Event &event);
-		void scheduleEvent(const Event &event, Timestamp timestamp);
 	};
 }	 // namespace lcsm
 

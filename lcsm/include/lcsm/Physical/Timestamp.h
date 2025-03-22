@@ -13,6 +13,7 @@ namespace lcsm
 	{
 	  public:
 		Timestamp() noexcept;
+		Timestamp(timescale_t tick, timescale_t subtick) noexcept;
 
 		Timestamp(const Timestamp &other) noexcept;
 		Timestamp(Timestamp &&other) noexcept;
@@ -22,8 +23,14 @@ namespace lcsm
 
 		void swap(Timestamp &other) noexcept;
 
+		timescale_t ticks() const noexcept;
+		timescale_t subticks() const noexcept;
+
 		Timestamp next() const noexcept;
+		Timestamp subnext() const noexcept;
 		bool isReset() const noexcept;
+
+		void reset() noexcept;
 
 		bool operator<(const Timestamp &other) const noexcept;
 		bool operator<=(const Timestamp &other) const noexcept;
@@ -43,6 +50,7 @@ namespace lcsm
 
 	  private:
 		timescale_t m_tick;
+		timescale_t m_subtick;
 	};
 }	 // namespace lcsm
 

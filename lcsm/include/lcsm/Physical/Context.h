@@ -72,35 +72,37 @@ namespace lcsm
 		std::size_t size() const noexcept;
 		std::size_t privateSize() const noexcept;
 
-		const Timestamp &lastUpdate() const noexcept;
+		bool polluted() const noexcept;
+		void setPolluted(bool polluted) noexcept;
+
+		const Timestamp &lastUpdate(std::size_t i = 0) const;
 		const DataBits &getValue(std::size_t i = 0) const;
 		const std::vector< DataBits > &values() const noexcept;
+		const std::vector< Timestamp > &timestamps() const noexcept;
 
 		bool isEqualsValues(const Context &other) const;
 
-		void beginUpdate(const Timestamp &timestamp);
-		void beginUpdate(Timestamp &&timestamp);
-		void updateValue(std::size_t i, const DataBits &databits);
-		void updateValue(std::size_t i, DataBits &&databits);
-		void endUpdate();
+		bool operator==(const Context &other) const;
+		bool operator!=(const Context &other) const;
 
-		void updateValues(const Timestamp &timestamp, const std::vector< DataBits > &databits);
-		void updateValues(const Timestamp &timestamp, std::vector< DataBits > &&databits);
-		void updateValues(Timestamp &&timestamp, const std::vector< DataBits > &databits);
-		void updateValues(Timestamp &&timestamp, std::vector< DataBits > &&databits);
-		void updateValues(const Timestamp &timestamp, std::initializer_list< DataBits > databits);
-		void updateValues(Timestamp &&timestamp, std::initializer_list< DataBits > databits);
+		void updateValue(std::size_t i, const DataBits &databits, Timestamp timestamp, bool forced = false);
+		void updateValue(std::size_t i, DataBits &&databits, Timestamp timestamp, bool forced = false);
 
-		bool neverUpdate() const noexcept;
+		void updateValues(Timestamp timestamp, const std::vector< DataBits > &databits);
+		void updateValues(Timestamp timestamp, std::vector< DataBits > &&databits);
+		void updateValues(Timestamp timestamp, std::initializer_list< DataBits > databits);
+
+		bool neverUpdate(std::size_t i = 0) const;
 
 		PrivateContext &privateContext() noexcept;
 		const PrivateContext &privateContext() const noexcept;
 
 	  private:
+		std::size_t m_size;
 		std::vector< DataBits > m_databits;
-		Timestamp m_timestamp;
+		std::vector< Timestamp > m_timestamps;
 		PrivateContext m_private;
-		bool m_updating;
+		bool m_polluted;
 	};
 }	 // namespace lcsm
 

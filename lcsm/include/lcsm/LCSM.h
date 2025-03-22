@@ -74,7 +74,8 @@ namespace lcsm
 	/// Represents all implemented instructions in standard library.
 	enum InstructionType : target_t
 	{
-		WriteValue,	   ///< Instruction to write a value to a given element.
+		WriteValue,		 ///< Instruction to write a value to a given element.
+		PolluteValue,	 ///< Instruction to pollute value in element.
 		LastInstructionType = WriteValue + 1
 	};
 }	 // namespace lcsm

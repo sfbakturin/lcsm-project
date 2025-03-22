@@ -63,6 +63,7 @@ namespace lcsm
 		bool checkWidth(const DataBits &other) const noexcept;
 
 		verilog::Bit bit(std::size_t index) const noexcept;
+		verilog::Strength strength(std::size_t index) const noexcept;
 		verilog::Value value(std::size_t index) const noexcept;
 
 		verilog::Value &operator[](std::size_t index);

@@ -83,14 +83,16 @@ std::vector< lcsm::Event > lcsm::physical::Probe::invokeInstants(const lcsm::Tim
 	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
 	if (takeFirst && !m_instants.empty())
 	{
-		lcsm::Instruction instant = m_instants.front();
+		const lcsm::Instruction instant = m_instants.front();
 		m_instants.pop_front();
 		value = instant.value();
 	}
 
 	/* Invoke all instructions. */
 	for (const lcsm::Instruction &instant : m_instants)
+	{
 		value |= instant.value();
+	}
 
 	/* Clean instants. */
 	m_instants.clear();

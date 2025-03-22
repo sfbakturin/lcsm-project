@@ -126,24 +126,22 @@ std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Tim
 	// Extract values from context.
 	lcsm::DataBits valueData = m_context->getValue(0);
 	lcsm::DataBits valueDecimalPoint = m_context->getValue(1);
-	const lcsm::Timestamp &then = m_context->lastUpdate();
-	const bool takeFirst = now > then;
+	const lcsm::Timestamp thenData = m_context->lastUpdate(0);
+	const lcsm::Timestamp thenDecimalPoint = m_context->lastUpdate(1);
 
 	// If NOW is later, then THEN, then we should take first value as not-dirty.
-	if (takeFirst)
+	if (now > thenData && !m_instantsData.empty())
 	{
-		if (!m_instantsData.empty())
-		{
-			lcsm::Instruction instant = m_instantsData.front();
-			m_instantsData.pop_front();
-			valueData = instant.value();
-		}
-		if (!m_instantsDecimalPoint.empty())
-		{
-			lcsm::Instruction instant = m_instantsDecimalPoint.front();
-			m_instantsDecimalPoint.pop_front();
-			valueDecimalPoint = instant.value();
-		}
+		const lcsm::Instruction instant = m_instantsData.front();
+		m_instantsData.pop_front();
+		valueData = instant.value();
+	}
+
+	if (now > thenDecimalPoint && !m_instantsDecimalPoint.empty())
+	{
+		const lcsm::Instruction instant = m_instantsDecimalPoint.front();
+		m_instantsDecimalPoint.pop_front();
+		valueDecimalPoint = instant.value();
 	}
 
 	// Invoke all instructions.
@@ -151,6 +149,7 @@ std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Tim
 	{
 		valueData |= instant.value();
 	}
+
 	for (const lcsm::Instruction &instant : m_instantsDecimalPoint)
 	{
 		valueDecimalPoint |= instant.value();

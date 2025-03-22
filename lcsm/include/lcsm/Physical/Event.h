@@ -11,10 +11,8 @@ namespace lcsm
 	  public:
 		Event(const Instruction &instruction) noexcept;
 		Event(Instruction &&instruction) noexcept;
-		Event(const Instruction &instruction, const Timestamp &diff) noexcept;
-		Event(Instruction &&instruction, const Timestamp &diff) noexcept;
-		Event(const Instruction &instruction, Timestamp &&diff) noexcept;
-		Event(Instruction &&instruction, Timestamp &&diff) noexcept;
+		Event(const Instruction &instruction, Timestamp diff) noexcept;
+		Event(Instruction &&instruction, Timestamp diff) noexcept;
 
 		Event(const Event &other) noexcept;
 		Event(Event &&other) noexcept;
@@ -30,9 +28,9 @@ namespace lcsm
 		bool isInstant() const noexcept;
 		bool isFuture() const noexcept;
 
-		Event toInstant() const noexcept;
+		void toInstant() noexcept;
 
-		const Timestamp &diff() const noexcept;
+		Timestamp diff() const noexcept;
 
 	  private:
 		Instruction m_instruction;

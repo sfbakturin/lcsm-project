@@ -250,6 +250,11 @@ lcsm::verilog::Bit lcsm::DataBits::bit(std::size_t index) const noexcept
 	return value(index).bit();
 }
 
+lcsm::verilog::Strength lcsm::DataBits::strength(std::size_t index) const noexcept
+{
+	return value(index).strength();
+}
+
 lcsm::verilog::Value lcsm::DataBits::value(std::size_t index) const noexcept
 {
 	static const lcsm::verilog::Value NO_VALUE{ lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined };

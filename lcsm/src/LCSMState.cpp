@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <deque>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -146,9 +147,7 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databi
 	}
 
 	/* Update value. */
-	context.beginUpdate(m_globalTimer);
-	context.updateValue(i, databits);
-	context.endUpdate();
+	context.updateValue(i, databits, m_globalTimer, true);
 
 	/* Verify value. */
 	foundInp->second->verifyContext();
@@ -187,49 +186,19 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm:
 	foundInp->second->verifyContext();
 }
 
-void lcsm::LCSMState::scheduleEvent(const lcsm::Event &event)
-{
-	scheduleEvent(event, m_globalTimer);
-}
-
-void lcsm::LCSMState::scheduleEvent(const lcsm::Event &event, lcsm::Timestamp timestamp)
-{
-	/* If scheduling event is instant, then, we should instant it in this timestamp. */
-	if (event.isInstant())
-	{
-		/* Ensure queue existence. */
-		if (m_globalQueue.find(timestamp) == m_globalQueue.end())
-			m_globalQueue[timestamp] = {};
-		/* Add new event to queue. */
-		m_globalQueue[timestamp].push_back(event);
-		return;
-	}
-
-	/* Extract instant event from future with time difference. */
-	const Timestamp diff = event.diff();
-	lcsm::Event instant = event.toInstant();
-
-	/* Shift timer. */
-	timestamp += diff;
-
-	/* Check if queue is exists, create if needs one. */
-	if (m_globalQueue.find(timestamp) == m_globalQueue.end())
-		m_globalQueue[timestamp] = {};
-
-	/* Add new event to queue. */
-	m_globalQueue[timestamp].push_back(std::move(instant));
-}
-
 void lcsm::LCSMState::ticks(unsigned n)
 {
 	for (unsigned i = 0; i < n; i++)
+	{
 		tick();
+	}
 }
 
 void lcsm::LCSMState::tick()
 {
 	/* Tick. */
 	m_globalTimer++;
+	lcsm::Timestamp now = m_globalTimer;
 
 	/* At each global tick (or: "clock") of the circuit we perform the following actions: 1. Generate new events from
 	 * the root elements of the circuit and write them to the found or created new queue for the current step. 2. Go to
@@ -246,7 +215,7 @@ void lcsm::LCSMState::tick()
 	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &root : m_roots)
 	{
 		/* Invoke and generate new instructions. */
-		std::vector< lcsm::Event > events = root->invokeInstants(m_globalTimer);
+		std::vector< lcsm::Event > events = root->invokeInstants(now);
 
 		/* Schedule events. */
 		for (lcsm::Event &event : events)
@@ -259,6 +228,9 @@ void lcsm::LCSMState::tick()
 	 * there is no looping in wires or elements. */
 	bool loop = true;
 	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > visited;
+
+	/* Additional queue for next subticks. */
+	std::map< lcsm::Timestamp, std::deque< Event > > futureSubticks;
 
 	/* Main looping mini-steps for step by timeouts and sync. To begin with, we execute all our scheduled instructions
 	 * in the following order: while it is possible to execute instructions smaller than this node type (in order of
@@ -274,10 +246,30 @@ void lcsm::LCSMState::tick()
 		for (lcsm::target_t nodeType = lcsm::NodeType::FirstNodeType; nodeType < lcsm::NodeType::LastNodeType; nodeType++)
 		{
 			/* Loop and invoke all possible specific typed nodes. */
-			do
+			for (;;)
 			{
 				std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > nodes;
 				const std::size_t size = localQueue.size();
+
+				/* Find the minimum node type to ensure if everything is found. */
+				lcsm::target_t realType = nodeType;
+				for (const lcsm::Event &event : localQueue)
+				{
+					/* Targeting invoke in future node. */
+					const lcsm::Instruction &instruction = event.instruction();
+					const lcsm::EvaluatorNode *caller = instruction.caller();
+					const lcsm::EvaluatorNode *target = instruction.target();
+
+					/* Check if target is not in visited set. */
+					if (std::find(visited.begin(), visited.end(), caller) != visited.end())
+					{
+						continue;
+					}
+
+					/* Find the min of real type and target's type. */
+					const lcsm::target_t targetNodeType = target->nodeType();
+					realType = std::min(realType, targetNodeType);
+				}
 
 				/* Extract all events from queue. */
 				for (std::size_t i = 0; i < size && !localQueue.empty(); i++)
@@ -301,7 +293,7 @@ void lcsm::LCSMState::tick()
 					/* Check event's target's type - if it's the one, then put instruction and remember, otherwise
 					 * put it to scheduler back. */
 					const lcsm::target_t targetNodeType = target->nodeType();
-					if (targetNodeType == nodeType)
+					if (targetNodeType == realType)
 					{
 						/* Push instruction to object's node. */
 						target->addInstant(instruction);
@@ -320,7 +312,7 @@ void lcsm::LCSMState::tick()
 							lcsm::support::PointerView< lcsm::EvaluatorNode > otherTarget = otherInstruction.target();
 
 							/* Add to nodes, if caller is presented. */
-							if (caller == otherCaller)
+							if (caller == otherCaller && otherTarget->nodeType() == targetNodeType)
 							{
 								otherTarget->addInstant(otherInstruction);
 								nodes.push_back(otherTarget);
@@ -347,7 +339,7 @@ void lcsm::LCSMState::tick()
 					break;
 				}
 
-				/* Invoke all nodes and push events to main scheduler. */
+				/* Invoke all nodes and push events to main scheduler, skip already invoked. */
 				std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > already;
 				for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : nodes)
 				{
@@ -361,26 +353,56 @@ void lcsm::LCSMState::tick()
 					already.insert(node);
 
 					/* Invoke and generate new instructions. */
-					std::vector< lcsm::Event > events = node->invokeInstants(m_globalTimer);
+					std::vector< lcsm::Event > events = node->invokeInstants(now);
 
 					/* Schedule events. */
 					for (lcsm::Event &event : events)
 					{
-						localQueue.push_back(event);
+						if (event.isFuture())
+						{
+							/* Right now we supporting only subticks, when it's polluted circuits. */
+							const lcsm::Timestamp diff = event.diff();
+
+							/* If queue is not exists, create it. */
+							if (futureSubticks.find(diff) == futureSubticks.end())
+							{
+								futureSubticks[diff] = {};
+							}
+
+							/* Put event to future. */
+							event.toInstant();
+							futureSubticks[diff].push_back(std::move(event));
+						}
+						else
+						{
+							localQueue.push_back(event);
+						}
 					}
 				}
-			} while (true);
-		}
-
-		/* Case: scheduler is empty. No need to double check something. */
-		if (localQueue.empty())
-		{
-			break;
+			}
 		}
 
 		/* Clear all visited. */
 		visited.clear();
 
+		/* Case: scheduler is empty, then go away. */
+		if (localQueue.empty())
+		{
+			/* Check the future subticks. */
+			if (!futureSubticks.empty())
+			{
+				/* If there existing future subtick, then get queue and continue main loop. */
+				std::map< lcsm::Timestamp, std::deque< lcsm::Event > >::iterator it = futureSubticks.begin();
+				now += it->first;
+				localQueue = std::move(it->second);
+				futureSubticks.erase(it);
+				goto lMainLoop;
+			}
+
+			break;
+		}
+
+lMainLoop:
 		/* Case: stabilized circuit. */
 		{
 			/* Copy all contents of contexts and events. */
@@ -406,7 +428,7 @@ void lcsm::LCSMState::tick()
 			/* Invoke all instants. */
 			for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : nodes)
 			{
-				node->invokeInstants(m_globalTimer);
+				node->invokeInstants(now);
 			}
 
 			/* Compare contexts. */
@@ -418,7 +440,7 @@ void lcsm::LCSMState::tick()
 				const lcsm::Identifier &id = it->first;
 				const lcsm::Context &lhs = it->second;
 				const lcsm::Context &rhs = copyContexts[id];
-				if (!lhs.isEqualsValues(rhs))
+				if (lhs != rhs)
 				{
 					equals = false;
 					break;
@@ -438,8 +460,20 @@ void lcsm::LCSMState::tick()
 			 * stop this step. Otherwise, fixup scheduled and continue this loop. */
 			if (equals)
 			{
-				loop = false;
 				localQueue.clear();
+
+				/* Check the future subticks. */
+				if (!futureSubticks.empty())
+				{
+					/* If there existing future subtick, then get queue and continue main loop. */
+					std::map< lcsm::Timestamp, std::deque< lcsm::Event > >::iterator it = futureSubticks.begin();
+					now += it->first;
+					localQueue = std::move(it->second);
+					futureSubticks.erase(it);
+					goto lMainLoop;
+				}
+
+				loop = false;
 			}
 			else
 			{
@@ -447,4 +481,10 @@ void lcsm::LCSMState::tick()
 			}
 		}
 	} while (loop);
+
+	/* Traverse all contexts and remove pollution. */
+	for (std::pair< const lcsm::Identifier, lcsm::Context > &it : m_contexts)
+	{
+		it.second.setPolluted(false);
+	}
 }

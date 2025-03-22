@@ -38,6 +38,7 @@ namespace lcsm
 		  private:
 			bool m_output;
 			Width m_width;
+			bool m_wasPolluteInstant;
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_internalConnect;

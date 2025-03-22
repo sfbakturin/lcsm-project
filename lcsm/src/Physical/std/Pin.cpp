@@ -15,7 +15,7 @@
 #include <vector>
 
 lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output, Width width) :
-	lcsm::EvaluatorNode(objectType), m_output(output), m_width(width)
+	lcsm::EvaluatorNode(objectType), m_output(output), m_width(width), m_wasPolluteInstant(false)
 {
 }
 
@@ -77,17 +77,30 @@ void lcsm::physical::Pin::verifyContext()
 
 void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 {
+	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
+	if ((instruction.caller() == m_internalConnect || instruction.caller() == m_externalConnect) &&
+		instruction.type() == lcsm::InstructionType::PolluteValue)
+	{
+		if (m_output == false)
+		{
+			m_wasPolluteInstant = true;
+		}
+		return;
+	}
+
 	if (!m_output)
 	{
 		/* If caller is external wire and it's WV, then we should invoke this instruction in future. */
+		/* If caller is internal wire and it's WV, then we ignore it without errors. */
 		if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(instruction);
 			return;
 		}
-		else /* If caller is internal wire and it's WV, then we ignore it without errors. */
-			if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
-				return;
+		else if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		{
+			return;
+		}
 
 		/* Otherwise, no instructions can be provided to input Pin. */
 		throw std::logic_error("Attempt to instant instruction for input Pin");
@@ -95,14 +108,16 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 	else
 	{
 		/* If caller is internal wire and it's WV, then we should invoke this instruction in future. */
+		/* If caller is external wire and it's WV, then we ignore it without errors. */
 		if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(instruction);
 			return;
 		}
-		else /* If caller is external wire and it's WV, then we ignore it without errors. */
-			if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
-				return;
+		else if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		{
+			return;
+		}
 
 		/* Otherwise, no instructions can be provided to output Pin. */
 		throw std::logic_error("Attempt to instant instruction for output Pin");
@@ -111,17 +126,30 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 
 void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 {
+	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
+	if ((instruction.caller() == m_internalConnect || instruction.caller() == m_externalConnect) &&
+		instruction.type() == lcsm::InstructionType::PolluteValue)
+	{
+		if (m_output == false)
+		{
+			m_wasPolluteInstant = true;
+		}
+		return;
+	}
+
 	if (!m_output)
 	{
 		/* If caller is external wire and it's WV, then we should invoke this instruction in future. */
+		/* If caller is internal wire and it's WV, then we ignore it without errors. */
 		if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(std::move(instruction));
 			return;
 		}
-		else /* If caller is internal wire and it's WV, then we ignore it without errors. */
-			if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
-				return;
+		else if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		{
+			return;
+		}
 
 		/* Otherwise, no instructions can be provided to input Pin. */
 		throw std::logic_error("Attempt to instant instruction for input Pin");
@@ -129,14 +157,16 @@ void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 	else
 	{
 		/* If caller is internal wire and it's WV, then we should invoke this instruction in future. */
+		/* If caller is external wire and it's WV, then we ignore it without errors. */
 		if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(std::move(instruction));
 			return;
 		}
-		else /* If caller is external wire and it's WV, then we ignore it without errors. */
-			if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
-				return;
+		else if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		{
+			return;
+		}
 
 		/* Otherwise, no instructions can be provided to output Pin. */
 		throw std::logic_error("Attempt to instant instruction for output Pin");
@@ -160,7 +190,9 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 
 	/* Traverse value on instants from external connection. */
 	for (const lcsm::Instruction &instant : m_instants)
+	{
 		value |= instant.value();
+	}
 
 	/* Update context value. */
 	m_context->updateValues(now, { value });
@@ -171,20 +203,30 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 	/* Resulting events for future mini-steps. */
 	std::vector< lcsm::Event > events;
 
+	/* Construct new timestamp with maybe pollution situation. */
+	const lcsm::Timestamp diff = lcsm::Timestamp(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
+	if (m_output && m_wasPolluteInstant)
+	{
+		int x = 123;
+	}
+	m_wasPolluteInstant = false;
+
 	if (m_output)
 	{
 		if (m_externalConnect)
 		{
 			/* Write wire's value to target. */
-			lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_externalConnect.get(), value);
-			events.emplace_back(std::move(i));
+			lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_externalConnect.get(), value);
+			lcsm::Event E = { std::move(I), diff };
+			events.push_back(std::move(E));
 		}
 	}
 	else
 	{
 		/* Write value to Wire. */
-		lcsm::Instruction i = lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value);
-		events.push_back(std::move(i));
+		lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value);
+		lcsm::Event E = { std::move(I), diff };
+		events.push_back(std::move(E));
 	}
 
 	return events;
