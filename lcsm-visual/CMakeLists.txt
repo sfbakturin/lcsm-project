@@ -10,15 +10,15 @@ SET(CMAKE_AUTORCC ON)
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Widgets)
 
 # Visualizer.
-ADD_EXECUTABLE(lcsm-vis
-	lcsm-vis.cpp
+ADD_EXECUTABLE(lcsm-visual
+	lcsm-visual.cpp
 
 	view/mainwindow.h
 	view/mainwindow.cpp
 	view/mainwindow.ui
 )
 
-TARGET_INCLUDE_DIRECTORIES(lcsm-vis PUBLIC view)
+TARGET_INCLUDE_DIRECTORIES(lcsm-visual PUBLIC view)
 
 # Link Qt5.
-TARGET_LINK_LIBRARIES(lcsm-vis PRIVATE Qt5::Widgets)
+TARGET_LINK_LIBRARIES(lcsm-visual PRIVATE Qt5::Widgets)
