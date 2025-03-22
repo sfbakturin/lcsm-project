@@ -205,10 +205,6 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Times
 
 	/* Construct new timestamp with maybe pollution situation. */
 	const lcsm::Timestamp diff = lcsm::Timestamp(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
-	if (m_output && m_wasPolluteInstant)
-	{
-		int x = 123;
-	}
 	m_wasPolluteInstant = false;
 
 	if (m_output)

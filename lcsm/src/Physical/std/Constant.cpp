@@ -143,10 +143,6 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 
 	// There might be pollution.
 	const lcsm::Timestamp diff(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
-	if (m_wasPolluteInstant)
-	{
-		int x = 1;
-	}
 	m_wasPolluteInstant = false;
 
 	// Write value to Wire.
