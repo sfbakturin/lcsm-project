@@ -1,5 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
-PROJECT(LogicalCircuitStateMachine LANGUAGES CXX)
+PROJECT(LogicalCircuitStateMachine LANGUAGES CXX
+        DESCRIPTION " LCSM project is a set of tools and libraries that provide construction and simulation of simple logic circuits for educational purposes. "
+        HOMEPAGE_URL "https://github.com/sfbakturin/lcsm-project"
+)
 
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)

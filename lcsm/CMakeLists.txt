@@ -1,7 +1,7 @@
 PROJECT(LCSM LANGUAGES CXX
-             VERSION 1.0.0
-             DESCRIPTION "LCSM's project main library provides building and simulating simple logic circuits"
-             HOMEPAGE_URL "https://github.com/sfbakturin/lcsm-project"
+        VERSION 1.0.0
+        DESCRIPTION "LCSM's project main library."
+        HOMEPAGE_URL "https://github.com/sfbakturin/lcsm-project"
 )
 
 ADD_LIBRARY(LCSM)

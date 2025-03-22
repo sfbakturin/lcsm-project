@@ -17,6 +17,8 @@
 #include <string>
 #include <utility>
 
+lcsm::model::Splitter::Splitter() : lcsm::model::Splitter("", lcsm::Width::Bit2, 2) {}
+
 lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) :
 	lcsm::model::Splitter("", widthIn, widthOut)
 {
