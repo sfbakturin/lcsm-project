@@ -40,11 +40,11 @@ jobs:
           ninja: true
 
       - name: Install Icarus Verilog (Windows)
-        if: ${{ matrix.toolchain.name == 'Windows' }}
+        if: ${{ contains(matrix.toolchain.runner, 'windows') }}
         run: choco install -y iverilog
 
       - name: Install Icarus Verilog (Linux)
-        if: ${{ matrix.toolchain.name == 'Linux' }}
+        if: ${{ contains(matrix.toolchain.runner, 'ubuntu') }}
         run: sudo apt-get install -y iverilog
 
       - name: Build
