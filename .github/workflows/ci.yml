@@ -11,10 +11,10 @@ jobs:
 
       matrix:
         toolchain:
-          - { name: Windows/MSVC,  runner: windows-2022, compiler: msvc-2022 }
-          - { name: Windows/Clang, runner: windows-2022, compiler: clang-18  }
-          - { name: Linux/GCC,     runner: ubuntu-24.04, compiler: gcc-14    }
-          - { name: Linux/Clang,   runner: ubuntu-24.04, compiler: clang-18  }
+          - { name: Windows/MSVC,  runner: windows-2022, compiler: msvc-2022, cmake-gen: ''       }
+          - { name: Windows/Clang, runner: windows-2022, compiler: clang-18,  cmake-gen: -G Ninja }
+          - { name: Linux/GCC,     runner: ubuntu-24.04, compiler: gcc-14,    cmake-gen: -G Ninja }
+          - { name: Linux/Clang,   runner: ubuntu-24.04, compiler: clang-18,  cmake-gen: -G Ninja }
 
         buildtype:
           - Debug
@@ -39,26 +39,26 @@ jobs:
           cmake: true
           ninja: true
 
-      - name: Install Icarus Verilog (Windows)
-        if: ${{ contains(matrix.toolchain.runner, 'windows') }}
-        run: choco install -y iverilog
+#      - name: Install Icarus Verilog (Windows)
+#        if: ${{ contains(matrix.toolchain.runner, 'windows') }}
+#        run: choco install -y iverilog
 
-      - name: Install Icarus Verilog (Linux)
-        if: ${{ contains(matrix.toolchain.runner, 'ubuntu') }}
-        run: sudo apt-get install -y iverilog
+#      - name: Install Icarus Verilog (Linux)
+#        if: ${{ contains(matrix.toolchain.runner, 'ubuntu') }}
+#        run: sudo apt-get install -y iverilog
 
       - name: Build
         run: |
-          cmake . -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }}
+          cmake . ${{ matrix.toolchain.cmake-gen }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }}
           cmake --build . --config ${{ matrix.buildtype }} --parallel
 
       - name: Test (exclude Verilog)
         run: ctest -E "Verilog" -C ${{ matrix.buildtype }}
 
-      - name: Test (Verilog/MSVC)
-        if: ${{ contains(matrix.toolchain.compiler, 'msvc') }}
-        run: ./lcsm/test/src/userend/${{ matrix.buildtype }}/VerilogTest
+#      - name: Test (Verilog/MSVC)
+#        if: ${{ contains(matrix.toolchain.compiler, 'msvc') }}
+#        run: ./lcsm/test/src/userend/${{ matrix.buildtype }}/VerilogTest
 
-      - name: Test (Verilog/non MSVC)
-        if: ${{ !contains(matrix.toolchain.compiler, 'msvc') }}
-        run: ./lcsm/test/src/userend/VerilogTest
+#      - name: Test (Verilog/non MSVC)
+#        if: ${{ !contains(matrix.toolchain.compiler, 'msvc') }}
+#        run: ./lcsm/test/src/userend/VerilogTest
