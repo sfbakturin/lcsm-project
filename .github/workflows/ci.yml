@@ -1,0 +1,64 @@
+name: CI/CD
+
+on: push
+
+jobs:
+  buildtest:
+    name: Testing ${{ matrix.toolchain.name }} (with ${{ matrix.buildtype }} config, -Werror=${{ matrix.werror }})
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        toolchain:
+          - { name: Windows/MSVC,  runner: windows-2022, compiler: msvc-2022 }
+          - { name: Windows/Clang, runner: windows-2022, compiler: clang-18  }
+          - { name: Linux/GCC,     runner: ubuntu-24.04, compiler: gcc-14    }
+          - { name: Linux/Clang,   runner: ubuntu-24.04, compiler: clang-18  }
+
+        buildtype:
+          - Debug
+          - Release
+          - MinSizeRel
+          - RelWithDebInfo
+
+        werror:
+          - 'ON'
+          - 'OFF'
+
+    runs-on: ${{ matrix.toolchain.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install C/C++ compiler
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: ${{ matrix.toolchain.compiler }}
+          vcvarsall: ${{ contains(matrix.toolchain.compiler, 'msvc') }}
+          cmake: true
+          ninja: true
+
+      - name: Install Icarus Verilog (Windows)
+        if: ${{ matrix.toolchain.name == 'Windows' }}
+        run: choco install -y iverilog
+
+      - name: Install Icarus Verilog (Linux)
+        if: ${{ matrix.toolchain.name == 'Linux' }}
+        run: sudo apt-get install -y iverilog
+
+      - name: Build
+        run: |
+          cmake . -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }}
+          cmake --build . --config ${{ matrix.buildtype }} --parallel
+
+      - name: Test (exclude Verilog)
+        run: ctest -E "Verilog" -C ${{ matrix.buildtype }}
+
+      - name: Test (Verilog/MSVC)
+        if: ${{ contains(matrix.toolchain.compiler, 'msvc') }}
+        run: ./lcsm/test/src/userend/${{ matrix.buildtype }}/VerilogTest
+
+      - name: Test (Verilog/non MSVC)
+        if: ${{ !contains(matrix.toolchain.compiler, 'msvc') }}
+        run: ./lcsm/test/src/userend/VerilogTest
