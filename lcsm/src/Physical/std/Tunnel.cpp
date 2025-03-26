@@ -64,7 +64,7 @@ void lcsm::physical::Tunnel::addInstant(const lcsm::Instruction &instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::InstructionType type = instruction.type();
-	if (caller == m_wiring && type == lcsm::InstructionType::WriteValue)
+	if (m_wiring == caller && type == lcsm::InstructionType::WriteValue)
 	{
 		m_instantsWiring.push_back(instruction);
 	}
@@ -82,7 +82,7 @@ void lcsm::physical::Tunnel::addInstant(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::InstructionType type = instruction.type();
-	if (caller == m_wiring && type == lcsm::InstructionType::WriteValue)
+	if (m_wiring == caller && type == lcsm::InstructionType::WriteValue)
 	{
 		m_instantsWiring.push_back(std::move(instruction));
 	}

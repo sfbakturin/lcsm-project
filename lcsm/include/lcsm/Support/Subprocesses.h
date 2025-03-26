@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_SUBPROCESS_H
 
 #include <initializer_list>
+#include <lcsm/lcsmconfig.h>
 
 #include <string>
 #include <vector>
@@ -10,7 +11,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class CompletedProcess
+		class LCSM_API CompletedProcess
 		{
 		  public:
 			CompletedProcess(int returncode);
@@ -31,9 +32,9 @@ namespace lcsm
 			std::string m_stderr;
 		};
 
-		CompletedProcess subprocessRun(char *cmdline);
-		CompletedProcess subprocessRun(const char *exec, const std::vector< std::string > &args);
-		CompletedProcess subprocessRun(const char *exec, std::initializer_list< const char * > args);
+		LCSM_API CompletedProcess subprocessRun(char *cmdline);
+		LCSM_API CompletedProcess subprocessRun(const char *exec, const std::vector< std::string > &args);
+		LCSM_API CompletedProcess subprocessRun(const char *exec, std::initializer_list< const char * > args);
 	}	 // namespace support
 }	 // namespace lcsm
 

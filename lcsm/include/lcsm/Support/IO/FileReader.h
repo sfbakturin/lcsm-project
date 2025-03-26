@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_FILEREADER_H
 
 #include <lcsm/Support/IO/Reader.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <fstream>
 #include <string>
@@ -10,7 +11,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class FileReader : public Reader
+		class LCSM_API FileReader : public Reader
 		{
 		  public:
 			FileReader(const char *filename);

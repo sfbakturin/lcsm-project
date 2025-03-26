@@ -4,12 +4,13 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Physical/std/Constant.h>
+#include <lcsm/lcsmconfig.h>
 
 namespace lcsm
 {
 	namespace physical
 	{
-		class Ground : public Constant
+		class LCSM_API Ground : public Constant
 		{
 		  public:
 			Ground(object_type_t objectType, Width width);

@@ -9,13 +9,14 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <vector>
 
 namespace lcsm
 {
-	class EvaluatorNode
+	class LCSM_API EvaluatorNode
 	{
 	  public:
 		EvaluatorNode(object_type_t objectType) noexcept;

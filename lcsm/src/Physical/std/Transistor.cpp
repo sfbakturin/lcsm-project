@@ -96,19 +96,19 @@ void lcsm::physical::Transistor::addInstant(const lcsm::Instruction &instruction
 	{
 	case lcsm::InstructionType::WriteValue:
 	{
-		if (caller == m_base)
+		if (m_base == caller)
 		{
 			m_instantsBase.push_back(instruction);
 			return;
 		}
 
-		if (caller == m_srca)
+		if (m_srca == caller)
 		{
 			m_instantsSrcA.push_back(instruction);
 			return;
 		}
 
-		if (caller == m_srcb)
+		if (m_srcb == caller)
 		{
 			m_instantsSrcB.push_back(instruction);
 			return;
@@ -118,18 +118,18 @@ void lcsm::physical::Transistor::addInstant(const lcsm::Instruction &instruction
 	}
 	case lcsm::InstructionType::PolluteValue:
 	{
-		if (caller == m_base)
+		if (m_base == caller)
 		{
 			return;
 		}
 
-		if (caller == m_srca)
+		if (m_srca == caller)
 		{
 			m_wasPollutedFromSrcA = true;
 			return;
 		}
 
-		if (caller == m_srcb)
+		if (m_srcb == caller)
 		{
 			m_wasPollutedFromSrcB = true;
 			return;
@@ -161,19 +161,19 @@ void lcsm::physical::Transistor::addInstant(lcsm::Instruction &&instruction)
 	{
 	case lcsm::InstructionType::WriteValue:
 	{
-		if (caller == m_base)
+		if (m_base == caller)
 		{
 			m_instantsBase.push_back(std::move(instruction));
 			return;
 		}
 
-		if (caller == m_srca)
+		if (m_srca == caller)
 		{
 			m_instantsSrcA.push_back(std::move(instruction));
 			return;
 		}
 
-		if (caller == m_srcb)
+		if (m_srcb == caller)
 		{
 			m_instantsSrcB.push_back(std::move(instruction));
 			return;
@@ -183,18 +183,18 @@ void lcsm::physical::Transistor::addInstant(lcsm::Instruction &&instruction)
 	}
 	case lcsm::InstructionType::PolluteValue:
 	{
-		if (caller == m_base)
+		if (m_base == caller)
 		{
 			return;
 		}
 
-		if (caller == m_srca)
+		if (m_srca == caller)
 		{
 			m_wasPollutedFromSrcA = true;
 			return;
 		}
 
-		if (caller == m_srcb)
+		if (m_srcb == caller)
 		{
 			m_wasPollutedFromSrcB = true;
 			return;

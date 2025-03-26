@@ -9,6 +9,7 @@
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <memory>
 #include <vector>
@@ -17,7 +18,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Probe : public Circuit
+		class LCSM_API Probe : public Circuit
 		{
 		  public:
 			enum Port : portid_t

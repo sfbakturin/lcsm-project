@@ -3,6 +3,7 @@
 
 #include <lcsm/Model/File/Token.h>
 #include <lcsm/Support/IO/Reader.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 #include <memory>
@@ -11,7 +12,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class LCSMFileLexer
+		class LCSM_API LCSMFileLexer
 		{
 		  public:
 			LCSMFileLexer(const std::shared_ptr< support::Reader > &source);

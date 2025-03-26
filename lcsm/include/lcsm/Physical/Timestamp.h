@@ -1,6 +1,8 @@
 #ifndef LCSM_PHYSICAL_TIMESTAMP_H
 #define LCSM_PHYSICAL_TIMESTAMP_H
 
+#include <lcsm/lcsmconfig.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -9,7 +11,7 @@ namespace lcsm
 {
 	using timescale_t = std::uint64_t;
 
-	class Timestamp
+	class LCSM_API Timestamp
 	{
 	  public:
 		Timestamp() noexcept;

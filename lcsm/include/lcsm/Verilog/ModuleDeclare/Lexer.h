@@ -3,6 +3,7 @@
 
 #include <lcsm/Support/IO/Reader.h>
 #include <lcsm/Verilog/ModuleDeclare/Token.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 #include <memory>
@@ -12,7 +13,7 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		class ModuleDeclareLexer
+		class LCSM_API ModuleDeclareLexer
 		{
 		  public:
 			ModuleDeclareLexer(const std::shared_ptr< support::Reader > &source);

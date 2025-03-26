@@ -2,6 +2,7 @@
 #define LCSM_VERILOG_MODULEDECLARE_CONTEXT_H
 
 #include <lcsm/Verilog/Port.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <string>
 #include <utility>
@@ -11,7 +12,7 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		class ModuleDeclareContext
+		class LCSM_API ModuleDeclareContext
 		{
 		  public:
 			ModuleDeclareContext() = default;

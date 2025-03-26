@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_STRINGREADER_H
 
 #include <lcsm/Support/IO/Reader.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <string>
@@ -10,7 +11,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class StringReader : public Reader
+		class LCSM_API StringReader : public Reader
 		{
 		  public:
 			StringReader(const std::string &source);

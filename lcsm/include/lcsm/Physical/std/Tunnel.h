@@ -9,6 +9,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 #include <vector>
@@ -17,7 +18,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class Tunnel : public EvaluatorNode
+		class LCSM_API Tunnel : public EvaluatorNode
 		{
 		  public:
 			Tunnel(object_type_t objectType);

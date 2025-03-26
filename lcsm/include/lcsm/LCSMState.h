@@ -10,6 +10,7 @@
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 #include <unordered_map>
 
 #include <deque>
@@ -17,9 +18,9 @@
 
 namespace lcsm
 {
-	class LCSMEngine;
+	class LCSM_API LCSMEngine;
 
-	class LCSMState
+	class LCSM_API LCSMState
 	{
 	  public:
 		LCSMState(const LCSMState &other);

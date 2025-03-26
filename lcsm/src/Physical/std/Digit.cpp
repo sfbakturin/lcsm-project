@@ -84,11 +84,11 @@ void lcsm::physical::Digit::addInstant(const lcsm::Instruction &instruction)
 	{
 		throw std::logic_error("Target is not this element");
 	}
-	if (type == lcsm::InstructionType::WriteValue && caller == m_data)
+	if (type == lcsm::InstructionType::WriteValue && m_data == caller)
 	{
 		m_instantsData.push_back(instruction);
 	}
-	else if (type == lcsm::InstructionType::WriteValue && caller == m_decimalPoint && m_hasDecimalPoint)
+	else if (type == lcsm::InstructionType::WriteValue && m_decimalPoint == caller && m_hasDecimalPoint)
 	{
 		m_instantsDecimalPoint.push_back(instruction);
 	}
@@ -107,11 +107,11 @@ void lcsm::physical::Digit::addInstant(lcsm::Instruction &&instruction)
 	{
 		throw std::logic_error("Target is not this element");
 	}
-	if (type == lcsm::InstructionType::WriteValue && caller == m_data)
+	if (type == lcsm::InstructionType::WriteValue && m_data == caller)
 	{
 		m_instantsData.push_back(std::move(instruction));
 	}
-	else if (type == lcsm::InstructionType::WriteValue && caller == m_decimalPoint && m_hasDecimalPoint)
+	else if (type == lcsm::InstructionType::WriteValue && m_decimalPoint == caller && m_hasDecimalPoint)
 	{
 		m_instantsDecimalPoint.push_back(std::move(instruction));
 	}

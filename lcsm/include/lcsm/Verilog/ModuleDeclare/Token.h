@@ -1,6 +1,8 @@
 #ifndef LCSM_VERILOG_MODULEDECLARE_TOKEN_H
 #define LCSM_VERILOG_MODULEDECLARE_TOKEN_H
 
+#include <lcsm/lcsmconfig.h>
+
 #include <cstdint>
 #include <string>
 
@@ -51,14 +53,14 @@ namespace lcsm
 		static constexpr std::int8_t KindKeywordStart = ModuleDeclareKind::KW_EQUAL;
 		static constexpr std::int8_t KindKeywordEnd = ModuleDeclareKind::KW_TIME;
 
-		const char *KindToKeyword(ModuleDeclareKind kind) noexcept;
-		ModuleDeclareKind IsKeyword(const char *s) noexcept;
-		ModuleDeclareKind IsKeyword(const std::string &s) noexcept;
-		ModuleDeclareKind IsKeyword(char c) noexcept;
-		bool IsStartOfKeyword(const char *s) noexcept;
-		bool IsStartOfKeyword(const std::string &s) noexcept;
+		LCSM_API const char *KindToKeyword(ModuleDeclareKind kind) noexcept;
+		LCSM_API ModuleDeclareKind IsKeyword(const char *s) noexcept;
+		LCSM_API ModuleDeclareKind IsKeyword(const std::string &s) noexcept;
+		LCSM_API ModuleDeclareKind IsKeyword(char c) noexcept;
+		LCSM_API bool IsStartOfKeyword(const char *s) noexcept;
+		LCSM_API bool IsStartOfKeyword(const std::string &s) noexcept;
 
-		class ModuleDeclareToken
+		class LCSM_API ModuleDeclareToken
 		{
 		  public:
 			ModuleDeclareToken();

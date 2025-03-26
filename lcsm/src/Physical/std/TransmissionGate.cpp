@@ -85,25 +85,25 @@ void lcsm::physical::TransmissionGate::addInstant(const lcsm::Instruction &instr
 	if (instructionType != lcsm::InstructionType::WriteValue)
 		throw std::logic_error("Bad instruction!");
 
-	if (caller == m_base)
+	if (m_base == caller)
 	{
 		m_instantsBase.push_back(instruction);
 		return;
 	}
 
-	if (caller == m_srca)
+	if (m_srca == caller)
 	{
 		m_instantsSrcA.push_back(instruction);
 		return;
 	}
 
-	if (caller == m_srcb)
+	if (m_srcb == caller)
 	{
 		m_instantsSrcB.push_back(instruction);
 		return;
 	}
 
-	if (caller == m_srcc)
+	if (m_srcc == caller)
 	{
 		m_instantsSrcC.push_back(instruction);
 	}
@@ -123,25 +123,25 @@ void lcsm::physical::TransmissionGate::addInstant(lcsm::Instruction &&instructio
 	if (instructionType != lcsm::InstructionType::WriteValue)
 		throw std::logic_error("Bad instruction!");
 
-	if (caller == m_base)
+	if (m_base == caller)
 	{
 		m_instantsBase.push_back(std::move(instruction));
 		return;
 	}
 
-	if (caller == m_srca)
+	if (m_srca == caller)
 	{
 		m_instantsSrcA.push_back(std::move(instruction));
 		return;
 	}
 
-	if (caller == m_srcb)
+	if (m_srcb == caller)
 	{
 		m_instantsSrcB.push_back(std::move(instruction));
 		return;
 	}
 
-	if (caller == m_srcc)
+	if (m_srcc == caller)
 	{
 		m_instantsSrcC.push_back(std::move(instruction));
 	}

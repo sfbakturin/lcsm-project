@@ -5,6 +5,7 @@
 #include <lcsm/Verilog/ModuleDeclare/Context.h>
 #include <lcsm/Verilog/ModuleDeclare/Lexer.h>
 #include <lcsm/Verilog/Port.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <memory>
 
@@ -12,7 +13,7 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		class ModuleDeclareParser
+		class LCSM_API ModuleDeclareParser
 		{
 		  public:
 			ModuleDeclareParser(const std::shared_ptr< support::Reader > &source);

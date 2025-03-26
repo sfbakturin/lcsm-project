@@ -1,6 +1,8 @@
 #ifndef LCSM_LCSM_H
 #define LCSM_LCSM_H
 
+#include <lcsm/lcsmconfig.h>
+
 #include <cstdint>
 
 namespace lcsm
@@ -31,7 +33,7 @@ namespace lcsm
 		LastCircuitType = VerilogModule + 1
 	};
 
-	const char *CircuitTypePretty(CircuitType circuitType) noexcept;
+	LCSM_API const char *CircuitTypePretty(CircuitType circuitType) noexcept;
 
 	/// Represents ordering of invoking and generating physical node's events.
 	enum NodeType : target_t
@@ -66,7 +68,7 @@ namespace lcsm
 	 * @return true if the object has such a property
 	 * @return false if the object does not have such a property
 	 */
-	constexpr inline bool TestObjectType(object_type_t actual, object_type_t expected) noexcept
+	LCSM_API constexpr inline bool TestObjectType(object_type_t actual, object_type_t expected) noexcept
 	{
 		return static_cast< bool >(actual & expected);
 	}

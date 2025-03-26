@@ -8,6 +8,7 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 #include <utility>
@@ -17,7 +18,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class VerilogModule : public EvaluatorNode
+		class LCSM_API VerilogModule : public EvaluatorNode
 		{
 		  public:
 			VerilogModule(const verilog::Module *module, object_type_t objectType);

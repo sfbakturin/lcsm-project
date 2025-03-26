@@ -9,6 +9,7 @@
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -18,7 +19,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class TransmissionGate : public Circuit
+		class LCSM_API TransmissionGate : public Circuit
 		{
 		  public:
 			enum Port : portid_t

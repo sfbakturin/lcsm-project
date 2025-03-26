@@ -3,6 +3,7 @@
 
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
+#include <lcsm/lcsmconfig.h>
 #include <unordered_map>
 
 #include <deque>
@@ -11,14 +12,14 @@
 
 namespace lcsm
 {
-	class LCSMCircuit;
+	class LCSM_API LCSMCircuit;
 
 	namespace model
 	{
-		class Wire;
-		class Tunnel;
+		class LCSM_API Wire;
+		class LCSM_API Tunnel;
 
-		class LCSMBuilder
+		class LCSM_API LCSMBuilder
 		{
 		  public:
 			LCSMBuilder() = default;

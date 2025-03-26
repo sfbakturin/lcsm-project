@@ -1,11 +1,13 @@
 #ifndef LCSM_SUPPORT_IO_READER_H
 #define LCSM_SUPPORT_IO_READER_H
 
+#include <lcsm/lcsmconfig.h>
+
 namespace lcsm
 {
 	namespace support
 	{
-		class Reader
+		class LCSM_API Reader
 		{
 		  public:
 			Reader() noexcept = default;

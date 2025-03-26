@@ -3,10 +3,11 @@
 
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/Timestamp.h>
+#include <lcsm/lcsmconfig.h>
 
 namespace lcsm
 {
-	class Event
+	class LCSM_API Event
 	{
 	  public:
 		Event(const Instruction &instruction) noexcept;

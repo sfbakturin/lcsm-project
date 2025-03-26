@@ -6,6 +6,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 
@@ -13,7 +14,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class Probe : public EvaluatorNode
+		class LCSM_API Probe : public EvaluatorNode
 		{
 		  public:
 			Probe(object_type_t objectType);

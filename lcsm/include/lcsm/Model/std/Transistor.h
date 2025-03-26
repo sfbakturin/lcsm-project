@@ -10,6 +10,7 @@
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,7 +20,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Transistor : public Circuit
+		class LCSM_API Transistor : public Circuit
 		{
 		  public:
 			enum Type : unsigned

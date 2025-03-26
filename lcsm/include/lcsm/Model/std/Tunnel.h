@@ -1,14 +1,15 @@
 #ifndef LCSM_MODEL_TUNNEL_H
 #define LCSM_MODEL_TUNNEL_H
 
-#include "lcsm/Model/File/Reader.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
 #include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -18,7 +19,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Tunnel : public Circuit
+		class LCSM_API Tunnel : public Circuit
 		{
 		  public:
 			enum Port : portid_t

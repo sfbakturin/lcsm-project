@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_WRITER_H
 
 #include <initializer_list>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <string>
@@ -10,7 +11,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class Writer
+		class LCSM_API Writer
 		{
 		  public:
 			Writer() noexcept = default;

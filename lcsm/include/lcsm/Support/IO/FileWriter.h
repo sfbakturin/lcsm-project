@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_FILEWRITER_H
 
 #include <lcsm/Support/IO/Writer.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <fstream>
 #include <string>
@@ -10,7 +11,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class FileWriter : public Writer
+		class LCSM_API FileWriter : public Writer
 		{
 		  public:
 			FileWriter(const std::string &filename);

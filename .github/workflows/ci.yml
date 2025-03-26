@@ -4,7 +4,7 @@ on: push
 
 jobs:
   buildtest:
-    name: Testing ${{ matrix.toolchain.name }} (with ${{ matrix.buildtype }} config, -Werror=${{ matrix.werror }})
+    name: Testing ${{ matrix.toolchain.name }} (with ${{ matrix.buildtype }} config, -Werror=${{ matrix.werror }}, -D BUILD_SHARED_LIBS=${{ matrix.shared }})
 
     strategy:
       fail-fast: false
@@ -23,6 +23,10 @@ jobs:
           - RelWithDebInfo
 
         werror:
+          - 'ON'
+          - 'OFF'
+
+        shared:
           - 'ON'
           - 'OFF'
 
@@ -49,7 +53,7 @@ jobs:
 
       - name: Build
         run: |
-          cmake . ${{ matrix.toolchain.cmake-gen }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }}
+          cmake . ${{ matrix.toolchain.cmake-gen }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }} -D BUILD_SHARED_LIBS=${{ matrix.shared }}
           cmake --build . --config ${{ matrix.buildtype }} --parallel
 
       - name: Test (exclude Verilog)

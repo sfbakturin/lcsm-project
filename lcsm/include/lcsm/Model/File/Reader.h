@@ -6,6 +6,7 @@
 #include <lcsm/Model/File/Token.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/IO/Reader.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <memory>
 #include <string>
@@ -16,7 +17,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class LCSMFileReader
+		class LCSM_API LCSMFileReader
 		{
 		  public:
 			LCSMFileReader(const std::shared_ptr< support::Reader > &reader);

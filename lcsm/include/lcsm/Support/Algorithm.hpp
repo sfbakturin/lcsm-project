@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_ALGORITHM_HPP
 
 #include <lcsm/Support/Meta.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <algorithm>
 #include <memory>
@@ -12,7 +13,7 @@ namespace lcsm
 	namespace support
 	{
 		template< typename Class >
-		inline Class &
+		LCSM_API inline Class &
 			CopyAssign(Class *that, const Class &other) noexcept(IsNothrowCopyAssign< Class >() && IsSwappable< Class >())
 		{
 			if (that != std::addressof(other))
@@ -21,7 +22,7 @@ namespace lcsm
 		}
 
 		template< typename Class >
-		inline Class &MoveAssign(Class *that, Class &&other) noexcept(IsNothrowMoveAssign< Class >())
+		LCSM_API inline Class &MoveAssign(Class *that, Class &&other) noexcept(IsNothrowMoveAssign< Class >())
 		{
 			if (that != std::addressof(other))
 				Class(std::move(other)).swap(*that);

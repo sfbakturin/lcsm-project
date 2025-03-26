@@ -59,7 +59,7 @@ void lcsm::physical::Probe::verifyContext()
 
 void lcsm::physical::Probe::addInstant(const lcsm::Instruction &instruction)
 {
-	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && instruction.caller() == m_wire)
+	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && m_wire == instruction.caller())
 		m_instants.push_back(instruction);
 	else
 		throw std::logic_error("Bad instant");
@@ -67,7 +67,7 @@ void lcsm::physical::Probe::addInstant(const lcsm::Instruction &instruction)
 
 void lcsm::physical::Probe::addInstant(lcsm::Instruction &&instruction)
 {
-	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && instruction.caller() == m_wire)
+	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && m_wire == instruction.caller())
 		m_instants.push_back(std::move(instruction));
 	else
 		throw std::logic_error("Bad instant");

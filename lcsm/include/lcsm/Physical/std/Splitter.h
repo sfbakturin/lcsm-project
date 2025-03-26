@@ -6,6 +6,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <deque>
@@ -16,7 +17,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class Splitter : public EvaluatorNode
+		class LCSM_API Splitter : public EvaluatorNode
 		{
 		  public:
 			Splitter(object_type_t objectType);

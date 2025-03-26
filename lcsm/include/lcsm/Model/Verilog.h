@@ -10,6 +10,7 @@
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,7 +20,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class VerilogModule : public Circuit
+		class LCSM_API VerilogModule : public Circuit
 		{
 		  public:
 			enum Port : portid_t

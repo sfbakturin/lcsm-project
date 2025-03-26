@@ -9,15 +9,15 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
-#include <deque>
 #include <vector>
 
 namespace lcsm
 {
 	namespace physical
 	{
-		class Constant : public EvaluatorNode
+		class LCSM_API Constant : public EvaluatorNode
 		{
 		  public:
 			Constant(object_type_t objectType, const DataBits &databits);

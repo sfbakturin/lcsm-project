@@ -6,6 +6,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <deque>
 
@@ -13,7 +14,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class TransmissionGate : public EvaluatorNode
+		class LCSM_API TransmissionGate : public EvaluatorNode
 		{
 		  public:
 			TransmissionGate(object_type_t objectType);

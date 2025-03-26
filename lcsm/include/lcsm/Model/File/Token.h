@@ -2,6 +2,7 @@
 #define LCSM_MODEL_FILE_TOKEN_H
 
 #include <lcsm/Model/File/Kind.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <string>
 
@@ -9,7 +10,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class LCSMFileToken
+		class LCSM_API LCSMFileToken
 		{
 		  public:
 			LCSMFileToken();

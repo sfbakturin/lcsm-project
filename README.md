@@ -24,7 +24,7 @@ You will need a compiler that supports C++11 and [Icarus Verilog v12](https://gi
 
     ```bash
     cd lcsm-project/
-    mkdir -v build
+    mkdir -v build && cd build
     cmake .. -D CMAKE_BUILD_TYPE=Release -D BUILD_SHARED_LIBS=ON # -D LCSM_BUILD_TESTS=ON -- activate CTest's
     cmake --build .
     ```

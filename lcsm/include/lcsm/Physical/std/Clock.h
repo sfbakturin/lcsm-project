@@ -9,6 +9,7 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <vector>
 
@@ -16,7 +17,7 @@ namespace lcsm
 {
 	namespace physical
 	{
-		class Clock : public EvaluatorNode
+		class LCSM_API Clock : public EvaluatorNode
 		{
 		  public:
 			Clock(object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset);

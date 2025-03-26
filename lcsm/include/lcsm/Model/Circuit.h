@@ -7,6 +7,7 @@
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,10 +20,10 @@ namespace lcsm
 
 	namespace model
 	{
-		class Wire;
+		class LCSM_API Wire;
 	}
 
-	class Circuit
+	class LCSM_API Circuit
 	{
 	  public:
 		Circuit() = default;

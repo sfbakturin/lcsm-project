@@ -78,7 +78,7 @@ void lcsm::physical::Pin::verifyContext()
 void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 {
 	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
-	if ((instruction.caller() == m_internalConnect || instruction.caller() == m_externalConnect) &&
+	if ((m_internalConnect == instruction.caller() || m_externalConnect == instruction.caller()) &&
 		instruction.type() == lcsm::InstructionType::PolluteValue)
 	{
 		if (m_output == false)
@@ -92,12 +92,12 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 	{
 		/* If caller is external wire and it's WV, then we should invoke this instruction in future. */
 		/* If caller is internal wire and it's WV, then we ignore it without errors. */
-		if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(instruction);
 			return;
 		}
-		else if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		else if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			return;
 		}
@@ -109,12 +109,12 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 	{
 		/* If caller is internal wire and it's WV, then we should invoke this instruction in future. */
 		/* If caller is external wire and it's WV, then we ignore it without errors. */
-		if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(instruction);
 			return;
 		}
-		else if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		else if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			return;
 		}
@@ -127,7 +127,7 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 {
 	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
-	if ((instruction.caller() == m_internalConnect || instruction.caller() == m_externalConnect) &&
+	if ((m_internalConnect == instruction.caller() || m_externalConnect == instruction.caller()) &&
 		instruction.type() == lcsm::InstructionType::PolluteValue)
 	{
 		if (m_output == false)
@@ -141,12 +141,12 @@ void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 	{
 		/* If caller is external wire and it's WV, then we should invoke this instruction in future. */
 		/* If caller is internal wire and it's WV, then we ignore it without errors. */
-		if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(std::move(instruction));
 			return;
 		}
-		else if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		else if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			return;
 		}
@@ -158,12 +158,12 @@ void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 	{
 		/* If caller is internal wire and it's WV, then we should invoke this instruction in future. */
 		/* If caller is external wire and it's WV, then we ignore it without errors. */
-		if (instruction.caller() == m_internalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			m_instants.push_back(std::move(instruction));
 			return;
 		}
-		else if (instruction.caller() == m_externalConnect && instruction.type() == lcsm::InstructionType::WriteValue)
+		else if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
 		{
 			return;
 		}

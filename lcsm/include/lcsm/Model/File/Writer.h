@@ -3,6 +3,7 @@
 
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/IO/Writer.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -13,7 +14,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class LCSMFileWriter
+		class LCSM_API LCSMFileWriter
 		{
 		  public:
 			LCSMFileWriter(const std::shared_ptr< support::Writer > &writer) noexcept;

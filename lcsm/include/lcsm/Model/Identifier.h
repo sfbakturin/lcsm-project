@@ -2,6 +2,7 @@
 #define LCSM_MODEL_IDENTIFIER_H
 
 #include <lcsm/LCSM.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <functional>
@@ -10,7 +11,7 @@
 
 namespace lcsm
 {
-	class Identifier
+	class LCSM_API Identifier
 	{
 	  public:
 		using value_type = id_t;
@@ -36,7 +37,7 @@ namespace lcsm
 		bool operator<=(const Identifier &other) const noexcept;
 		bool operator>=(const Identifier &other) const noexcept;
 
-		friend std::ostream &operator<<(std::ostream &os, const Identifier &id);
+		friend LCSM_API std::ostream &operator<<(std::ostream &os, const Identifier &id);
 
 	  private:
 		value_type m_id;
@@ -46,7 +47,7 @@ namespace lcsm
 namespace std
 {
 	template<>
-	struct hash< lcsm::Identifier >
+	struct LCSM_API hash< lcsm::Identifier >
 	{
 		std::size_t operator()(const lcsm::Identifier &object) const { return object.hashCode(); }
 	};

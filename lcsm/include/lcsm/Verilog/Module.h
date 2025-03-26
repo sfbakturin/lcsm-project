@@ -4,6 +4,7 @@
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Support/IO/Reader.h>
 #include <lcsm/Verilog/Port.h>
+#include <lcsm/lcsmconfig.h>
 #include <unordered_map>
 
 #include <cstddef>
@@ -17,7 +18,7 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		class Module
+		class LCSM_API Module
 		{
 		  public:
 			Module(const Module &other);

@@ -3,6 +3,7 @@
 
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <ostream>
 #include <string>
@@ -11,7 +12,7 @@ namespace lcsm
 {
 	namespace verilog
 	{
-		class Value
+		class LCSM_API Value
 		{
 		  public:
 			Value() noexcept;
@@ -56,7 +57,7 @@ namespace lcsm
 
 			void reset() noexcept;
 
-			friend std::ostream &operator<<(std::ostream &os, const Value &v);
+			friend LCSM_API std::ostream &operator<<(std::ostream &os, const Value &v);
 
 			std::string toString() const;
 

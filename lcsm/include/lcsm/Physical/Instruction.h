@@ -3,12 +3,13 @@
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Physical/DataBits.h>
+#include <lcsm/lcsmconfig.h>
 
 namespace lcsm
 {
-	class EvaluatorNode;
+	class LCSM_API EvaluatorNode;
 
-	class Instruction
+	class LCSM_API Instruction
 	{
 	  public:
 		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target) noexcept;

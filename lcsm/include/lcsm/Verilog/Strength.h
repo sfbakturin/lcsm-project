@@ -1,6 +1,8 @@
 #ifndef LCSM_VERILOG_STRENGTH_H
 #define LCSM_VERILOG_STRENGTH_H
 
+#include <lcsm/lcsmconfig.h>
+
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -26,8 +28,8 @@ namespace lcsm
 		};
 		// clang-format on
 
-		std::ostream &operator<<(std::ostream &os, const Strength &s);
-		const char *StrengthPretty(const Strength &s) noexcept;
+		LCSM_API std::ostream &operator<<(std::ostream &os, const Strength &s);
+		LCSM_API const char *StrengthPretty(const Strength &s) noexcept;
 	}	 // namespace verilog
 }	 // namespace lcsm
 

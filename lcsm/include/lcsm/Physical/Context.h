@@ -4,13 +4,14 @@
 #include <initializer_list>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Timestamp.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <vector>
 
 namespace lcsm
 {
-	class PrivateContext
+	class LCSM_API PrivateContext
 	{
 		union PrivateContextData
 		{
@@ -55,7 +56,7 @@ namespace lcsm
 		std::vector< PrivateContextData > m_data;
 	};
 
-	class Context
+	class LCSM_API Context
 	{
 	  public:
 		Context();

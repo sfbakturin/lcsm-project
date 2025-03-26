@@ -8,6 +8,7 @@
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <vector>
 
@@ -15,7 +16,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Wire : public Circuit
+		class LCSM_API Wire : public Circuit
 		{
 		  public:
 			enum Port : portid_t

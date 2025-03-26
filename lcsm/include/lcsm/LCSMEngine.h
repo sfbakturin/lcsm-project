@@ -8,6 +8,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -17,7 +18,7 @@
 
 namespace lcsm
 {
-	class LCSMEngine
+	class LCSM_API LCSMEngine
 	{
 	  public:
 		static LCSMEngine fromCircuit(const LCSMCircuit &circuit);

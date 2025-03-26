@@ -24,6 +24,7 @@
 #include <lcsm/Model/std/Tunnel.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
+#include <lcsm/lcsmconfig.h>
 #include <unordered_map>
 
 #include <cstddef>
@@ -33,9 +34,9 @@
 
 namespace lcsm
 {
-	class LCSMCircuit;
+	class LCSM_API LCSMCircuit;
 
-	class LCSMCircuitView
+	class LCSM_API LCSMCircuitView
 	{
 	  public:
 		LCSMCircuitView() noexcept;
@@ -78,7 +79,7 @@ namespace lcsm
 		LCSMCircuit *m_circuit;
 	};
 
-	class LCSMCircuit
+	class LCSM_API LCSMCircuit
 	{
 	  public:
 		LCSMCircuit() = default;

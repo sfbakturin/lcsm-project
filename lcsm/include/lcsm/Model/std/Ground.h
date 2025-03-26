@@ -8,6 +8,7 @@
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <memory>
 
@@ -15,7 +16,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Ground : public Circuit
+		class LCSM_API Ground : public Circuit
 		{
 		  public:
 			enum Port : portid_t

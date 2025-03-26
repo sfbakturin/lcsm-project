@@ -10,6 +10,7 @@
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,7 +20,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class Button : public Circuit
+		class LCSM_API Button : public Circuit
 		{
 		  public:
 			enum Port : portid_t

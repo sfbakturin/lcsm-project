@@ -1,6 +1,8 @@
 #ifndef LCSM_MODEL_WIDTH_H
 #define LCSM_MODEL_WIDTH_H
 
+#include <lcsm/lcsmconfig.h>
+
 #include <array>
 #include <cstdint>
 
@@ -39,7 +41,7 @@ namespace lcsm
 	};
 	// clang-format on
 
-	Width StrongToWidth(unsigned long long width);
+	LCSM_API Width StrongToWidth(unsigned long long width);
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */

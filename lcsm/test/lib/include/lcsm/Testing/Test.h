@@ -2,6 +2,7 @@
 #define LCSM_TESTING_TEST_H
 
 #include <lcsm/LCSMCircuit.h>
+#include <lcsm/lcsmtestingconfig.h>
 
 #include <functional>
 
@@ -13,7 +14,7 @@ namespace lcsm
 		using CheckerTy = std::function< void(LCSMCircuit &) >;
 		using TestTy = std::function< void(LCSMCircuit &) >;
 
-		void PerformTest(const GeneratorTy &generator, const CheckerTy &checker, const TestTy &test);
+		LCSMTesting_API void PerformTest(const GeneratorTy &generator, const CheckerTy &checker, const TestTy &test);
 	}	 // namespace testing
 }	 // namespace lcsm
 

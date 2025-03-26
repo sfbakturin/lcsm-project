@@ -3,6 +3,7 @@
 
 #include <lcsm/Model/Width.h>
 #include <lcsm/Physical/DataBits.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -53,14 +54,14 @@ namespace lcsm
 			TimeOutputVariable
 		};
 
-		const char *PortDirectionTypePretty(PortDirectionType portDirectionType) noexcept;
-		const char *IntegerVectorTypePretty(IntegerVectorType integerVectorType) noexcept;
-		const char *NetTypePretty(NetType netType) noexcept;
-		const char *OutputVariableTypePretty(OutputVariableType outputVariableType) noexcept;
+		LCSM_API const char *PortDirectionTypePretty(PortDirectionType portDirectionType) noexcept;
+		LCSM_API const char *IntegerVectorTypePretty(IntegerVectorType integerVectorType) noexcept;
+		LCSM_API const char *NetTypePretty(NetType netType) noexcept;
+		LCSM_API const char *OutputVariableTypePretty(OutputVariableType outputVariableType) noexcept;
 
 		using Range = std::pair< int, int >;
 
-		class PortType
+		class LCSM_API PortType
 		{
 		  public:
 			PortType() noexcept;
@@ -109,7 +110,7 @@ namespace lcsm
 			bool m_rangeValid;
 		};
 
-		class Port
+		class LCSM_API Port
 		{
 		  public:
 			Port(const PortType &portType);

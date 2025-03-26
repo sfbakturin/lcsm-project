@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_STRINGWRITER_H
 
 #include <lcsm/Support/IO/Writer.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <string>
 
@@ -9,7 +10,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class StringWriter : public Writer
+		class LCSM_API StringWriter : public Writer
 		{
 		  public:
 			StringWriter() = default;

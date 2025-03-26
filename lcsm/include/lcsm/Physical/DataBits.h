@@ -8,6 +8,7 @@
 #include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
 #include <lcsm/Verilog/Value.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 #include <ostream>
@@ -16,7 +17,7 @@
 
 namespace lcsm
 {
-	class DataBits
+	class LCSM_API DataBits
 	{
 	  public:
 		DataBits() noexcept;
@@ -79,7 +80,7 @@ namespace lcsm
 
 		void reset() noexcept;
 
-		friend std::ostream &operator<<(std::ostream &os, const DataBits &db);
+		friend LCSM_API std::ostream &operator<<(std::ostream &os, const DataBits &db);
 
 		std::string toString() const;
 

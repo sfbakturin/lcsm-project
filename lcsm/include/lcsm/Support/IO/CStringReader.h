@@ -2,6 +2,7 @@
 #define LCSM_SUPPORT_IO_CSTRINGREADER_H
 
 #include <lcsm/Support/IO/Reader.h>
+#include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
 
@@ -9,7 +10,7 @@ namespace lcsm
 {
 	namespace support
 	{
-		class CStringReader : public Reader
+		class LCSM_API CStringReader : public Reader
 		{
 		  public:
 			CStringReader(const char *source) noexcept;

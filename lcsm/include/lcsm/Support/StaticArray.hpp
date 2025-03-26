@@ -1,6 +1,8 @@
 #ifndef LCSM_SUPPORT_ARRAY_HPP
 #define LCSM_SUPPORT_ARRAY_HPP
 
+#include <lcsm/Support/Algorithm.hpp>
+#include <lcsm/lcsmconfig.h>
 #include <type_traits>
 
 #include <array>
@@ -14,7 +16,7 @@ namespace lcsm
 	namespace support
 	{
 		template< typename T, std::size_t S >
-		class StaticArray
+		class LCSM_API StaticArray
 		{
 			static_assert(std::is_default_constructible< T >::value, "StaticArray::T should be default constructible");
 
@@ -33,25 +35,94 @@ namespace lcsm
 			using size_type = std::size_t;
 			using difference_type = std::ptrdiff_t;
 
-			StaticArray() noexcept(NOTHROW_DEFAULT_CONSTRUCTIBLE);
-			StaticArray(const T &initial) noexcept(NOTHROW_COPY_ASSIGNABLE);
-			StaticArray(T &&initial) noexcept(NOTHROW_COPY_ASSIGNABLE && NOTHROW_MOVE_ASSIGNABLE);
+			StaticArray() noexcept(NOTHROW_DEFAULT_CONSTRUCTIBLE) : m_data{} {}
 
-			StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE);
-			StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE);
+			StaticArray(const T &initial) noexcept(NOTHROW_COPY_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					m_data[i] = initial;
+				}
+			}
 
-			StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE);
-			StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE);
+			StaticArray(T &&initial) noexcept(NOTHROW_COPY_ASSIGNABLE && NOTHROW_MOVE_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S - 1; i++)
+				{
+					m_data[i] = initial;
+				}
+				m_data[S - 1] = std::move(initial);
+			}
 
-			StaticArray &operator=(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE);
-			StaticArray &operator=(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE);
+			StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					m_data[i] = other[i];
+				}
+			}
 
-			void swap(StaticArray &other) noexcept;
+			StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					m_data[i] = std::move(other[i]);
+				}
+			}
 
-			std::size_t size() const noexcept;
+			StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					m_data[i] = array[i];
+				}
+			}
 
-			reference operator[](size_type pos);
-			const_reference operator[](size_type pos) const;
+			StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					m_data[i] = std::move(array[i]);
+				}
+			}
+
+			StaticArray &operator=(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE)
+			{
+				return CopyAssign< StaticArray< T, S > >(this, other);
+			}
+
+			StaticArray &operator=(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE)
+			{
+				return MoveAssign< StaticArray< T, S > >(this, std::move(other));
+			}
+
+			void swap(StaticArray &other) noexcept
+			{
+				for (size_type i = 0; i < S; i++)
+				{
+					std::swap(m_data[i], other[i]);
+				}
+			}
+
+			size_type size() const noexcept { return S; }
+
+			reference operator[](size_type pos)
+			{
+				if (S > pos)
+				{
+					return m_data[pos];
+				}
+				throw std::out_of_range("Out of reference");
+			}
+
+			const_reference operator[](size_type pos) const
+			{
+				if (S > pos)
+				{
+					return m_data[pos];
+				}
+				throw std::out_of_range("Out of reference");
+			}
 
 		  private:
 			T m_data[S];
@@ -59,107 +130,108 @@ namespace lcsm
 	}	 // namespace support
 }	 // namespace lcsm
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray() noexcept(NOTHROW_DEFAULT_CONSTRUCTIBLE) : m_data{}
-{
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray() noexcept(NOTHROW_DEFAULT_CONSTRUCTIBLE) : m_data{}
+// {
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S; i++)
-		m_data[i] = other[i];
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(const StaticArray &other) noexcept(NOTHROW_COPY_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S; i++)
+// 		m_data[i] = other[i];
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S; i++)
-		m_data[i] = std::move(other[i]);
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(StaticArray &&other) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S; i++)
+// 		m_data[i] = std::move(other[i]);
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(const T &initial) noexcept(NOTHROW_COPY_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S; i++)
-		m_data[i] = initial;
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(const T &initial) noexcept(NOTHROW_COPY_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S; i++)
+// 		m_data[i] = initial;
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(T &&initial) noexcept(NOTHROW_COPY_ASSIGNABLE && NOTHROW_MOVE_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S - 1; i++)
-		m_data[i] = initial;
-	m_data[S - 1] = std::move(initial);
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(T &&initial) noexcept(NOTHROW_COPY_ASSIGNABLE &&
+// NOTHROW_MOVE_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S - 1; i++)
+// 		m_data[i] = initial;
+// 	m_data[S - 1] = std::move(initial);
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S; i++)
-		m_data[i] = array[i];
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(const std::array< T, S > &array) noexcept(NOTHROW_COPY_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S; i++)
+// 		m_data[i] = array[i];
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S >::StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE)
-{
-	using size_type = lcsm::support::StaticArray< T, S >::size_type;
-	for (size_type i = 0; i < S; i++)
-		m_data[i] = std::move(array[i]);
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S >::StaticArray(std::array< T, S > &&array) noexcept(NOTHROW_MOVE_ASSIGNABLE)
+// {
+// 	using size_type = lcsm::support::StaticArray< T, S >::size_type;
+// 	for (size_type i = 0; i < S; i++)
+// 		m_data[i] = std::move(array[i]);
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S > &
-	lcsm::support::StaticArray< T, S >::operator=(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE)
-{
-	if (this != std::addressof(other))
-		lcsm::support::StaticArray< T, S >(other).swap(*this);
-	return *this;
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S > &
+// 	lcsm::support::StaticArray< T, S >::operator=(const StaticArray &other) noexcept(NOTHROW_COPY_CONSTRUCTIBLE)
+// {
+// 	if (this != std::addressof(other))
+// 		lcsm::support::StaticArray< T, S >(other).swap(*this);
+// 	return *this;
+// }
 
-template< typename T, std::size_t S >
-lcsm::support::StaticArray< T, S > &
-	lcsm::support::StaticArray< T, S >::operator=(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE)
-{
-	if (this != std::addressof(other))
-		lcsm::support::StaticArray< T, S >(std::move(other)).swap(*this);
-	return *this;
-}
+// template< typename T, std::size_t S >
+// lcsm::support::StaticArray< T, S > &
+// 	lcsm::support::StaticArray< T, S >::operator=(StaticArray &&other) noexcept(NOTHROW_MOVE_CONSTRUCTIBLE)
+// {
+// 	if (this != std::addressof(other))
+// 		lcsm::support::StaticArray< T, S >(std::move(other)).swap(*this);
+// 	return *this;
+// }
 
-template< typename T, std::size_t S >
-void lcsm::support::StaticArray< T, S >::swap(StaticArray &other) noexcept
-{
-	for (std::size_t i = 0; i < S; i++)
-		std::swap(m_data[i], other[i]);
-}
+// template< typename T, std::size_t S >
+// void lcsm::support::StaticArray< T, S >::swap(StaticArray &other) noexcept
+// {
+// 	for (std::size_t i = 0; i < S; i++)
+// 		std::swap(m_data[i], other[i]);
+// }
 
-template< typename T, std::size_t S >
-std::size_t lcsm::support::StaticArray< T, S >::size() const noexcept
-{
-	return S;
-}
+// template< typename T, std::size_t S >
+// std::size_t lcsm::support::StaticArray< T, S >::size() const noexcept
+// {
+// 	return S;
+// }
 
-template< typename T, std::size_t S >
-typename lcsm::support::StaticArray< T, S >::reference
-	lcsm::support::StaticArray< T, S >::operator[](lcsm::support::StaticArray< T, S >::size_type pos)
-{
-	if (S > pos)
-		return m_data[pos];
-	throw std::out_of_range("Out of reference");
-}
+// template< typename T, std::size_t S >
+// typename lcsm::support::StaticArray< T, S >::reference
+// 	lcsm::support::StaticArray< T, S >::operator[](lcsm::support::StaticArray< T, S >::size_type pos)
+// {
+// 	if (S > pos)
+// 		return m_data[pos];
+// 	throw std::out_of_range("Out of reference");
+// }
 
-template< typename T, std::size_t S >
-typename lcsm::support::StaticArray< T, S >::const_reference
-	lcsm::support::StaticArray< T, S >::operator[](lcsm::support::StaticArray< T, S >::size_type pos) const
-{
-	if (S > pos)
-		return m_data[pos];
-	throw std::out_of_range("Out of reference");
-}
+// template< typename T, std::size_t S >
+// typename lcsm::support::StaticArray< T, S >::const_reference
+// 	lcsm::support::StaticArray< T, S >::operator[](lcsm::support::StaticArray< T, S >::size_type pos) const
+// {
+// 	if (S > pos)
+// 		return m_data[pos];
+// 	throw std::out_of_range("Out of reference");
+// }
 
 #endif /* LCSM_SUPPORT_ARRAY_HPP */
