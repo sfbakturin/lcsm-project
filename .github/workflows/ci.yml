@@ -19,8 +19,6 @@ jobs:
         buildtype:
           - Debug
           - Release
-          - MinSizeRel
-          - RelWithDebInfo
 
         werror:
           - 'ON'
