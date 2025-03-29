@@ -46,7 +46,7 @@ static inline bool
 		throw std::logic_error("Trying to compare snapshots with non equals sizes!");
 	}
 
-	for (It it = lhs.begin(); it != rhs.end(); it++)
+	for (It it = lhs.begin(); it != lhs.end(); it++)
 	{
 		const lcsm::Identifier id = it->first;
 		const lcsm::Context &l = it->second;

@@ -2,33 +2,34 @@ name: CI/CD
 
 on: push
 
+env:
+  CMAKE_COMMON_FLAG: -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=ON
+
 jobs:
   buildtest:
-    name: Testing ${{ matrix.toolchain.name }} (with ${{ matrix.buildtype }} config, -Werror=${{ matrix.werror }}, -D BUILD_SHARED_LIBS=${{ matrix.shared }})
+    name: Testing ${{ matrix.toolchain.name }} (with ${{ matrix.buildtype }} config, ${{ matrix.libtype.name }})
 
     strategy:
       fail-fast: false
 
       matrix:
         toolchain:
-          - { name: Windows/MSVC,  runner: windows-2022, compiler: msvc-2022, cmake-gen: ''       }
-          - { name: Windows/Clang, runner: windows-2022, compiler: clang-18,  cmake-gen: -G Ninja }
-          - { name: Linux/GCC,     runner: ubuntu-24.04, compiler: gcc-14,    cmake-gen: -G Ninja }
-          - { name: Linux/Clang,   runner: ubuntu-24.04, compiler: clang-18,  cmake-gen: -G Ninja }
+          - { name: Windows/MSVC 2019, runner: windows-2019, compiler: msvc-2019, cmake-gen: ''       }
+          - { name: Windows/MSVC 2022, runner: windows-2022, compiler: msvc-2022, cmake-gen: ''       }
+          - { name: Windows/Clang 18,  runner: windows-2022, compiler: clang-18,  cmake-gen: -G Ninja }
+          - { name: Linux/GCC 14,      runner: ubuntu-24.04, compiler: gcc-14,    cmake-gen: -G Ninja }
+          - { name: Linux/Clang 18,    runner: ubuntu-24.04, compiler: clang-18,  cmake-gen: -G Ninja }
 
         buildtype:
           - Debug
           - Release
 
-        werror:
-          - 'ON'
-          - 'OFF'
-
-        shared:
-          - 'ON'
-          - 'OFF'
+        libtype:
+          - { name: shared, value: 'ON' }
+          - { name: static, value: 'OFF' }
 
     runs-on: ${{ matrix.toolchain.runner }}
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +52,7 @@ jobs:
 
       - name: Build
         run: |
-          cmake . ${{ matrix.toolchain.cmake-gen }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} -D LCSM_BUILD_TESTS=ON -D BUILD_ENABLE_WERROR=${{ matrix.werror }} -D BUILD_SHARED_LIBS=${{ matrix.shared }}
+          cmake . ${{ matrix.toolchain.cmake-gen }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} ${{ env.CMAKE_COMMON_FLAG }} -D BUILD_SHARED_LIBS=${{ matrix.libtype.value }}
           cmake --build . --config ${{ matrix.buildtype }} --parallel
 
       - name: Test (exclude Verilog)
