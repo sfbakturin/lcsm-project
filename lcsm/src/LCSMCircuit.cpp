@@ -99,6 +99,16 @@ const std::string &lcsm::LCSMCircuit::name() const noexcept
 	return m_name;
 }
 
+void lcsm::LCSMCircuit::setName(lcsm::label_t name)
+{
+	m_name = name;
+}
+
+void lcsm::LCSMCircuit::setName(const std::string &name)
+{
+	m_name = name;
+}
+
 const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuit::components() const noexcept
 {
 	return m_components;

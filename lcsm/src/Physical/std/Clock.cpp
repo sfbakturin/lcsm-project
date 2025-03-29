@@ -19,8 +19,8 @@ static const lcsm::DataBits T{ lcsm::Width::Bit1, lcsm::verilog::Bit::True };
 static const lcsm::DataBits F{ lcsm::Width::Bit1, lcsm::verilog::Bit::False };
 
 lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration),
-	m_phaseOffset(phaseOffset), m_counterFalse(m_lowDuration), m_counterTrue(m_highDuration), m_counter(true)
+	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset),
+	m_counterFalse(m_lowDuration), m_counterTrue(m_highDuration), m_counter(true), m_wasPolluted(false)
 {
 }
 
@@ -92,11 +92,11 @@ void lcsm::physical::Clock::verifyContext()
 	}
 }
 
-void lcsm::physical::Clock::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Clock::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	// Check if target is this circuit.
 	if (target != this)
@@ -111,42 +111,27 @@ void lcsm::physical::Clock::addInstant(const lcsm::Instruction &instruction)
 	}
 
 	// Check if instruction is supported one.
-	if (type != lcsm::InstructionType::WriteValue)
+	switch (type)
 	{
-		throw std::logic_error("Bad instruction type!");
+	case lcsm::InstructionType::WriteValue:
+	{
+		return;
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		m_wasPolluted = true;
+		return;
+	}
+	default:
+	{
+		break;
+	}
 	}
 
-	// Otherwise, ignore this instruction (no need for Clock element).
+	throw std::logic_error("Bad instruction!");
 }
 
-void lcsm::physical::Clock::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	// Check if target is this circuit.
-	if (target != this)
-	{
-		throw std::logic_error("Bad target in instruction!");
-	}
-
-	// Check if caller is known port.
-	if (m_connect != caller)
-	{
-		throw std::logic_error("Unknown caller!");
-	}
-
-	// Check if instruction is supported one.
-	if (type != lcsm::InstructionType::WriteValue)
-	{
-		throw std::logic_error("Bad instruction type!");
-	}
-
-	// Otherwise, ignore this instruction (no need for Clock element).
-}
-
-std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Clock::invoke(const lcsm::Timestamp &now)
 {
 	// Generated events.
 	std::vector< lcsm::Event > events;
@@ -202,8 +187,7 @@ std::vector< lcsm::Event > lcsm::physical::Clock::invokeInstants(const lcsm::Tim
 
 l_write:
 	// Write value to Wire.
-	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_connect.get(), value);
-	events.emplace_back(std::move(I));
+	events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_connect.get(), value));
 
 	// Save value to context.
 	m_context->updateValues(now, { value });

@@ -59,43 +59,10 @@ void lcsm::physical::Wire::verifyContext()
 	}
 }
 
-void lcsm::physical::Wire::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Wire::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	// Check, if target is this circuit element.
-	if (target != this)
-	{
-		throw std::logic_error("Bad this target element!");
-	}
-
-	// Check, if instruction is supported.
-	switch (type)
-	{
-	case lcsm::InstructionType::WriteValue:
-	{
-		m_instants.push_back(instruction);
-		return;
-	}
-	case lcsm::InstructionType::PolluteValue:
-	{
-		m_pollutes.push_back(instruction);
-		return;
-	}
-	default:
-	{
-		break;
-	}
-	}
-
-	throw std::logic_error("Bad instruction!");
-}
-
-void lcsm::physical::Wire::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	// Check, if target is this circuit element.
 	if (target != this)
@@ -143,7 +110,7 @@ static inline void WireNeighbourInstructions(
 	WireNeighbourInstructions(targetFrom.get(), targetTo.get(), value, events);
 }
 
-std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Wire::invoke(const lcsm::Timestamp &now)
 {
 	std::vector< lcsm::Event > events;
 	lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = this;
@@ -152,8 +119,10 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 	const bool wasPolution = !m_pollutes.empty();
 	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
 
+	/* Act, when there was PolluteValue instruction. */
 	if (wasPolution)
 	{
+		/* Get all polluters. */
 		for (lcsm::Instruction &pollute : m_pollutes)
 		{
 			callings.emplace(pollute.caller());
@@ -175,12 +144,14 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 		callings.clear();
 		m_pollutes.clear();
 
+		/* Set context to polluted. */
 		m_context->setPolluted(true);
 	}
 
 	/* Don't write value on wires, if there is no need to. */
 	const bool wasWrite = !m_instants.empty();
 
+	/* Act, when there was WriteValue instruction. */
 	if (wasWrite)
 	{
 		/* Extract context. */
@@ -191,17 +162,17 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 		/* If NOW is later, then THEN, then we should take first value as not-dirty. */
 		if (takeFirst && !m_instants.empty())
 		{
-			lcsm::Instruction instant = m_instants.front();
+			lcsm::Instruction &instruction = m_instants.front();
+			value = std::move(instruction.value());
+			callings.emplace(instruction.caller());
 			m_instants.pop_front();
-			value = instant.value();
-			callings.emplace(instant.caller());
 		}
 
 		/* Invoke all instructions. */
-		for (lcsm::Instruction &instant : m_instants)
+		for (lcsm::Instruction &instruction : m_instants)
 		{
-			value |= instant.value();
-			callings.emplace(instant.caller());
+			value |= instruction.value();
+			callings.emplace(instruction.caller());
 		}
 
 		/* Go through all objects-neighbour and create a new events to all non callings. */
@@ -215,11 +186,11 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invokeInstants(const lcsm::Time
 		}
 
 		/* Go through all objects-neighbour and create a new events to all callings, where instant::value() != value. */
-		for (lcsm::Instruction &instant : m_instants)
+		for (lcsm::Instruction &instruction : m_instants)
 		{
-			if (value != instant.value())
+			if (value != instruction.value())
 			{
-				WireNeighbourInstructions(this, instant.caller(), value, events);
+				WireNeighbourInstructions(this, instruction.caller(), value, events);
 			}
 		}
 

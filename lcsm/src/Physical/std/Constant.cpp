@@ -12,12 +12,12 @@
 #include <utility>
 
 lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, const lcsm::DataBits &databits) :
-	lcsm::EvaluatorNode(objectType), m_wasPolluteInstant(false), m_databits(databits)
+	lcsm::EvaluatorNode(objectType), m_wasPolluted(false), m_databits(databits)
 {
 }
 
 lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, lcsm::DataBits &&databits) :
-	lcsm::EvaluatorNode(objectType), m_wasPolluteInstant(false), m_databits(std::move(databits))
+	lcsm::EvaluatorNode(objectType), m_wasPolluted(false), m_databits(std::move(databits))
 {
 }
 
@@ -78,12 +78,11 @@ void lcsm::physical::Constant::verifyContext()
 	}
 }
 
-void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Constant::add(lcsm::Instruction &&instruction)
 {
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
-	// Check for supported instruction. If its WriteValue - ignore, if its PolluteValue, then remember to answer on
-	// pollution.
+	// Check for supported instruction.
 	switch (type)
 	{
 	case lcsm::InstructionType::WriteValue:
@@ -92,7 +91,7 @@ void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
 	}
 	case lcsm::InstructionType::PolluteValue:
 	{
-		m_wasPolluteInstant = true;
+		m_wasPolluted = true;
 		return;
 	}
 	default:
@@ -104,33 +103,7 @@ void lcsm::physical::Constant::addInstant(const lcsm::Instruction &instruction)
 	throw std::logic_error("Bad instruction type!");
 }
 
-void lcsm::physical::Constant::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::InstructionType type = instruction.type();
-
-	// Check for supported instruction. If its WriteValue - ignore, if its PolluteValue, then remember to answer on
-	// pollution.
-	switch (type)
-	{
-	case lcsm::InstructionType::WriteValue:
-	{
-		return;
-	}
-	case lcsm::InstructionType::PolluteValue:
-	{
-		m_wasPolluteInstant = true;
-		return;
-	}
-	default:
-	{
-		break;
-	}
-	}
-
-	throw std::logic_error("Bad instruction type!");
-}
-
-std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Constant::invoke(const lcsm::Timestamp &now)
 {
 	// Update context ONLY ONCE to be like a real constant element.
 	if (m_context->neverUpdate())
@@ -141,14 +114,22 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invokeInstants(const lcsm::
 	// Resulting events for future mini-steps.
 	std::vector< lcsm::Event > events;
 
-	// There might be pollution.
-	const lcsm::Timestamp diff(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
-	m_wasPolluteInstant = false;
+	// If it was polluted, then generate simulator's event.
+	// Otherwise, act normally.
+	if (m_wasPolluted)
+	{
+		// Create new simulator instruction.
+		events.emplace_back(lcsm::CreatePolluteCircuitSimulatorInstruction(this));
+
+		// Reset.
+		m_wasPolluted = false;
+
+		// Return events.
+		return events;
+	}
 
 	// Write value to Wire.
-	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits);
-	lcsm::Event E(std::move(I), diff);
-	events.push_back(std::move(E));
+	events.push_back(lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits));
 
 	return events;
 }

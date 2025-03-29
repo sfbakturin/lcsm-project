@@ -15,7 +15,7 @@
 #include <vector>
 
 lcsm::physical::Pin::Pin(lcsm::object_type_t objectType, bool output, Width width) :
-	lcsm::EvaluatorNode(objectType), m_output(output), m_width(width), m_wasPolluteInstant(false)
+	lcsm::EvaluatorNode(objectType), m_output(output), m_width(width), m_wasPolluted(false)
 {
 }
 
@@ -75,7 +75,7 @@ void lcsm::physical::Pin::verifyContext()
 	}
 }
 
-void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Pin::add(lcsm::Instruction &&instruction)
 {
 	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
 	if ((m_internalConnect == instruction.caller() || m_externalConnect == instruction.caller()) &&
@@ -83,56 +83,7 @@ void lcsm::physical::Pin::addInstant(const lcsm::Instruction &instruction)
 	{
 		if (m_output == false)
 		{
-			m_wasPolluteInstant = true;
-		}
-		return;
-	}
-
-	if (!m_output)
-	{
-		/* If caller is external wire and it's WV, then we should invoke this instruction in future. */
-		/* If caller is internal wire and it's WV, then we ignore it without errors. */
-		if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
-		{
-			m_instants.push_back(instruction);
-			return;
-		}
-		else if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
-		{
-			return;
-		}
-
-		/* Otherwise, no instructions can be provided to input Pin. */
-		throw std::logic_error("Attempt to instant instruction for input Pin");
-	}
-	else
-	{
-		/* If caller is internal wire and it's WV, then we should invoke this instruction in future. */
-		/* If caller is external wire and it's WV, then we ignore it without errors. */
-		if (m_internalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
-		{
-			m_instants.push_back(instruction);
-			return;
-		}
-		else if (m_externalConnect == instruction.caller() && instruction.type() == lcsm::InstructionType::WriteValue)
-		{
-			return;
-		}
-
-		/* Otherwise, no instructions can be provided to output Pin. */
-		throw std::logic_error("Attempt to instant instruction for output Pin");
-	}
-}
-
-void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
-{
-	/* If caller is internal or external wire and it's PV, then we flag, that there was pollution. */
-	if ((m_internalConnect == instruction.caller() || m_externalConnect == instruction.caller()) &&
-		instruction.type() == lcsm::InstructionType::PolluteValue)
-	{
-		if (m_output == false)
-		{
-			m_wasPolluteInstant = true;
+			m_wasPolluted = true;
 		}
 		return;
 	}
@@ -173,56 +124,66 @@ void lcsm::physical::Pin::addInstant(lcsm::Instruction &&instruction)
 	}
 }
 
-std::vector< lcsm::Event > lcsm::physical::Pin::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Pin::invoke(const lcsm::Timestamp &now)
 {
+	/* Resulting events for future mini-steps. */
+	std::vector< lcsm::Event > events;
+
+	/* If it was polluted, then generate simulator's event. Otherwise, act normally. */
+	if (m_wasPolluted)
+	{
+		/* Create new simulator instruction. */
+		events.emplace_back(lcsm::CreatePolluteCircuitSimulatorInstruction(this));
+
+		/* Reset. */
+		m_wasPolluted = false;
+
+		/* Return events. */
+		return events;
+	}
+
 	/* Invoke instants from external connect. */
 	lcsm::DataBits value = m_context->getValue();
 	const lcsm::Timestamp then = m_context->lastUpdate();
 	const bool takeFirst = now > then;
+	bool popedInstant = false;
 
 	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
 	if (takeFirst && !m_instants.empty())
 	{
-		const lcsm::Instruction instant = m_instants.front();
+		lcsm::Instruction &instruction = m_instants.front();
+		value = std::move(instruction.value());
 		m_instants.pop_front();
-		value = instant.value();
+		popedInstant = true;
 	}
 
 	/* Traverse value on instants from external connection. */
-	for (const lcsm::Instruction &instant : m_instants)
+	for (const lcsm::Instruction &instruction : m_instants)
 	{
-		value |= instant.value();
+		value |= instruction.value();
 	}
 
 	/* Update context value. */
-	m_context->updateValues(now, { value });
+	if (!m_instants.empty() || popedInstant)
+	{
+		m_context->updateValues(now, { value });
+	}
 
 	/* Clear instants. */
 	m_instants.clear();
-
-	/* Resulting events for future mini-steps. */
-	std::vector< lcsm::Event > events;
-
-	/* Construct new timestamp with maybe pollution situation. */
-	const lcsm::Timestamp diff = lcsm::Timestamp(0, static_cast< lcsm::timescale_t >(m_wasPolluteInstant));
-	m_wasPolluteInstant = false;
 
 	if (m_output)
 	{
 		if (m_externalConnect)
 		{
 			/* Write wire's value to target. */
-			lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_externalConnect.get(), value);
-			lcsm::Event E = { std::move(I), diff };
-			events.push_back(std::move(E));
+			events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_externalConnect.get(), value));
 		}
 	}
 	else
 	{
 		/* Write value to Wire. */
-		lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value);
-		lcsm::Event E = { std::move(I), diff };
-		events.push_back(std::move(E));
+		events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value));
 	}
 
 	return events;

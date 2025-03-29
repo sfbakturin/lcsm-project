@@ -55,6 +55,8 @@ namespace lcsm
 
 		Identifier globalId() const noexcept;
 		const std::string &name() const noexcept;
+		void setName(label_t name);
+		void setName(const std::string &name);
 
 		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
@@ -97,6 +99,8 @@ namespace lcsm
 		LCSMCircuit copy() const;
 		Identifier globalId() const noexcept;
 		const std::string &name() const noexcept;
+		void setName(label_t name);
+		void setName(const std::string &name);
 
 		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
 		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;

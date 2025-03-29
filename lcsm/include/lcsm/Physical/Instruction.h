@@ -12,9 +12,10 @@ namespace lcsm
 	class LCSM_API Instruction
 	{
 	  public:
-		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target) noexcept;
-		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
-		Instruction(InstructionType type, EvaluatorNode *caller, EvaluatorNode *target, DataBits &&value) noexcept;
+		Instruction(EvaluatorNode *caller, instruction_t type) noexcept;
+		Instruction(EvaluatorNode *caller, EvaluatorNode *target, instruction_t type) noexcept;
+		Instruction(EvaluatorNode *caller, EvaluatorNode *target, instruction_t type, const DataBits &databits) noexcept;
+		Instruction(EvaluatorNode *caller, EvaluatorNode *target, instruction_t type, DataBits &&databits) noexcept;
 
 		Instruction(const Instruction &other) noexcept;
 		Instruction(Instruction &&other) noexcept;
@@ -24,7 +25,10 @@ namespace lcsm
 
 		void swap(Instruction &other) noexcept;
 
-		InstructionType type() const noexcept;
+		instruction_t type() const noexcept;
+		bool operator==(instruction_t type) const noexcept;
+		bool isInstruction() const noexcept;
+		bool isSimulatorInstruction() const noexcept;
 
 		const EvaluatorNode *caller() const noexcept;
 		EvaluatorNode *caller() noexcept;
@@ -32,23 +36,24 @@ namespace lcsm
 		const EvaluatorNode *target() const noexcept;
 		EvaluatorNode *target() noexcept;
 
-		bool hasValue() const noexcept;
+		bool valued() const noexcept;
 		const DataBits &value() const;
+		DataBits &value();
 
 	  private:
-		InstructionType m_type;
 		EvaluatorNode *m_caller;
 		EvaluatorNode *m_target;
-
-		bool m_hasValue;
-		DataBits m_value;
+		instruction_t m_type;
+		DataBits m_databits;
+		bool m_valued;
 	};
 
-	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
-	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
-	Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, DataBits &&value) noexcept;
+	LCSM_API Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, const DataBits &value) noexcept;
+	LCSM_API Instruction CreateWriteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target, DataBits &&value) noexcept;
 
-	Instruction CreatePolluteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
+	LCSM_API Instruction CreatePolluteValueInstruction(EvaluatorNode *caller, EvaluatorNode *target) noexcept;
+
+	LCSM_API Instruction CreatePolluteCircuitSimulatorInstruction(EvaluatorNode *caller) noexcept;
 }	 // namespace lcsm
 
 #endif /* LCSM_PHYSICAL_INSTRUCTION_H */

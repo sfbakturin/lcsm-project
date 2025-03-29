@@ -79,11 +79,11 @@ static inline lcsm::portid_t
 	return -1;
 }
 
-void lcsm::physical::VerilogModule::addInstant(const Instruction &instruction)
+void lcsm::physical::VerilogModule::add(Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	// Check, if target is this circuit.
 	if (target != this)
@@ -92,53 +92,20 @@ void lcsm::physical::VerilogModule::addInstant(const Instruction &instruction)
 	}
 
 	// Check instruction.
-	if (type != lcsm::InstructionType::WriteValue)
+	switch (type)
 	{
-		throw std::logic_error("Bad instruction!");
+	case lcsm::InstructionType::WriteValue:
+	{
+		break;
 	}
-
-	// Check, if caller is one of outputs, then ignore this instant.
-	if (Find(m_outputs, caller) >= 0)
+	case lcsm::InstructionType::PolluteValue:
 	{
 		return;
 	}
-
-	// Check, if caller is input.
-	const lcsm::portid_t foundInput = Find(m_inputs, caller);
-	if (foundInput >= 0)
+	default:
 	{
-		m_inputsInstants.emplace_back(foundInput, instruction);
-		return;
+		throw std::logic_error("Unsupported instruction type found!");
 	}
-
-	// Check, if caller is inout.
-	const lcsm::portid_t foundInout = Find(m_inputs, caller);
-	if (foundInput >= 0)
-	{
-		m_inoutsInstants.emplace_back(foundInout, instruction);
-		return;
-	}
-
-	// Otherwise, error.
-	throw std::logic_error("Bad caller!");
-}
-
-void lcsm::physical::VerilogModule::addInstant(Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	// Check, if target is this circuit.
-	if (target != this)
-	{
-		throw std::logic_error("Bad target!");
-	}
-
-	// Check instruction.
-	if (type != lcsm::InstructionType::WriteValue)
-	{
-		throw std::logic_error("Bad instruction!");
 	}
 
 	// Check, if caller is one of outputs, then ignore this instant.
@@ -182,8 +149,7 @@ static void GenerateEvents(
 		std::vector< lcsm::DataBits > &output = data[portDirectionType];
 		for (std::size_t i = 0; i < size; i++)
 		{
-			lcsm::Instruction I{ lcsm::InstructionType::WriteValue, caller, wires[i].get(), std::move(output[i]) };
-			events.emplace_back(I);
+			events.emplace_back(lcsm::CreateWriteValueInstruction(caller, wires[i].get(), std::move(output[i])));
 		}
 	}
 }
@@ -216,7 +182,7 @@ static void ExtractValues(
 				{
 					const lcsm::portid_t idx = inputInstant.first;
 					taken.emplace(idx);
-					databits[idx] = inputInstant.second.value();
+					databits[idx] = std::move(inputInstant.second.value());
 				}
 			}
 		}
@@ -243,7 +209,7 @@ static void ExtractValues(
 	}
 }
 
-std::vector< lcsm::Event > lcsm::physical::VerilogModule::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::VerilogModule::invoke(const lcsm::Timestamp &now)
 {
 	// Generated events.
 	std::vector< lcsm::Event > events;

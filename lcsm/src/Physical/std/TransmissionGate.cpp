@@ -73,54 +73,16 @@ void lcsm::physical::TransmissionGate::verifyContext()
 	}
 }
 
-void lcsm::physical::TransmissionGate::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::TransmissionGate::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType instructionType = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	if (target != this)
 		throw std::logic_error("Target is not this object.");
 
-	if (instructionType != lcsm::InstructionType::WriteValue)
-		throw std::logic_error("Bad instruction!");
-
-	if (m_base == caller)
-	{
-		m_instantsBase.push_back(instruction);
-		return;
-	}
-
-	if (m_srca == caller)
-	{
-		m_instantsSrcA.push_back(instruction);
-		return;
-	}
-
-	if (m_srcb == caller)
-	{
-		m_instantsSrcB.push_back(instruction);
-		return;
-	}
-
-	if (m_srcc == caller)
-	{
-		m_instantsSrcC.push_back(instruction);
-	}
-
-	throw std::logic_error("Bad port!");
-}
-
-void lcsm::physical::TransmissionGate::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType instructionType = instruction.type();
-
-	if (target != this)
-		throw std::logic_error("Target is not this object.");
-
-	if (instructionType != lcsm::InstructionType::WriteValue)
+	if (type != lcsm::InstructionType::WriteValue)
 		throw std::logic_error("Bad instruction!");
 
 	if (m_base == caller)
@@ -149,7 +111,7 @@ void lcsm::physical::TransmissionGate::addInstant(lcsm::Instruction &&instructio
 	throw std::logic_error("Bad port!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::TransmissionGate::invokeInstants(const lcsm::Timestamp &)
+std::vector< lcsm::Event > lcsm::physical::TransmissionGate::invoke(const lcsm::Timestamp &)
 {
 	// Generated events.
 	std::vector< lcsm::Event > events;

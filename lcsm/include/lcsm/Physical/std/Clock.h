@@ -31,10 +31,9 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
+			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;
 
@@ -49,6 +48,8 @@ namespace lcsm
 			int m_counterFalse;
 			int m_counterTrue;
 			bool m_counter;
+
+			bool m_wasPolluted;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

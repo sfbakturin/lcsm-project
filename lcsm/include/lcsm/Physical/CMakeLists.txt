@@ -1,7 +1,7 @@
 # Add headers.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_HEADERS
-    COMMFILES Context.h DataBits.h Evaluator.h Event.h Instruction.h Timestamp.h
+    COMMFILES Context.h DataBits.h Evaluator.h Event.h Instruction.h Timestamp.h Snapshot.h
 )
 
 # Add subdirectories headers.

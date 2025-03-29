@@ -1,7 +1,7 @@
 # Add sources.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_SOURCES
-    COMMFILES Context.cpp DataBits.cpp EvaluatorNode.cpp Event.cpp Instruction.cpp PrivateContext.cpp Timestamp.cpp
+    COMMFILES Context.cpp DataBits.cpp EvaluatorNode.cpp Event.cpp Instruction.cpp PrivateContext.cpp Timestamp.cpp Snapshot.cpp
 )
 
 # Add subdirectory sources.

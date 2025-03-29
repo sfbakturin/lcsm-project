@@ -32,9 +32,9 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual void add(Instruction &&instruction) override final;
+
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connectInput(const support::PointerView< EvaluatorNode > &input);
 			void connectInout(const support::PointerView< EvaluatorNode > &inout);

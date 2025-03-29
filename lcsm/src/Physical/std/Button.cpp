@@ -15,7 +15,7 @@
 #include <vector>
 
 lcsm::physical::Button::Button(lcsm::object_type_t objectType, bool activeOnPress) :
-	lcsm::EvaluatorNode(objectType), m_activeOnPress(activeOnPress)
+	lcsm::EvaluatorNode(objectType), m_activeOnPress(activeOnPress), m_wasPolluted(false)
 {
 }
 
@@ -75,11 +75,11 @@ void lcsm::physical::Button::verifyContext()
 	}
 }
 
-void lcsm::physical::Button::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Button::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	// Check, if target is this circuit.
 	if (target != this)
@@ -95,61 +95,28 @@ void lcsm::physical::Button::addInstant(const lcsm::Instruction &instruction)
 
 	// Check, if instruction type is supported. If it's WriteValue - ignore, otherwise, if PolluteValue, then remember
 	// and return new clean value.
-	if (type == lcsm::InstructionType::WriteValue)
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
 	{
 		return;
 	}
-	else if (type == lcsm::InstructionType::PolluteValue)
+	case lcsm::InstructionType::PolluteValue:
 	{
-		m_instants.push_back(instruction);
-	}
-	else
-	{
-		throw std::logic_error("Bad instruction!");
-	}
-}
-
-void lcsm::physical::Button::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	// Check, if target is this circuit.
-	if (target != this)
-	{
-		throw std::logic_error("Bad this circuit in instruction!");
-	}
-
-	// Check, if caller is wire.
-	if (m_wire != caller)
-	{
-		throw std::logic_error("Bad caller in instruction!");
-	}
-
-	// Check, if instruction type is supported. If it's WriteValue - ignore, otherwise, if PolluteValue, then remember
-	// and return new clean value.
-	if (type == lcsm::InstructionType::WriteValue)
-	{
+		m_wasPolluted = true;
 		return;
 	}
-	else if (type == lcsm::InstructionType::PolluteValue)
+	default:
 	{
-		m_instants.push_back(std::move(instruction));
+		break;
 	}
-	else
-	{
-		throw std::logic_error("Bad instruction!");
 	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Button::invoke(const lcsm::Timestamp &now)
 {
-	// As now there is only PolluteValue is supported in instants, then we should just check size of m_instants and
-	// clean circuit.
-	const bool wasPolluted = !m_instants.empty();
-	m_instants.clear();
-
 	// Constants.
 	lcsm::EvaluatorNode *target = m_wire.get();
 	static const lcsm::DataBits T = lcsm::verilog::Bit::True;
@@ -157,6 +124,20 @@ std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Ti
 
 	// Generated events.
 	std::vector< lcsm::Event > events;
+
+	// If it was polluted, then generate simulator's event.
+	// Otherwise, act normally.
+	if (m_wasPolluted)
+	{
+		// Create new simulator instruction.
+		events.emplace_back(lcsm::CreatePolluteCircuitSimulatorInstruction(this));
+
+		// Reset.
+		m_wasPolluted = false;
+
+		// Return events.
+		return events;
+	}
 
 	// Extract context.
 	const lcsm::DataBits &databits = m_context->getValue();
@@ -181,16 +162,11 @@ std::vector< lcsm::Event > lcsm::physical::Button::invokeInstants(const lcsm::Ti
 	}
 	}
 
-	// Construct new timestamp with maybe pollution situation.
-	const lcsm::Timestamp diff = lcsm::Timestamp(0, static_cast< lcsm::timescale_t >(wasPolluted));
-
 	// Save context and generate event.
 	m_context->updateValues(now, { pushed });
 
-	// Create new instruction with difference. If there was pollution, then diff will be non-zero.
-	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, target, std::move(pushed));
-	lcsm::Event E(std::move(I), diff);
-	events.push_back(std::move(E));
+	// Create write value.
+	events.push_back(lcsm::CreateWriteValueInstruction(this, target, std::move(pushed)));
 
 	return events;
 }

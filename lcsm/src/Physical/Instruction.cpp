@@ -7,34 +7,38 @@
 #include <stdexcept>
 #include <utility>
 
-lcsm::Instruction::Instruction(lcsm::InstructionType type, lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
-	: m_type(type), m_caller(caller), m_target(target), m_hasValue(false)
+lcsm::Instruction::Instruction(lcsm::EvaluatorNode *caller, lcsm::instruction_t type) noexcept :
+	m_caller(caller), m_target(nullptr), m_type(type), m_valued(false)
 {
 }
 
-lcsm::Instruction::Instruction(lcsm::InstructionType type, lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, const lcsm::DataBits &value) noexcept
-	: m_type(type), m_caller(caller), m_target(target), m_hasValue(true), m_value(value)
+lcsm::Instruction::Instruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::instruction_t type) noexcept
+	: m_caller(caller), m_target(target), m_type(type), m_valued(false)
 {
 }
 
-lcsm::Instruction::Instruction(lcsm::InstructionType type, lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::DataBits &&value) noexcept
-	: m_type(type), m_caller(caller), m_target(target), m_hasValue(true), m_value(std::move(value))
+lcsm::Instruction::Instruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::instruction_t type, const lcsm::DataBits &databits) noexcept
+	: m_caller(caller), m_target(target), m_type(type), m_databits(databits), m_valued(true)
 {
 }
 
-lcsm::Instruction::Instruction(const Instruction &other) noexcept :
-	m_type(other.m_type), m_caller(other.m_caller), m_target(other.m_target), m_hasValue(other.m_hasValue),
-	m_value(other.m_value)
+lcsm::Instruction::Instruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::instruction_t type, lcsm::DataBits &&databits) noexcept
+	: m_caller(caller), m_target(target), m_type(type), m_databits(std::move(databits)), m_valued(true)
 {
 }
 
-lcsm::Instruction::Instruction(Instruction &&other) noexcept :
-	m_type(other.m_type), m_caller(other.m_caller), m_target(other.m_target), m_hasValue(other.m_hasValue),
-	m_value(std::move(other.m_value))
+lcsm::Instruction::Instruction(const lcsm::Instruction &other) noexcept :
+	m_caller(other.m_caller), m_target(other.m_target), m_type(other.m_type), m_databits(other.m_databits),
+	m_valued(other.m_valued)
+{
+}
+
+lcsm::Instruction::Instruction(lcsm::Instruction &&other) noexcept :
+	m_caller(other.m_caller), m_target(other.m_target), m_type(other.m_type), m_databits(std::move(other.m_databits)),
+	m_valued(other.m_valued)
 {
 	other.m_caller = nullptr;
 	other.m_target = nullptr;
-	other.m_hasValue = false;
 }
 
 lcsm::Instruction &lcsm::Instruction::operator=(const lcsm::Instruction &other) noexcept
@@ -49,16 +53,31 @@ lcsm::Instruction &lcsm::Instruction::operator=(lcsm::Instruction &&other) noexc
 
 void lcsm::Instruction::swap(lcsm::Instruction &other) noexcept
 {
-	std::swap(m_type, other.m_type);
 	std::swap(m_caller, other.m_caller);
 	std::swap(m_target, other.m_target);
-	std::swap(m_hasValue, other.m_hasValue);
-	std::swap(m_value, other.m_value);
+	std::swap(m_type, other.m_type);
+	std::swap(m_databits, other.m_databits);
+	std::swap(m_valued, other.m_valued);
 }
 
-lcsm::InstructionType lcsm::Instruction::type() const noexcept
+lcsm::instruction_t lcsm::Instruction::type() const noexcept
 {
 	return m_type;
+}
+
+bool lcsm::Instruction::operator==(lcsm::instruction_t type) const noexcept
+{
+	return m_type == type;
+}
+
+bool lcsm::Instruction::isInstruction() const noexcept
+{
+	return lcsm::InstructionType::WriteValue <= m_type && m_type < lcsm::InstructionType::LastInstructionType;
+}
+
+bool lcsm::Instruction::isSimulatorInstruction() const noexcept
+{
+	return lcsm::SimulatorInstructionType::PolluteCircuit <= m_type && m_type < lcsm::SimulatorInstructionType::LastSimulatorInstructionType;
 }
 
 const lcsm::EvaluatorNode *lcsm::Instruction::caller() const noexcept
@@ -81,35 +100,46 @@ lcsm::EvaluatorNode *lcsm::Instruction::target() noexcept
 	return m_target;
 }
 
-bool lcsm::Instruction::hasValue() const noexcept
+bool lcsm::Instruction::valued() const noexcept
 {
-	return m_hasValue;
+	return m_valued;
 }
 
 const lcsm::DataBits &lcsm::Instruction::value() const
 {
-	if (m_hasValue)
-		return m_value;
-	throw std::logic_error("No value provided to instruction.");
+	if (valued())
+	{
+		return m_databits;
+	}
+	throw std::logic_error("No value in instruction!");
 }
 
-lcsm::Instruction lcsm::CreateWriteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
+lcsm::DataBits &lcsm::Instruction::value()
 {
-	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target);
+	if (valued())
+	{
+		return m_databits;
+	}
+	throw std::logic_error("No value in instruction!");
 }
 
 lcsm::Instruction
 	lcsm::CreateWriteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, const lcsm::DataBits &value) noexcept
 {
-	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target, value);
+	return lcsm::Instruction(caller, target, lcsm::InstructionType::WriteValue, value);
 }
 
 lcsm::Instruction lcsm::CreateWriteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target, lcsm::DataBits &&value) noexcept
 {
-	return lcsm::Instruction(lcsm::InstructionType::WriteValue, caller, target, std::move(value));
+	return lcsm::Instruction(caller, target, lcsm::InstructionType::WriteValue, std::move(value));
 }
 
 lcsm::Instruction lcsm::CreatePolluteValueInstruction(lcsm::EvaluatorNode *caller, lcsm::EvaluatorNode *target) noexcept
 {
-	return lcsm::Instruction(lcsm::InstructionType::PolluteValue, caller, target);
+	return lcsm::Instruction(caller, target, lcsm::InstructionType::PolluteValue);
+}
+
+lcsm::Instruction lcsm::CreatePolluteCircuitSimulatorInstruction(lcsm::EvaluatorNode *caller) noexcept
+{
+	return lcsm::Instruction(caller, lcsm::SimulatorInstructionType::PolluteCircuit);
 }

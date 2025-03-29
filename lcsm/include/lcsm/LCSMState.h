@@ -8,6 +8,7 @@
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
+#include <lcsm/Physical/Snapshot.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/lcsmconfig.h>
@@ -44,11 +45,11 @@ namespace lcsm
 	  private:
 		friend class LCSMEngine;
 
-		Timestamp m_globalTimer;
-		std::unordered_map< Timestamp, std::deque< Event > > m_globalQueue;
-		std::unordered_map< Identifier, Context > m_contexts;
+		Timestamp m_timestamp;
+		std::unordered_map< Timestamp, std::deque< Event > > m_queue;
+		Snapshot m_snapshot;
 		std::vector< support::PointerView< EvaluatorNode > > m_roots;
-		support::PointerView< LCSMEngine > m_enginePtr;
+		support::PointerView< LCSMEngine > m_engine;
 
 	  private:
 		LCSMState(LCSMEngine *engine);

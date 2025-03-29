@@ -10,6 +10,7 @@ namespace lcsm
 	using value_t = std::uint64_t;
 	using id_t = std::uint64_t;
 	using target_t = std::int8_t;
+	using instruction_t = std::int8_t;
 	using object_type_t = std::uint32_t;
 	using label_t = const char *;
 
@@ -74,11 +75,18 @@ namespace lcsm
 	}
 
 	/// Represents all implemented instructions in standard library.
-	enum InstructionType : target_t
+	enum InstructionType : instruction_t
 	{
 		WriteValue,		 ///< Instruction to write a value to a given element.
 		PolluteValue,	 ///< Instruction to pollute value in element.
-		LastInstructionType = WriteValue + 1
+		LastInstructionType = PolluteValue + 1
+	};
+
+	/// Represents all implemented simulator's instructions in standard library.
+	enum SimulatorInstructionType : instruction_t
+	{
+		PolluteCircuit = InstructionType::LastInstructionType + 1,	  ///< Instruction to pollute the whole circuit.
+		LastSimulatorInstructionType = PolluteCircuit + 1
 	};
 }	 // namespace lcsm
 

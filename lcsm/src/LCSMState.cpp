@@ -8,6 +8,7 @@
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Event.h>
 #include <lcsm/Physical/Instruction.h>
+#include <lcsm/Physical/Snapshot.h>
 #include <lcsm/Physical/Timestamp.h>
 #include <lcsm/Support/Algorithm.hpp>
 #include <lcsm/Support/PointerView.hpp>
@@ -17,34 +18,114 @@
 #include <algorithm>
 #include <cstddef>
 #include <deque>
-#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
+class SimulatorHandler
 {
-	for (auto &object : m_enginePtr->m_objects)
+  public:
+	SimulatorHandler(lcsm::Timestamp &timestamp);
+
+	void addSimulatorInstruction(lcsm::Instruction &&instruction);
+
+	bool checkPollution(std::deque< lcsm::Event > &queue, const lcsm::Snapshot &snapshot);
+
+  private:
+	lcsm::Timestamp &m_timestamp;
+
+	lcsm::Snapshot m_polluteCircuitSnaphot;
+	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > m_polluteCircuitRequesters;
+};
+
+SimulatorHandler::SimulatorHandler(lcsm::Timestamp &timestamp) : m_timestamp(timestamp) {}
+
+void SimulatorHandler::addSimulatorInstruction(lcsm::Instruction &&instruction)
+{
+	if (!instruction.isSimulatorInstruction())
+	{
+		throw std::logic_error("Attempt to add to simulator handler non simulator instruction!");
+	}
+
+	switch (instruction.type())
+	{
+	case lcsm::SimulatorInstructionType::PolluteCircuit:
+	{
+		m_polluteCircuitRequesters.emplace_back(instruction.caller());
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Unsupported simulator's instruction found!");
+}
+
+bool SimulatorHandler::checkPollution(std::deque< lcsm::Event > &queue, const lcsm::Snapshot &snapshot)
+{
+	if (m_polluteCircuitRequesters.empty())
+	{
+		return false;
+	}
+
+	if (m_polluteCircuitSnaphot)
+	{
+		if (m_polluteCircuitSnaphot.equalsValues(snapshot))
+		{
+			return false;
+		}
+	}
+
+	m_polluteCircuitSnaphot = snapshot;
+
+	queue.clear();
+	m_timestamp = m_timestamp.subnext();
+	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > already;
+
+	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : m_polluteCircuitRequesters)
+	{
+		if (already.find(node) != already.end())
+		{
+			continue;
+		}
+
+		already.insert(node);
+
+		std::vector< lcsm::Event > events = node->invoke(m_timestamp);
+		for (lcsm::Event &event : events)
+		{
+			queue.push_back(std::move(event));
+		}
+	}
+
+	m_polluteCircuitRequesters.clear();
+
+	return true;
+}
+
+lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_engine(engine)
+{
+	for (auto &object : m_engine->m_objects)
 	{
 		const lcsm::Identifier &id = object.first;
 		std::shared_ptr< lcsm::EvaluatorNode > &obj = object.second;
 
 		// Create context and setup physical object to new state.
-		m_contexts[id] = lcsm::Context(obj->contextSize(), obj->privateContextSize());
-		const lcsm::support::PointerView< lcsm::Context > context = std::addressof(m_contexts[id]);
-		obj->setContext(context);
+		obj->setContext(m_snapshot.allocate(id, obj->contextSize(), obj->privateContextSize()));
 	}
 
 	// Initialize all inputs.
-	for (auto &input : m_enginePtr->m_realInputs)
+	for (auto &input : m_engine->m_realInputs)
 	{
 		lcsm::support::PointerView< lcsm::EvaluatorNode > node = input.second;
 		m_roots.push_back(node);
 	}
 
 	// Initialize all roots.
-	for (auto &root : m_enginePtr->m_realRoots)
+	for (auto &root : m_engine->m_realRoots)
 	{
 		lcsm::support::PointerView< lcsm::EvaluatorNode > node = root.second;
 		m_roots.push_back(node);
@@ -52,14 +133,14 @@ lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_enginePtr(engine)
 }
 
 lcsm::LCSMState::LCSMState(const lcsm::LCSMState &other) :
-	m_globalTimer(other.m_globalTimer), m_globalQueue(other.m_globalQueue), m_contexts(other.m_contexts),
-	m_roots(other.m_roots), m_enginePtr(other.m_enginePtr)
+	m_timestamp(other.m_timestamp), m_queue(other.m_queue), m_snapshot(other.m_snapshot), m_roots(other.m_roots),
+	m_engine(other.m_engine)
 {
 }
 
 lcsm::LCSMState::LCSMState(lcsm::LCSMState &&other) noexcept :
-	m_globalTimer(std::move(other.m_globalTimer)), m_globalQueue(std::move(other.m_globalQueue)),
-	m_contexts(std::move(other.m_contexts)), m_roots(std::move(other.m_roots)), m_enginePtr(std::move(other.m_enginePtr))
+	m_timestamp(std::move(other.m_timestamp)), m_queue(std::move(other.m_queue)),
+	m_snapshot(std::move(other.m_snapshot)), m_roots(std::move(other.m_roots)), m_engine(std::move(other.m_engine))
 {
 }
 
@@ -75,79 +156,52 @@ lcsm::LCSMState &lcsm::LCSMState::operator=(lcsm::LCSMState &&other) noexcept
 
 void lcsm::LCSMState::swap(lcsm::LCSMState &other) noexcept
 {
-	std::swap(m_globalTimer, other.m_globalTimer);
-	std::swap(m_globalQueue, other.m_globalQueue);
-	std::swap(m_contexts, other.m_contexts);
+	std::swap(m_timestamp, other.m_timestamp);
+	std::swap(m_queue, other.m_queue);
+	std::swap(m_snapshot, other.m_snapshot);
 	std::swap(m_roots, other.m_roots);
-	std::swap(m_enginePtr, other.m_enginePtr);
+	std::swap(m_engine, other.m_engine);
 }
 
 std::size_t lcsm::LCSMState::valueSize(lcsm::Identifier id) const
 {
-	/* Find value by identifier. */
-	const std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator found = m_contexts.find(id);
-
-	/* Check if exists. */
-	if (found == m_contexts.end())
-		throw std::logic_error("No such value with identifier found");
-
-	/* Return context's size. */
-	const lcsm::Context &context = found->second;
-	return context.size();
+	/* Fidn and return context's size. */;
+	return m_snapshot.valueSize(id);
 }
 
 const lcsm::DataBits &lcsm::LCSMState::valueOf(lcsm::Identifier id, std::size_t i) const
 {
-	const std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator found = m_contexts.find(id);
-
-	/* Check if object with specified identifier exists. */
-	if (found == m_contexts.cend())
-		throw std::logic_error("LCSM State: object with specified identifier is not found.");
-
-	/* Return i's value from context. */
-	return found->second.getValue(i);
+	/* Find and return i's value from context. */
+	return m_snapshot.valueOf(id, i);
 }
 
 const std::vector< lcsm::DataBits > &lcsm::LCSMState::valuesOf(lcsm::Identifier id) const
 {
-	const std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator found = m_contexts.find(id);
-
-	/* Check if object with specified identifier exists. */
-	if (found == m_contexts.cend())
-		throw std::logic_error("LCSM State: object with specified identifier is not found.");
-
-	/* Return values from context. */
-	return found->second.values();
+	/* Find and return values from context. */
+	return m_snapshot.valuesOf(id);
 }
 
 void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databits, std::size_t i)
 {
 	/* Find value by identifier. */
-	std::unordered_map< lcsm::Identifier, lcsm::Context >::iterator foundIt = m_contexts.find(id);
-
-	/* Check if exists. */
-	if (foundIt == m_contexts.end())
-	{
-		throw std::logic_error("No such value with identifier found");
-	}
+	lcsm::support::PointerView< lcsm::Context > context = m_snapshot.at(id);
 
 	/* Check if id's object is input. */
 	std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::iterator foundInp =
-		m_enginePtr->m_realInputs.find(id);
-	if (foundInp == m_enginePtr->m_realInputs.end())
+		m_engine->m_realInputs.find(id);
+	if (foundInp == m_engine->m_realInputs.end())
 	{
 		throw std::logic_error("No such input with identifier found");
 	}
 
 	/* Check size of value. */
-	lcsm::Context &context = foundIt->second;
-	if (i >= context.size())
+	if (i >= context->size())
 	{
 		throw std::out_of_range("Context: Index out of bound");
 	}
 
 	/* Update value. */
-	context.updateValue(i, databits, m_globalTimer, true);
+	context->updateValue(i, databits, m_timestamp, true);
 
 	/* Verify value. */
 	foundInp->second->verifyContext();
@@ -156,31 +210,24 @@ void lcsm::LCSMState::putValue(lcsm::Identifier id, const lcsm::DataBits &databi
 void lcsm::LCSMState::putValue(lcsm::Identifier id, std::initializer_list< lcsm::DataBits > databits)
 {
 	/* Find value by identifier. */
-
-	/* Check if exists. */
-	std::unordered_map< lcsm::Identifier, lcsm::Context >::iterator foundIt = m_contexts.find(id);
-	if (foundIt == m_contexts.end())
-	{
-		throw std::logic_error("No such value with identifier found");
-	}
+	lcsm::support::PointerView< lcsm::Context > context = m_snapshot.at(id);
 
 	/* Check if id's object is input. */
 	const std::unordered_map< lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >::const_iterator foundInp =
-		m_enginePtr->m_realInputs.find(id);
-	if (foundInp == m_enginePtr->m_realInputs.cend())
+		m_engine->m_realInputs.find(id);
+	if (foundInp == m_engine->m_realInputs.cend())
 	{
 		throw std::logic_error("No such input with identifier found");
 	}
 
 	/* Check size of value. */
-	lcsm::Context &context = foundIt->second;
-	if (databits.size() != context.size())
+	if (databits.size() != context->size())
 	{
 		throw std::out_of_range("Context: Index out of bound");
 	}
 
 	/* Update values. */
-	context.updateValues(m_globalTimer, databits);
+	context->updateValues(m_timestamp, databits);
 
 	/* Verify values. */
 	foundInp->second->verifyContext();
@@ -197,30 +244,30 @@ void lcsm::LCSMState::ticks(unsigned n)
 void lcsm::LCSMState::tick()
 {
 	/* Tick. */
-	m_globalTimer++;
-	lcsm::Timestamp now = m_globalTimer;
+	m_timestamp++;
+	lcsm::Timestamp now = m_timestamp;
 
 	/* At each global tick (or: "clock") of the circuit we perform the following actions: 1. Generate new events from
 	 * the root elements of the circuit and write them to the found or created new queue for the current step. 2. Go to
 	 * the main loop (described below). */
-	std::deque< lcsm::Event > localQueue;
+	std::deque< lcsm::Event > queue;
 
-	auto found = m_globalQueue.find(m_globalTimer);
-	if (found != m_globalQueue.end())
+	std::unordered_map< lcsm::Timestamp, std::deque< lcsm::Event > >::iterator found = m_queue.find(m_timestamp);
+	if (found != m_queue.end())
 	{
-		localQueue = std::move(found->second);
-		m_globalQueue.erase(found);
+		queue = std::move(found->second);
+		m_queue.erase(found);
 	}
 
 	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &root : m_roots)
 	{
 		/* Invoke and generate new instructions. */
-		std::vector< lcsm::Event > events = root->invokeInstants(now);
+		std::vector< lcsm::Event > events = root->invoke(now);
 
 		/* Schedule events. */
 		for (lcsm::Event &event : events)
 		{
-			localQueue.push_back(event);
+			queue.push_back(event);
 		}
 	}
 
@@ -229,8 +276,8 @@ void lcsm::LCSMState::tick()
 	bool loop = true;
 	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > visited;
 
-	/* Additional queue for next subticks. */
-	std::map< lcsm::Timestamp, std::deque< Event > > futureSubticks;
+	/* Simulator handler. */
+	SimulatorHandler sm = now;
 
 	/* Main looping mini-steps for step by timeouts and sync. To begin with, we execute all our scheduled instructions
 	 * in the following order: while it is possible to execute instructions smaller than this node type (in order of
@@ -242,6 +289,7 @@ void lcsm::LCSMState::tick()
 	 */
 	do
 	{
+lMainLoop:
 		/* Priority steps. */
 		for (lcsm::target_t nodeType = lcsm::NodeType::FirstNodeType; nodeType < lcsm::NodeType::LastNodeType; nodeType++)
 		{
@@ -249,11 +297,11 @@ void lcsm::LCSMState::tick()
 			for (;;)
 			{
 				std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > nodes;
-				const std::size_t size = localQueue.size();
+				const std::size_t size = queue.size();
 
 				/* Find the minimum node type to ensure if everything is found. */
 				lcsm::target_t realType = nodeType;
-				for (const lcsm::Event &event : localQueue)
+				for (const lcsm::Event &event : queue)
 				{
 					/* Targeting invoke in future node. */
 					const lcsm::Instruction &instruction = event.instruction();
@@ -272,11 +320,11 @@ void lcsm::LCSMState::tick()
 				}
 
 				/* Extract all events from queue. */
-				for (std::size_t i = 0; i < size && !localQueue.empty(); i++)
+				for (std::size_t i = 0; i < size && !queue.empty(); i++)
 				{
 					/* Extract from front and remove from scheduler. */
-					lcsm::Event event = localQueue.front();
-					localQueue.pop_front();
+					lcsm::Event event = queue.front();
+					queue.pop_front();
 
 					/* Targeting invoke in future node. */
 					lcsm::Instruction &instruction = event.instruction();
@@ -286,7 +334,7 @@ void lcsm::LCSMState::tick()
 					/* Check if target is not in visited set. */
 					if (std::find(visited.begin(), visited.end(), caller) != visited.end())
 					{
-						localQueue.push_back(event);
+						queue.push_back(event);
 						continue;
 					}
 
@@ -296,15 +344,15 @@ void lcsm::LCSMState::tick()
 					if (targetNodeType == realType)
 					{
 						/* Push instruction to object's node. */
-						target->addInstant(instruction);
+						target->add(std::move(instruction));
 						/* Remember this node. */
 						nodes.push_back(target);
 						/* Find all events, where caller is certain this one. */
-						for (std::size_t j = i; j < size && !localQueue.empty(); j++)
+						for (std::size_t j = i; j < size && !queue.empty(); j++)
 						{
 							/* Extract from front and remove from scheduler. */
-							lcsm::Event otherEvent = localQueue.front();
-							localQueue.pop_front();
+							lcsm::Event otherEvent = queue.front();
+							queue.pop_front();
 
 							/* Targeting invoke in future node. */
 							lcsm::Instruction &otherInstruction = otherEvent.instruction();
@@ -314,13 +362,13 @@ void lcsm::LCSMState::tick()
 							/* Add to nodes, if caller is presented. */
 							if (caller == otherCaller && otherTarget->nodeType() == targetNodeType)
 							{
-								otherTarget->addInstant(otherInstruction);
+								otherTarget->add(std::move(otherInstruction));
 								nodes.push_back(otherTarget);
 							}
 							else
 							{
 								/* If not, then return to queue. */
-								localQueue.push_back(otherEvent);
+								queue.push_back(otherEvent);
 							}
 						}
 						/* Mark as visited. */
@@ -329,7 +377,7 @@ void lcsm::LCSMState::tick()
 					else
 					{
 						/* If non specific node is high as priority, then we should set iterator to begin. */
-						localQueue.push_back(event);
+						queue.push_back(event);
 					}
 				}
 
@@ -353,29 +401,30 @@ void lcsm::LCSMState::tick()
 					already.insert(node);
 
 					/* Invoke and generate new instructions. */
-					std::vector< lcsm::Event > events = node->invokeInstants(now);
+					std::vector< lcsm::Event > events = node->invoke(now);
 
 					/* Schedule events. */
 					for (lcsm::Event &event : events)
 					{
-						if (event.isFuture())
+						lcsm::Instruction &instruction = event.instruction();
+
+						/* Filter event. */
+						if (instruction.isSimulatorInstruction())
 						{
-							/* Right now we supporting only subticks, when it's polluted circuits. */
-							const lcsm::Timestamp diff = event.diff();
-
-							/* If queue is not exists, create it. */
-							if (futureSubticks.find(diff) == futureSubticks.end())
-							{
-								futureSubticks[diff] = {};
-							}
-
-							/* Put event to future. */
-							event.toInstant();
-							futureSubticks[diff].push_back(std::move(event));
+							sm.addSimulatorInstruction(std::move(instruction));
 						}
-						else
+						else if (event.isInstant())
 						{
-							localQueue.push_back(event);
+							queue.push_back(std::move(event));
+						}
+						else if (event.isFuture())
+						{
+							const lcsm::Timestamp T = event.diff();
+							if (m_queue.find(T) == m_queue.end())
+							{
+								m_queue[T] = {};
+							}
+							m_queue[T].push_back(std::move(event));
 						}
 					}
 				}
@@ -385,106 +434,71 @@ void lcsm::LCSMState::tick()
 		/* Clear all visited. */
 		visited.clear();
 
-		/* Case: scheduler is empty, then go away. */
-		if (localQueue.empty())
+		/* Case: scheduler is empty. */
+		if (queue.empty())
 		{
-			/* Check the future subticks. */
-			if (!futureSubticks.empty())
+			/* Check the simulator's hander. */
+			if (sm.checkPollution(queue, m_snapshot))
 			{
-				/* If there existing future subtick, then get queue and continue main loop. */
-				std::map< lcsm::Timestamp, std::deque< lcsm::Event > >::iterator it = futureSubticks.begin();
-				now += it->first;
-				localQueue = std::move(it->second);
-				futureSubticks.erase(it);
 				goto lMainLoop;
 			}
 
 			break;
 		}
 
-lMainLoop:
 		/* Case: stabilized circuit. */
 		{
 			/* Copy all contents of contexts and events. */
-			std::unordered_map< lcsm::Identifier, lcsm::Context > copyContexts = m_contexts;
-			std::deque< lcsm::Event > copyEvents = localQueue;
+			lcsm::Snapshot copySnapshot = m_snapshot;
+			std::deque< lcsm::Event > copyEvents = queue;
 
 			/* Extract all instants and add them to objects. */
-			const std::size_t size = localQueue.size();
+			const std::size_t size = queue.size();
 			std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > nodes;
 			for (std::size_t i = 0; i < size; i++)
 			{
 				/* Extract from front and remove from scheduler. */
-				lcsm::Event event = localQueue.front();
-				localQueue.pop_front();
+				lcsm::Event event = queue.front();
+				queue.pop_front();
 
 				/* Add scheduled instant to target. */
 				lcsm::Instruction instruction = event.instruction();
 				lcsm::support::PointerView< lcsm::EvaluatorNode > target = instruction.target();
-				target->addInstant(std::move(instruction));
+				target->add(std::move(instruction));
 				nodes.push_back(std::move(target));
 			}
 
 			/* Invoke all instants. */
 			for (lcsm::support::PointerView< lcsm::EvaluatorNode > &node : nodes)
 			{
-				node->invokeInstants(now);
+				node->invoke(now);
 			}
 
 			/* Compare contexts. */
-			bool equals = true;
-			for (std::unordered_map< lcsm::Identifier, lcsm::Context >::const_iterator it = m_contexts.cbegin();
-				 it != m_contexts.cend();
-				 it++)
-			{
-				const lcsm::Identifier &id = it->first;
-				const lcsm::Context &lhs = it->second;
-				const lcsm::Context &rhs = copyContexts[id];
-				if (lhs != rhs)
-				{
-					equals = false;
-					break;
-				}
-			}
+			bool equals = copySnapshot.equalsStrict(m_snapshot);
 
 			/* Fixup contexts. */
-			for (auto &context : copyContexts)
+			for (std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > > &object : m_engine->m_objects)
 			{
-				const lcsm::Identifier &id = context.first;
-				lcsm::Context &ctx = context.second;
-				m_enginePtr->m_objects[id]->setContext({ ctx });
+				const lcsm::Identifier id = object.first;
+				lcsm::EvaluatorNode *obj = object.second.get();
+				obj->setContext(copySnapshot.at(id));
 			}
-			m_contexts = std::move(copyContexts);
+			m_snapshot = std::move(copySnapshot);
 
 			/* If contexts are equals to each other, then circuit is now stabilized: need to clear current scheduler and
 			 * stop this step. Otherwise, fixup scheduled and continue this loop. */
 			if (equals)
 			{
-				localQueue.clear();
-
-				/* Check the future subticks. */
-				if (!futureSubticks.empty())
-				{
-					/* If there existing future subtick, then get queue and continue main loop. */
-					std::map< lcsm::Timestamp, std::deque< lcsm::Event > >::iterator it = futureSubticks.begin();
-					now += it->first;
-					localQueue = std::move(it->second);
-					futureSubticks.erase(it);
-					goto lMainLoop;
-				}
-
-				loop = false;
+				loop = sm.checkPollution(queue, m_snapshot);
 			}
 			else
 			{
-				localQueue = std::move(copyEvents);
+				queue = std::move(copyEvents);
 			}
 		}
 	} while (loop);
 
 	/* Traverse all contexts and remove pollution. */
-	for (std::pair< const lcsm::Identifier, lcsm::Context > &it : m_contexts)
-	{
-		it.second.setPolluted(false);
-	}
+	m_snapshot.clearPollution();
 }

@@ -28,10 +28,9 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
+			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connectToData(const support::PointerView< EvaluatorNode > &wire);
 			void connectToDecimalPoint(const support::PointerView< EvaluatorNode > &wire);

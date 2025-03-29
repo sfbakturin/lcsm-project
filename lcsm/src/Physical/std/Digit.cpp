@@ -75,53 +75,56 @@ void lcsm::physical::Digit::verifyContext()
 	}
 }
 
-void lcsm::physical::Digit::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Digit::add(lcsm::Instruction &&instruction)
 {
-	const lcsm::InstructionType type = instruction.type();
-	const lcsm::EvaluatorNode *target = instruction.target();
 	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::instruction_t type = instruction.type();
+
 	if (target != this)
 	{
 		throw std::logic_error("Target is not this element");
 	}
-	if (type == lcsm::InstructionType::WriteValue && m_data == caller)
+
+	// Check if instruction is supported.
+	switch (type)
 	{
-		m_instantsData.push_back(instruction);
-	}
-	else if (type == lcsm::InstructionType::WriteValue && m_decimalPoint == caller && m_hasDecimalPoint)
+	case lcsm::InstructionType::WriteValue:
 	{
-		m_instantsDecimalPoint.push_back(instruction);
+		if (m_data == caller)
+		{
+			m_instantsData.push_back(std::move(instruction));
+			return;
+		}
+		else if (m_hasDecimalPoint && m_decimalPoint == caller)
+		{
+			m_instantsDecimalPoint.push_back(std::move(instruction));
+			return;
+		}
+		break;
 	}
-	else
+	case lcsm::InstructionType::PolluteValue:
 	{
-		throw std::logic_error("Bad instant!");
+		if (m_data == caller)
+		{
+			return;
+		}
+		else if (m_hasDecimalPoint && m_decimalPoint == caller)
+		{
+			return;
+		}
+		break;
 	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
-void lcsm::physical::Digit::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::InstructionType type = instruction.type();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	if (target != this)
-	{
-		throw std::logic_error("Target is not this element");
-	}
-	if (type == lcsm::InstructionType::WriteValue && m_data == caller)
-	{
-		m_instantsData.push_back(std::move(instruction));
-	}
-	else if (type == lcsm::InstructionType::WriteValue && m_decimalPoint == caller && m_hasDecimalPoint)
-	{
-		m_instantsDecimalPoint.push_back(std::move(instruction));
-	}
-	else
-	{
-		throw std::logic_error("Bad instant!");
-	}
-}
-
-std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Digit::invoke(const lcsm::Timestamp &now)
 {
 	// Extract values from context.
 	lcsm::DataBits valueData = m_context->getValue(0);
@@ -132,27 +135,27 @@ std::vector< lcsm::Event > lcsm::physical::Digit::invokeInstants(const lcsm::Tim
 	// If NOW is later, then THEN, then we should take first value as not-dirty.
 	if (now > thenData && !m_instantsData.empty())
 	{
-		const lcsm::Instruction instant = m_instantsData.front();
+		lcsm::Instruction &instruction = m_instantsData.front();
+		valueData = std::move(instruction.value());
 		m_instantsData.pop_front();
-		valueData = instant.value();
 	}
 
 	if (now > thenDecimalPoint && !m_instantsDecimalPoint.empty())
 	{
-		const lcsm::Instruction instant = m_instantsDecimalPoint.front();
+		lcsm::Instruction &instruction = m_instantsDecimalPoint.front();
+		valueDecimalPoint = std::move(instruction.value());
 		m_instantsDecimalPoint.pop_front();
-		valueDecimalPoint = instant.value();
 	}
 
 	// Invoke all instructions.
-	for (const lcsm::Instruction &instant : m_instantsData)
+	for (const lcsm::Instruction &instruction : m_instantsData)
 	{
-		valueData |= instant.value();
+		valueData |= instruction.value();
 	}
 
-	for (const lcsm::Instruction &instant : m_instantsDecimalPoint)
+	for (const lcsm::Instruction &instruction : m_instantsDecimalPoint)
 	{
-		valueDecimalPoint |= instant.value();
+		valueDecimalPoint |= instruction.value();
 	}
 
 	// Clean instants.

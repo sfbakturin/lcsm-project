@@ -28,10 +28,9 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
+			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connectInternal(const support::PointerView< EvaluatorNode > &internal);
 			void connectExternal(const support::PointerView< EvaluatorNode > &external);
@@ -39,7 +38,7 @@ namespace lcsm
 		  private:
 			bool m_output;
 			Width m_width;
-			bool m_wasPolluteInstant;
+			bool m_wasPolluted;
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_internalConnect;

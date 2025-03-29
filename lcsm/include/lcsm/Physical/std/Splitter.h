@@ -31,15 +31,16 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
+			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connectInput(const support::PointerView< EvaluatorNode > &input);
 			void connectOut(const support::PointerView< EvaluatorNode > &out, const std::pair< lcsm::width_t, lcsm::width_t > &index);
 
 		  private:
+			bool m_wasPollutedInput;
+			bool m_wasPollutedOutput;
 			std::deque< Instruction > m_instants;
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_input;

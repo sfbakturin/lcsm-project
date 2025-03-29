@@ -1,4 +1,3 @@
-#include "lcsm/Verilog/Bit.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Transistor.h>
@@ -9,6 +8,7 @@
 #include <lcsm/Physical/Instruction.h>
 #include <lcsm/Physical/std/Transistor.h>
 #include <lcsm/Support/PointerView.hpp>
+#include <lcsm/Verilog/Bit.h>
 #include <lcsm/Verilog/Strength.h>
 #include <lcsm/Verilog/Value.h>
 
@@ -81,76 +81,11 @@ void lcsm::physical::Transistor::verifyContext()
 	}
 }
 
-void lcsm::physical::Transistor::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Transistor::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	if (target != this)
-	{
-		throw std::logic_error("Target is not this object.");
-	}
-
-	switch (type)
-	{
-	case lcsm::InstructionType::WriteValue:
-	{
-		if (m_base == caller)
-		{
-			m_instantsBase.push_back(instruction);
-			return;
-		}
-
-		if (m_srca == caller)
-		{
-			m_instantsSrcA.push_back(instruction);
-			return;
-		}
-
-		if (m_srcb == caller)
-		{
-			m_instantsSrcB.push_back(instruction);
-			return;
-		}
-
-		break;
-	}
-	case lcsm::InstructionType::PolluteValue:
-	{
-		if (m_base == caller)
-		{
-			return;
-		}
-
-		if (m_srca == caller)
-		{
-			m_wasPollutedFromSrcA = true;
-			return;
-		}
-
-		if (m_srcb == caller)
-		{
-			m_wasPollutedFromSrcB = true;
-			return;
-		}
-
-		break;
-	}
-	default:
-	{
-		break;
-	}
-	}
-
-	throw std::logic_error("Bad instruction!");
-}
-
-void lcsm::physical::Transistor::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	if (target != this)
 	{
@@ -211,7 +146,7 @@ void lcsm::physical::Transistor::addInstant(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Transistor::invoke(const Timestamp &now)
 {
 	// Constants.
 	static const lcsm::DataBits NO_VALUE(lcsm::Width::Bit1, lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined);
@@ -232,37 +167,39 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 
 	if (now > thenBase && !m_instantsBase.empty())
 	{
-		const lcsm::Instruction instant = m_instantsBase.front();
-		valueBase = instant.value();
+		lcsm::Instruction &instruction = m_instantsBase.front();
+		valueBase = instruction.value();
 		m_instantsBase.pop_front();
 	}
 
 	if (now > thenSrcA && !m_instantsSrcA.empty())
 	{
-		const lcsm::Instruction instant = m_instantsSrcA.front();
-		valueSrcA = instant.value();
+		lcsm::Instruction &instruction = m_instantsSrcA.front();
+		valueSrcA = instruction.value();
 		m_instantsSrcA.pop_front();
 	}
 
 	if (now > thenSrcB && !m_instantsSrcB.empty())
 	{
-		const lcsm::Instruction instant = m_instantsSrcB.front();
-		valueSrcB = instant.value();
+		lcsm::Instruction &instruction = m_instantsSrcB.front();
+		valueSrcB = instruction.value();
 		m_instantsSrcB.pop_front();
 	}
 
 	// Invoke all instructions.
-	for (lcsm::Instruction &instant : m_instantsBase)
+	for (const lcsm::Instruction &instruction : m_instantsBase)
 	{
-		valueBase |= instant.value();
+		valueBase |= instruction.value();
 	}
-	for (lcsm::Instruction &instant : m_instantsSrcA)
+
+	for (const lcsm::Instruction &instruction : m_instantsSrcA)
 	{
-		valueSrcA |= instant.value();
+		valueSrcA |= instruction.value();
 	}
-	for (lcsm::Instruction &instant : m_instantsSrcB)
+
+	for (const lcsm::Instruction &instruction : m_instantsSrcB)
 	{
-		valueSrcB |= instant.value();
+		valueSrcB |= instruction.value();
 	}
 
 	// Values must be 1 bit (aka width == Width::Bit1)!
@@ -295,15 +232,15 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 		// If there was pollution (1).
 		if (m_wasPollutedFromSrcA && !m_wasPollutedFromSrcB)
 		{
-			lcsm::Instruction I = lcsm::CreatePolluteValueInstruction(this, m_srcb.get());
-			events.emplace_back(std::move(I));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srcb.get()));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_base.ptr()));
 		}
 
 		// If there was pollution (2).
 		if (!m_wasPollutedFromSrcA && m_wasPollutedFromSrcB)
 		{
-			lcsm::Instruction I = lcsm::CreatePolluteValueInstruction(this, m_srca.get());
-			events.emplace_back(std::move(I));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srca.get()));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_base.ptr()));
 		}
 
 		// If only one value is provided (1).
@@ -311,15 +248,13 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 		{
 			newValueSrcA = valueSrcA;
 			newValueSrcB = valueSrcA;
-			lcsm::Instruction i(lcsm::InstructionType::WriteValue, this, m_srcb.ptr(), std::move(valueSrcA));
-			events.emplace_back(std::move(i));
+			events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_srcb.ptr(), std::move(valueSrcA)));
 		}	 // If only one value is provided (2).
 		else if (!wasSignalFromSrcA && wasSignalFromSrcB)
 		{
 			newValueSrcB = valueSrcB;
 			newValueSrcA = valueSrcB;
-			lcsm::Instruction i(lcsm::InstructionType::WriteValue, this, m_srca.ptr(), std::move(valueSrcB));
-			events.emplace_back(std::move(i));
+			events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_srca.ptr(), std::move(valueSrcB)));
 		}
 		else if (wasSignalFromSrcA && wasSignalFromSrcB)
 		{
@@ -328,24 +263,20 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invokeInstants(const Time
 			if (newValueResult != newValueSrcA)
 			{
 				newValueSrcA = newValueResult;
-				lcsm::Instruction i(lcsm::InstructionType::WriteValue, this, m_srca.ptr(), newValueSrcA);
-				events.emplace_back(std::move(i));
+				events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_srca.ptr(), newValueSrcA));
 			}
 
 			if (newValueResult != newValueSrcB)
 			{
 				newValueSrcB = newValueResult;
-				lcsm::Instruction i(lcsm::InstructionType::WriteValue, this, m_srcb.ptr(), newValueSrcB);
-				events.emplace_back(std::move(i));
+				events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_srcb.ptr(), newValueSrcB));
 			}
 		}
 		else
 		{
 			// Pollute the circuit in sources directions.
-			lcsm::Instruction I1 = lcsm::CreatePolluteValueInstruction(this, m_srca.get());
-			lcsm::Instruction I2 = lcsm::CreatePolluteValueInstruction(this, m_srcb.get());
-			events.emplace_back(std::move(I1));
-			events.emplace_back(std::move(I2));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srca.get()));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srcb.get()));
 		}
 	}
 

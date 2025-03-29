@@ -10,6 +10,7 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <unordered_set>
 
+#include <algorithm>
 #include <deque>
 #include <stdexcept>
 #include <utility>
@@ -60,51 +61,64 @@ void lcsm::physical::Tunnel::verifyContext()
 	}
 }
 
-void lcsm::physical::Tunnel::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Tunnel::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::InstructionType type = instruction.type();
-	if (m_wiring == caller && type == lcsm::InstructionType::WriteValue)
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::instruction_t type = instruction.type();
+
+	// Check, if target is this circuit element.
+	if (target != this)
 	{
-		m_instantsWiring.push_back(instruction);
+		throw std::logic_error("Bad this target element!");
 	}
-	else if (type == lcsm::InstructionType::WriteValue)
+
+	// Find caller in tunnels.
+	const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator found = std::find_if(
+		m_tunnels.begin(),
+		m_tunnels.end(),
+		[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &c) { return c == caller; });
+
+	switch (type)
 	{
-		m_instantsWiring.push_back(instruction);
-	}
-	else
+	case lcsm::InstructionType::WriteValue:
 	{
-		throw std::logic_error("Bad instruction!");
+		if (m_wiring == caller)
+		{
+			m_writeValueWiring.push_back(std::move(instruction));
+			return;
+		}
+		else if (found != m_tunnels.end())
+		{
+			m_writeValueTunnel.push_back(std::move(instruction));
+			return;
+		}
+		break;
 	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		if (m_wiring == caller)
+		{
+			m_polluteValueWiring.push_back(std::move(instruction));
+			return;
+		}
+		else if (found != m_tunnels.end())
+		{
+			m_polluteValueTunnel.push_back(std::move(instruction));
+			return;
+		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
-void lcsm::physical::Tunnel::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::InstructionType type = instruction.type();
-	if (m_wiring == caller && type == lcsm::InstructionType::WriteValue)
-	{
-		m_instantsWiring.push_back(std::move(instruction));
-	}
-	else if (type == lcsm::InstructionType::WriteValue)
-	{
-		m_instantsWiring.push_back(std::move(instruction));
-	}
-	else
-	{
-		throw std::logic_error("Bad instruction!");
-	}
-}
-
-static inline void
-	CreateInstr(lcsm::EvaluatorNode *targetFrom, lcsm::EvaluatorNode *targetTo, const lcsm::DataBits &value, std::vector< lcsm::Event > &events)
-{
-	// Write wire's value to target.
-	lcsm::Instruction i = lcsm::CreateWriteValueInstruction(targetFrom, targetTo, value);
-	events.emplace_back(std::move(i));
-}
-
-std::vector< lcsm::Event > lcsm::physical::Tunnel::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Tunnel::invoke(const lcsm::Timestamp &now)
 {
 	// Created events.
 	std::vector< lcsm::Event > events;
@@ -113,84 +127,132 @@ std::vector< lcsm::Event > lcsm::physical::Tunnel::invokeInstants(const lcsm::Ti
 	lcsm::DataBits value = m_context->getValue();
 	const lcsm::Timestamp &then = m_context->lastUpdate();
 	const bool takeFirst = now > then;
+	bool popedWiring = false;
+	bool popedTunnel = false;
 
 	// If NOW is later, then THEN, then we should take first value as not-dirty.
 	if (takeFirst)
 	{
-		const bool hasWiring = !m_instantsWiring.empty();
-		const bool hasTunnel = !m_instantsTunnel.empty();
+		const bool hasWiring = !m_writeValueWiring.empty();
+		const bool hasTunnel = !m_writeValueTunnel.empty();
 		if (hasWiring && hasTunnel)
 		{
-			const lcsm::Instruction instantWiring = m_instantsWiring.front();
-			m_instantsWiring.pop_front();
-			value = instantWiring.value();
-			const lcsm::Instruction instantTunnel = m_instantsTunnel.front();
-			m_instantsTunnel.pop_front();
+			lcsm::Instruction &instantWiring = m_writeValueWiring.front();
+			value = std::move(instantWiring.value());
+			lcsm::Instruction &instantTunnel = m_writeValueTunnel.front();
 			value |= instantTunnel.value();
+			m_writeValueWiring.pop_front();
+			m_writeValueTunnel.pop_front();
+			popedTunnel = true;
+			popedWiring = true;
 		}
 		else if (hasWiring && !hasTunnel)
 		{
-			const lcsm::Instruction instantWiring = m_instantsWiring.front();
-			m_instantsWiring.pop_front();
-			value = instantWiring.value();
+			lcsm::Instruction &instantWiring = m_writeValueWiring.front();
+			value = std::move(instantWiring.value());
+			m_writeValueWiring.pop_front();
+			popedWiring = true;
 		}
 		else if (!hasWiring && hasTunnel)
 		{
-			const lcsm::Instruction instantTunnel = m_instantsTunnel.front();
-			m_instantsTunnel.pop_front();
-			value = instantTunnel.value();
+			lcsm::Instruction &instantTunnel = m_writeValueTunnel.front();
+			value = std::move(instantTunnel.value());
+			m_writeValueTunnel.pop_front();
+			popedTunnel = true;
 		}
 	}
 
-	// Invoke all instructions.
-	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
-	for (lcsm::Instruction &instant : m_instantsWiring)
+	// Implementation of pollution.
+	if (!m_polluteValueTunnel.empty() || !m_polluteValueWiring.empty())
 	{
-		value |= instant.value();
-		callings.emplace(instant.caller());
-	}
-	for (lcsm::Instruction &instant : m_instantsTunnel)
-	{
-		value |= instant.value();
-		callings.emplace(instant.caller());
+		// Get all polluters.
+		std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > polluters;
+		for (lcsm::Instruction &instruction : m_polluteValueWiring)
+		{
+			polluters.emplace(instruction.caller());
+		}
+		for (lcsm::Instruction &instruction : m_polluteValueTunnel)
+		{
+			polluters.emplace(instruction.caller());
+		}
+
+		// Go through all objects-neighbour and create a new events to all non callings.
+		if (polluters.find(m_wiring) == polluters.end())
+		{
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_wiring.get()));
+		}
+
+		for (lcsm::support::PointerView< lcsm::EvaluatorNode > &tunnel : m_tunnels)
+		{
+			if (polluters.find(tunnel) == polluters.end())
+			{
+				events.emplace_back(lcsm::CreatePolluteValueInstruction(this, tunnel.get()));
+			}
+		}
+
+		// Set context to polluted.
+		m_context->setPolluted(true);
 	}
 
-	// Go through all objects-neighbour and create a new events to all non callings.
-	if (callings.count(m_wiring) == 0)
+	// Implementation of writing value.
+	if (!m_writeValueTunnel.empty() || !m_writeValueWiring.empty() || popedTunnel || popedWiring)
 	{
-		CreateInstr(this, m_wiring.get(), value, events);
-	}
-	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &tunnel : m_tunnels)
-	{
-		if (callings.count(tunnel))
+		// Invoke all instructions.
+		std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > callings;
+		for (lcsm::Instruction &instruction : m_writeValueWiring)
 		{
-			continue;
+			value |= instruction.value();
+			callings.emplace(instruction.caller());
 		}
-		CreateInstr(this, tunnel.get(), value, events);
-	}
+		for (lcsm::Instruction &instruction : m_writeValueTunnel)
+		{
+			value |= instruction.value();
+			callings.emplace(instruction.caller());
+		}
 
-	// Go through all objects-neighbour and create a new events to all callings, where instant::value() != value.
-	for (lcsm::Instruction &instant : m_instantsWiring)
-	{
-		if (value != instant.value())
+		// Go through all objects-neighbour and create a new events to all non callings.
+		if (callings.find(m_wiring) == callings.end())
 		{
-			CreateInstr(this, instant.caller(), value, events);
+			events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_wiring.get(), value));
 		}
-	}
-	for (lcsm::Instruction &instant : m_instantsTunnel)
-	{
-		if (value != instant.value())
+
+		for (lcsm::support::PointerView< lcsm::EvaluatorNode > &tunnel : m_tunnels)
 		{
-			CreateInstr(this, instant.caller(), value, events);
+			if (callings.find(tunnel) == callings.end())
+			{
+				events.emplace_back(lcsm::CreateWriteValueInstruction(this, tunnel.get(), value));
+			}
 		}
+
+		// Go through all objects-neighbour and create a new events to all callings, where instant::value() != value.
+		for (lcsm::Instruction &instruction : m_writeValueWiring)
+		{
+			if (value != instruction.value())
+			{
+				events.emplace_back(lcsm::CreateWriteValueInstruction(this, instruction.caller(), value));
+			}
+		}
+
+		for (lcsm::Instruction &instruction : m_writeValueTunnel)
+		{
+			if (value != instruction.value())
+			{
+				events.emplace_back(lcsm::CreateWriteValueInstruction(this, instruction.caller(), value));
+			}
+		}
+
+		// Set context as not polluted.
+		m_context->setPolluted(false);
 	}
 
 	// Save last value.
 	m_context->updateValues(now, { value });
 
 	// Clear instants.
-	m_instantsWiring.clear();
-	m_instantsTunnel.clear();
+	m_writeValueWiring.clear();
+	m_writeValueTunnel.clear();
+	m_polluteValueTunnel.clear();
+	m_polluteValueWiring.clear();
 
 	return events;
 }

@@ -32,10 +32,9 @@ namespace lcsm
 			virtual void resetContext() noexcept override final;
 			virtual void verifyContext() override final;
 
-			virtual void addInstant(const Instruction &instruction) override final;
-			virtual void addInstant(Instruction &&instruction) override final;
+			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invokeInstants(const Timestamp &now) override final;
+			virtual std::vector< Event > invoke(const Timestamp &now) override final;
 
 			void connectWiring(const support::PointerView< EvaluatorNode > &node);
 			void connectTunnel(const support::PointerView< EvaluatorNode > &node);
@@ -44,8 +43,10 @@ namespace lcsm
 			support::PointerView< Context > m_context;
 			support::PointerView< EvaluatorNode > m_wiring;
 			std::vector< support::PointerView< EvaluatorNode > > m_tunnels;
-			std::deque< Instruction > m_instantsWiring;
-			std::deque< Instruction > m_instantsTunnel;
+			std::deque< Instruction > m_writeValueWiring;
+			std::deque< Instruction > m_writeValueTunnel;
+			std::deque< Instruction > m_polluteValueWiring;
+			std::deque< Instruction > m_polluteValueTunnel;
 		};
 	}	 // namespace physical
 }	 // namespace lcsm

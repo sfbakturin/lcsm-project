@@ -214,9 +214,9 @@ void lcsm::model::Pin::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LC
 	// keyvalue width <INTEGER>;
 	setWidth(lcsm::StrongToWidth(reader.exceptIntegerKeyValue("width")));
 
-	// keyvalue externalid <INTEGER>;
+	// keyvalue internalid <INTEGER>;
 	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("internalid")), internal()->id());
 
-	// keyvalue internalid <INTEGER>;
+	// keyvalue externalid <INTEGER>;
 	builder.oldToNew(lcsm::Identifier(reader.exceptIntegerKeyValue("externalid")), external()->id());
 }

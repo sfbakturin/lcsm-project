@@ -15,7 +15,10 @@
 #include <utility>
 #include <vector>
 
-lcsm::physical::Splitter::Splitter(lcsm::object_type_t objectType) : lcsm::EvaluatorNode(objectType) {}
+lcsm::physical::Splitter::Splitter(lcsm::object_type_t objectType) :
+	lcsm::EvaluatorNode(objectType), m_wasPollutedInput(false), m_wasPollutedOutput(false)
+{
+}
 
 lcsm::NodeType lcsm::physical::Splitter::nodeType() const noexcept
 {
@@ -60,11 +63,11 @@ void lcsm::physical::Splitter::verifyContext()
 	}
 }
 
-void lcsm::physical::Splitter::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Splitter::add(lcsm::Instruction &&instruction)
 {
 	const lcsm::EvaluatorNode *caller = instruction.caller();
 	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
+	const lcsm::instruction_t type = instruction.type();
 
 	// Target must be always this.
 	if (target != this)
@@ -72,71 +75,62 @@ void lcsm::physical::Splitter::addInstant(const lcsm::Instruction &instruction)
 		throw std::logic_error("Target is not this circuit!");
 	}
 
-	// Only WriteValue is available for now.
-	if (type != lcsm::InstructionType::WriteValue)
+	// Check if instruction supported.
+	switch (type)
 	{
-		throw std::logic_error("Bad instruction!");
+	case lcsm::InstructionType::WriteValue:
+	{
+		// If caller is one of outputs, then ignore this instruction.
+		const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
+			m_outputs.begin(),
+			m_outputs.end(),
+			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
+		if (foundOutput != m_outputs.end())
+		{
+			return;
+		}
+
+		// If caller is input, instruction is valid.
+		if (m_input == caller)
+		{
+			m_instants.push_back(std::move(instruction));
+			return;
+		}
+
+		break;
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		// If caller is one of outputs, then remember about it.
+		const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
+			m_outputs.begin(),
+			m_outputs.end(),
+			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
+		if (foundOutput != m_outputs.end())
+		{
+			m_wasPollutedOutput = true;
+			return;
+		}
+
+		// If caller is input, then remember about it.
+		if (m_input == caller)
+		{
+			m_wasPollutedInput = true;
+			return;
+		}
+
+		break;
+	}
+	default:
+	{
+		break;
+	}
 	}
 
-	// If caller is one of outputs, then ignore this instruction.
-	const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
-		m_outputs.begin(),
-		m_outputs.end(),
-		[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
-	if (foundOutput != m_outputs.end())
-	{
-		return;
-	}
-
-	// If caller is not input, then this instruction is invalid.
-	if (m_input != caller)
-	{
-		throw std::logic_error("Invalid instruction!");
-	}
-
-	// Otherwise, add this instruction to instants.
-	m_instants.push_back(instruction);
+	throw std::logic_error("Bad instruction!");
 }
 
-void lcsm::physical::Splitter::addInstant(lcsm::Instruction &&instruction)
-{
-	const lcsm::EvaluatorNode *caller = instruction.caller();
-	const lcsm::EvaluatorNode *target = instruction.target();
-	const lcsm::InstructionType type = instruction.type();
-
-	// Target must be always this.
-	if (target != this)
-	{
-		throw std::logic_error("Target is not this circuit!");
-	}
-
-	// Only WriteValue is available for now.
-	if (type != lcsm::InstructionType::WriteValue)
-	{
-		throw std::logic_error("Bad instruction!");
-	}
-
-	// If caller is one of outputs, then ignore this instruction.
-	const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
-		m_outputs.begin(),
-		m_outputs.end(),
-		[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
-	if (foundOutput != m_outputs.end())
-	{
-		return;
-	}
-
-	// If caller is not input, then this instruction is invalid.
-	if (m_input != caller)
-	{
-		throw std::logic_error("Invalid instruction!");
-	}
-
-	// Otherwise, add this instruction to instants.
-	m_instants.push_back(std::move(instruction));
-}
-
-std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Splitter::invoke(const lcsm::Timestamp &now)
 {
 	// Extract value from context.
 	lcsm::DataBits value = m_context->getValue(0);
@@ -145,15 +139,15 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::
 	// If NOW is later, then use value from instants.
 	if (now > then && !m_instants.empty())
 	{
-		const lcsm::Instruction instant = m_instants.front();
+		lcsm::Instruction &instruction = m_instants.front();
+		value = std::move(instruction.value());
 		m_instants.pop_front();
-		value = instant.value();
 	}
 
 	// Invoke all instructions.
-	for (const lcsm::Instruction &instant : m_instants)
+	for (const lcsm::Instruction &instruction : m_instants)
 	{
-		value |= instant.value();
+		value |= instruction.value();
 	}
 
 	// Clear instants.
@@ -161,14 +155,14 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invokeInstants(const lcsm::
 
 	// Create WriteValue instructions to outs with specified indexes for subdatabits.
 	std::vector< lcsm::Event > events;
-	const lcsm::InstructionType type = lcsm::InstructionType::WriteValue;
 	for (std::size_t i = 0; i < m_indexes.size(); i++)
 	{
 		const std::pair< lcsm::width_t, lcsm::width_t > &index = m_indexes[i];
 		const lcsm::width_t begin = index.first;
 		const lcsm::width_t end = index.second;
-		lcsm::Instruction instruction{ type, this, m_outputs[i].get(), value.subdatabits(begin, end) };
-		events.emplace_back(std::move(instruction));
+		lcsm::Instruction I = lcsm::CreateWriteValueInstruction(this, m_outputs[i].get(), value.subdatabits(begin, end));
+		lcsm::Event E{ std::move(I) };
+		events.push_back(std::move(E));
 	}
 
 	// Save value to context.

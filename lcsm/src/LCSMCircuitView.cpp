@@ -52,6 +52,16 @@ const std::string &lcsm::LCSMCircuitView::name() const noexcept
 	return m_circuit->name();
 }
 
+void lcsm::LCSMCircuitView::setName(lcsm::label_t name)
+{
+	m_circuit->setName(name);
+}
+
+void lcsm::LCSMCircuitView::setName(const std::string &name)
+{
+	m_circuit->setName(name);
+}
+
 const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &lcsm::LCSMCircuitView::components() const noexcept
 {
 	return m_circuit->components();

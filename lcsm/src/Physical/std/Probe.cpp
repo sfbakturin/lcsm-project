@@ -57,23 +57,43 @@ void lcsm::physical::Probe::verifyContext()
 	}
 }
 
-void lcsm::physical::Probe::addInstant(const lcsm::Instruction &instruction)
+void lcsm::physical::Probe::add(lcsm::Instruction &&instruction)
 {
-	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && m_wire == instruction.caller())
-		m_instants.push_back(instruction);
-	else
-		throw std::logic_error("Bad instant");
-}
+	const lcsm::EvaluatorNode *caller = instruction.caller();
+	const lcsm::EvaluatorNode *target = instruction.target();
+	const lcsm::instruction_t type = instruction.type();
 
-void lcsm::physical::Probe::addInstant(lcsm::Instruction &&instruction)
-{
-	if (instruction.type() == lcsm::InstructionType::WriteValue && instruction.target() == this && m_wire == instruction.caller())
+	if (target != this)
+	{
+		throw std::logic_error("Bad target in instruction!");
+	}
+
+	if (m_wire != caller)
+	{
+		throw std::logic_error("Bad caller in instruction!");
+	}
+
+	switch (type)
+	{
+	case lcsm::InstructionType::WriteValue:
+	{
 		m_instants.push_back(std::move(instruction));
-	else
-		throw std::logic_error("Bad instant");
+		return;
+	}
+	case lcsm::InstructionType::PolluteValue:
+	{
+		return;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Probe::invokeInstants(const lcsm::Timestamp &now)
+std::vector< lcsm::Event > lcsm::physical::Probe::invoke(const lcsm::Timestamp &now)
 {
 	/* Extract values from context. */
 	lcsm::DataBits value = m_context->getValue(0);
@@ -83,15 +103,15 @@ std::vector< lcsm::Event > lcsm::physical::Probe::invokeInstants(const lcsm::Tim
 	/* If NOW is later, then THEN, then we should take first value as not-dirty. */
 	if (takeFirst && !m_instants.empty())
 	{
-		const lcsm::Instruction instant = m_instants.front();
+		lcsm::Instruction &instruction = m_instants.front();
+		value = std::move(instruction.value());
 		m_instants.pop_front();
-		value = instant.value();
 	}
 
 	/* Invoke all instructions. */
-	for (const lcsm::Instruction &instant : m_instants)
+	for (const lcsm::Instruction &instruction : m_instants)
 	{
-		value |= instant.value();
+		value |= instruction.value();
 	}
 
 	/* Clean instants. */

@@ -33,10 +33,10 @@ namespace lcsm
 		virtual void resetContext() noexcept = 0;
 		virtual void verifyContext() = 0;
 
-		virtual void addInstant(const Instruction &instruction) = 0;
-		virtual void addInstant(Instruction &&instruction) = 0;
+		virtual void add(Instruction &&instruction) = 0;
 
-		virtual std::vector< Event > invokeInstants(const Timestamp &now) = 0;
+		virtual std::vector< Event > invoke(const Timestamp &now) = 0;
+		// virtual void invokeImpl(const Timestamp &now, std::vector< Event > &events) = 0;
 
 	  private:
 		object_type_t m_objectType;
