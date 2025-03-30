@@ -49,10 +49,11 @@ LCSM_ADD_GROUP_SOURCE_FILES("Model/File")
 LCSM_ADD_GROUP_SOURCE_FILES("Model/std")
 LCSM_ADD_GROUP_SOURCE_FILES("Physical")
 LCSM_ADD_GROUP_SOURCE_FILES("Physical/std")
+LCSM_ADD_GROUP_SOURCE_FILES("Testing")
 LCSM_ADD_GROUP_SOURCE_FILES("Verilog")
+LCSM_ADD_GROUP_SOURCE_FILES("Verilog/ModuleDeclare")
 LCSM_ADD_GROUP_SOURCE_FILES("Support")
 LCSM_ADD_GROUP_SOURCE_FILES("Support/IO")
-LCSM_ADD_GROUP_SOURCE_FILES("Verilog/ModuleDeclare")
 
 LCSM_ADD_GROUP_HEADER_FILES("lcsm")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Model")
@@ -62,6 +63,7 @@ LCSM_ADD_GROUP_HEADER_FILES("lcsm/Physical")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Physical/std")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Support")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Support/IO")
+LCSM_ADD_GROUP_HEADER_FILES("lcsm/Testing")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Verilog")
 LCSM_ADD_GROUP_HEADER_FILES("lcsm/Verilog/ModuleDeclare")
 
@@ -94,7 +96,6 @@ INSTALL(TARGETS LCSM
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
 
 # Generate the version file for the config file.
 WRITE_BASIC_PACKAGE_VERSION_FILE(
@@ -143,6 +144,26 @@ IF(LCSM_BUILD_DOCS)
         VERBATIM
     )
 ENDIF()
+
+FUNCTION(LCSM_ADD_TEST)
+    SET(options)
+    SET(oneValueArgs CATEGORYNAME TESTNAME)
+    SET(multiValueArgs FILES)
+    CMAKE_PARSE_ARGUMENTS(ARG
+        "${options}" "${oneValueArgs}" "${multiValueArgs}"
+        ${ARGN}
+    )
+    SET(fs "")
+    FOREACH(f ${ARG_FILES})
+        GET_FILENAME_COMPONENT(fa "${f}" ABSOLUTE)
+        LIST(APPEND fs "${fa}")
+    ENDFOREACH()
+    SET(testExecutableName "${ARG_TESTNAME}Test")
+    ADD_EXECUTABLE(${testExecutableName} ${fs})
+    LCSM_BASE_SETUP_TARGET(${testExecutableName})
+    TARGET_LINK_LIBRARIES(${testExecutableName} PRIVATE LCSM)
+    ADD_TEST(NAME "${ARG_CATEGORYNAME}::${ARG_TESTNAME}" COMMAND ${testExecutableName})
+ENDFUNCTION()
 
 IF(LCSM_BUILD_TESTS)
     ADD_SUBDIRECTORY(test)

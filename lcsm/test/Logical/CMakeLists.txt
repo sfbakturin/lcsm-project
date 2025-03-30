@@ -1,0 +1,13 @@
+FUNCTION(LCSM_TEST_LOGICAL elementName)
+    LCSM_ADD_TEST(
+        CATEGORYNAME Logical
+        TESTNAME ${elementName}
+        FILES Logical${elementName}Test.cpp
+    )
+ENDFUNCTION()
+
+LCSM_TEST_LOGICAL("Not")
+LCSM_TEST_LOGICAL("OrNot")
+LCSM_TEST_LOGICAL("AndNot")
+LCSM_TEST_LOGICAL("Or")
+LCSM_TEST_LOGICAL("And")
