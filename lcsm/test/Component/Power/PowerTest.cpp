@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -38,17 +38,17 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *power = circuit.find("power");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *power = circuit.find("power");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(power, CircuitType::Power);
-	assertType(pin, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(power, ComponentType::Power);
+	assertType(pin, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
-static void test(LCSMState &state, const Circuit *power, const Circuit *pin, const Circuit *wire, Width width)
+static void test(LCSMState &state, const Component *power, const Component *pin, const Component *wire, Width width)
 {
 	// Indexes.
 	const Identifier powerId = power->id();
@@ -72,9 +72,9 @@ static void test(LCSMState &state, const Circuit *power, const Circuit *pin, con
 static void test1(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *power = circuit.find("power");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *power = circuit.find("power");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Extract models.
 	model::Power *powerModel = static_cast< model::Power * >(power);

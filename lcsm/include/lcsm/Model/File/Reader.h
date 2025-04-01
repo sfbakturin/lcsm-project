@@ -21,7 +21,6 @@ namespace lcsm
 		{
 		  public:
 			LCSMFileReader(const std::shared_ptr< support::Reader > &reader);
-			LCSMFileReader(std::shared_ptr< support::Reader > &&reader);
 
 			const LCSMFileToken &next();
 			const LCSMFileToken &curr() const noexcept;
@@ -44,7 +43,7 @@ namespace lcsm
 
 			bool tryParseTunnel();
 
-			target_t exceptCircuitType();
+			target_t exceptComponentType();
 			Identifier exceptIdentifier();
 			std::string exceptName();
 			std::pair< std::string, unsigned long long > exceptIntegerKeyValue();

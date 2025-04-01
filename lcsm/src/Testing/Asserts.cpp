@@ -1,5 +1,5 @@
 #include <lcsm/LCSM.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Testing/Asserts.h>
 
@@ -49,14 +49,14 @@ void lcsm::testing::assertEquals(std::size_t actual, std::size_t expected)
 	}
 }
 
-void lcsm::testing::assertType(const lcsm::Circuit *circuit, lcsm::CircuitType type)
+void lcsm::testing::assertType(const lcsm::Component *circuit, lcsm::ComponentType type)
 {
 	assertNotNullptr(circuit, "circuit doesn't exists");
-	if (circuit->circuitType() != type)
+	if (circuit->componentType() != type)
 	{
 		const std::string additional =
-			"circuit \"" + circuit->name() + "\" has wrong circuit's type [" + std::to_string(circuit->circuitType()) +
-			" vs. " + std::to_string(type) + "]";
+			"circuit \"" + circuit->name() + "\" has wrong circuit's type [" +
+			std::to_string(circuit->componentType()) + " vs. " + std::to_string(type) + "]";
 		assertError("Assertion", additional);
 	}
 }

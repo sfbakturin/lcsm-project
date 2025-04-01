@@ -8,6 +8,7 @@
 #include <lcsm/Physical/std/Probe.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <deque>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -93,7 +94,7 @@ void lcsm::physical::Probe::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Probe::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Probe::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &)
 {
 	/* Extract values from context. */
 	lcsm::DataBits value = m_context->getValue(0);
@@ -119,12 +120,9 @@ std::vector< lcsm::Event > lcsm::physical::Probe::invoke(const lcsm::Timestamp &
 
 	/* Update context. */
 	m_context->updateValues(now, { value });
-
-	/* No events from Probe. */
-	return {};
 }
 
-void lcsm::physical::Probe::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &wire)
+void lcsm::physical::Probe::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &wire) noexcept
 {
 	m_wire = wire;
 }

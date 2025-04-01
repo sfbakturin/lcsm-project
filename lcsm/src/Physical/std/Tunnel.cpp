@@ -77,7 +77,7 @@ void lcsm::physical::Tunnel::add(lcsm::Instruction &&instruction)
 	const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator found = std::find_if(
 		m_tunnels.begin(),
 		m_tunnels.end(),
-		[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &c) { return c == caller; });
+		[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &c) noexcept { return c == caller; });
 
 	switch (type)
 	{
@@ -118,11 +118,8 @@ void lcsm::physical::Tunnel::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Tunnel::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Tunnel::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
-	// Created events.
-	std::vector< lcsm::Event > events;
-
 	// Extract contexted value.
 	lcsm::DataBits value = m_context->getValue();
 	const lcsm::Timestamp &then = m_context->lastUpdate();
@@ -253,11 +250,9 @@ std::vector< lcsm::Event > lcsm::physical::Tunnel::invoke(const lcsm::Timestamp 
 	m_writeValueTunnel.clear();
 	m_polluteValueTunnel.clear();
 	m_polluteValueWiring.clear();
-
-	return events;
 }
 
-void lcsm::physical::Tunnel::connectWiring(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::Tunnel::connectWiring(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_wiring = node;
 }

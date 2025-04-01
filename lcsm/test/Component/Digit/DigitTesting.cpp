@@ -4,7 +4,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Digit.h>
 #include <lcsm/Model/std/Pin.h>
@@ -34,16 +34,16 @@ LCSMCircuit lcsm_tests::generator()
 void lcsm_tests::checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *digit = circuit.find("digit");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *digit = circuit.find("digit");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(digit, CircuitType::Digit);
-	assertType(wire1, CircuitType::Wire);
-	assertType(wire2, CircuitType::Wire);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(digit, ComponentType::Digit);
+	assertType(wire1, ComponentType::Wire);
+	assertType(wire2, ComponentType::Wire);
 }

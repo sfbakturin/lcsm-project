@@ -10,6 +10,7 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Bit.h>
 
+#include <deque>
 #include <stdexcept>
 #include <vector>
 
@@ -18,7 +19,7 @@
 static const lcsm::DataBits T{ lcsm::Width::Bit1, lcsm::verilog::Bit::True };
 static const lcsm::DataBits F{ lcsm::Width::Bit1, lcsm::verilog::Bit::False };
 
-lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
+lcsm::physical::Clock::Clock(lcsm::object_type_t objectType, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) noexcept :
 	lcsm::EvaluatorNode(objectType), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset),
 	m_counterFalse(m_lowDuration), m_counterTrue(m_highDuration), m_counter(true), m_wasPolluted(false)
 {
@@ -131,11 +132,8 @@ void lcsm::physical::Clock::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Clock::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Clock::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
-	// Generated events.
-	std::vector< lcsm::Event > events;
-
 	// If there is no updates, then put 1bit-Strong-False to context. Otherwise, read from context.
 	lcsm::DataBits value;
 	UNUSED(m_phaseOffset);
@@ -194,8 +192,6 @@ l_write:
 	m_context->privateContext().putInt(0, m_counterFalse);
 	m_context->privateContext().putInt(1, m_counterTrue);
 	m_context->privateContext().putBool(2, m_counter);
-
-	return events;
 }
 
 void lcsm::physical::Clock::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept

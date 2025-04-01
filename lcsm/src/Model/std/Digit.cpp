@@ -1,7 +1,7 @@
-#include "lcsm/Model/File/Reader.h"
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
+#include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -18,7 +18,7 @@
 lcsm::model::Digit::Digit(bool hasDecimalPoint) : lcsm::model::Digit("", hasDecimalPoint) {}
 
 lcsm::model::Digit::Digit(lcsm::label_t name, bool hasDecimalPoint) :
-	lcsm::Circuit(name), m_hasDecimalPoint(hasDecimalPoint)
+	lcsm::Component(name), m_hasDecimalPoint(hasDecimalPoint)
 {
 }
 
@@ -80,12 +80,12 @@ lcsm::object_type_t lcsm::model::Digit::objectType() const noexcept
 	return lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::Digit::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Digit::componentType() const noexcept
 {
-	return lcsm::CircuitType::Digit;
+	return lcsm::ComponentType::Digit;
 }
 
-void lcsm::model::Digit::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Digit::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	const lcsm::model::Digit::Port p = static_cast< lcsm::model::Digit::Port >(portId);
 	switch (p)
@@ -107,7 +107,7 @@ void lcsm::model::Digit::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Digit::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Digit::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -118,17 +118,17 @@ void lcsm::model::Digit::disconnectAll() noexcept
 	m_wireDecimalPoint->disconnectAll();
 }
 
-void lcsm::model::Digit::connectData(lcsm::Circuit *circuit)
+void lcsm::model::Digit::connectData(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Digit::Port::WiringData, circuit);
 }
 
-void lcsm::model::Digit::connectDecimalPoint(lcsm::Circuit *circuit)
+void lcsm::model::Digit::connectDecimalPoint(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Digit::Port::WiringDecimalPoint, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Digit::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Digit::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Digit::Port p = static_cast< lcsm::model::Digit::Port >(portId);
 	switch (p)
@@ -141,7 +141,7 @@ lcsm::Circuit *lcsm::model::Digit::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Digit::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Digit::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_wireData.get())
 		return lcsm::model::Digit::Port::WiringData;
@@ -158,15 +158,6 @@ lcsm::portid_t lcsm::model::Digit::defaultPort() const noexcept
 
 void lcsm::model::Digit::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	// begincomponent
-	writer.writeBeginComponent();
-
-	// circuittype <INTEGER>;
-	writer.writeCircuitTypeDeclaration(circuitType());
-
-	// id <IDENTIFIER>;
-	writer.writeIdDeclaration(id());
-
 	// name <STRING>;
 	writer.writeNameDeclaration(name());
 
@@ -185,14 +176,11 @@ void lcsm::model::Digit::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::
 	{
 		builder.addWires(m_wireDecimalPoint.get(), true);
 	}
-
-	// endcomponent
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Digit::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Digit::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -211,11 +199,6 @@ void lcsm::model::Digit::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &
 
 void lcsm::model::Digit::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

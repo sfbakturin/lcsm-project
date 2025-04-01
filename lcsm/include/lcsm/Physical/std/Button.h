@@ -8,6 +8,8 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/lcsmconfig.h>
 
+#include <deque>
+
 namespace lcsm
 {
 	namespace physical
@@ -15,7 +17,7 @@ namespace lcsm
 		class LCSM_API Button : public EvaluatorNode
 		{
 		  public:
-			Button(object_type_t objectType, bool activeOnPress);
+			Button(object_type_t objectType, bool activeOnPress) noexcept;
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -28,9 +30,9 @@ namespace lcsm
 
 			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invoke(const Timestamp &now) override final;
+			virtual void invoke(const Timestamp &now, std::deque< Event > &events) override final;
 
-			void connect(const support::PointerView< EvaluatorNode > &node);
+			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;
 
 		  private:
 			bool m_activeOnPress;

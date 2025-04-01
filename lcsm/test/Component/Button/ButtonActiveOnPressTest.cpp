@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -39,21 +39,21 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *button = circuit.find("button");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *button = circuit.find("button");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(button, CircuitType::Button);
-	assertType(pin, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(button, ComponentType::Button);
+	assertType(pin, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *button = circuit.find("button");
-	Circuit *pin = circuit.find("pin");
+	Component *button = circuit.find("button");
+	Component *pin = circuit.find("pin");
 
 	// Generate physical engine.
 	LCSMEngine engine = LCSMEngine::fromCircuit(circuit);

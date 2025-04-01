@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -26,11 +26,11 @@ using TestDataWithDecimalPoint = std::pair< DataBits, DataBits >;
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *digit = circuit.find("digit");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *digit = circuit.find("digit");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Extract models.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);

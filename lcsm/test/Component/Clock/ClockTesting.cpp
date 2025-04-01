@@ -4,7 +4,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/std/Clock.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Physical/DataBits.h>
@@ -34,15 +34,15 @@ LCSMCircuit lcsm_tests::generator()
 void lcsm_tests::checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *clock = circuit.find("clock");
-	Circuit *pin = circuit.find("pin");
+	Component *clock = circuit.find("clock");
+	Component *pin = circuit.find("pin");
 
 	// Check element's types.
-	assertType(clock, CircuitType::Clock);
-	assertType(pin, CircuitType::Pin);
+	assertType(clock, ComponentType::Clock);
+	assertType(pin, ComponentType::Pin);
 }
 
-void lcsm_tests::singleTest(LCSMState &state, const Circuit *clock, const Circuit *pin, const std::vector< TestData > &testdatas)
+void lcsm_tests::singleTest(LCSMState &state, const Component *clock, const Component *pin, const std::vector< TestData > &testdatas)
 {
 	for (const TestData &testdata : testdatas)
 	{

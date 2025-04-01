@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -18,7 +18,7 @@
 lcsm::model::Transistor::Transistor(lcsm::model::Transistor::Type type) : lcsm::model::Transistor("", type) {}
 
 lcsm::model::Transistor::Transistor(lcsm::label_t name, lcsm::model::Transistor::Type type) :
-	lcsm::Circuit(name), m_type(type)
+	lcsm::Component(name), m_type(type)
 {
 }
 
@@ -88,12 +88,12 @@ lcsm::object_type_t lcsm::model::Transistor::objectType() const noexcept
 	return lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::Transistor::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Transistor::componentType() const noexcept
 {
-	return lcsm::CircuitType::Transistor;
+	return lcsm::ComponentType::Transistor;
 }
 
-void lcsm::model::Transistor::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Transistor::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (!wire)
@@ -101,7 +101,7 @@ void lcsm::model::Transistor::connect(lcsm::portid_t portId, lcsm::Circuit *circ
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Transistor::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Transistor::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -113,22 +113,22 @@ void lcsm::model::Transistor::disconnectAll() noexcept
 	m_srcB->disconnectAll();
 }
 
-void lcsm::model::Transistor::connectBase(lcsm::Circuit *circuit)
+void lcsm::model::Transistor::connectBase(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Transistor::Port::Base, circuit);
 }
 
-void lcsm::model::Transistor::connectSrcA(lcsm::Circuit *circuit)
+void lcsm::model::Transistor::connectSrcA(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Transistor::Port::SrcA, circuit);
 }
 
-void lcsm::model::Transistor::connectSrcB(lcsm::Circuit *circuit)
+void lcsm::model::Transistor::connectSrcB(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Transistor::Port::SrcB, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Transistor::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Transistor::Port p = static_cast< lcsm::model::Transistor::Port >(portId);
 	switch (p)
@@ -143,7 +143,7 @@ lcsm::Circuit *lcsm::model::Transistor::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Transistor::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Transistor::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_base.get())
 		return lcsm::model::Transistor::Port::Base;
@@ -162,9 +162,6 @@ lcsm::portid_t lcsm::model::Transistor::defaultPort() const noexcept
 
 void lcsm::model::Transistor::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	writer.writeBeginComponent();
-	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(id());
 	writer.writeNameDeclaration(name());
 	writer.writeKeyValueDeclaration("type", static_cast< std::uint64_t >(type()));
 	writer.writeKeyValueDeclaration("baseid", wireBase()->id());
@@ -173,12 +170,11 @@ void lcsm::model::Transistor::dump(lcsm::model::LCSMFileWriter &writer, lcsm::mo
 	builder.addWires(wireBase(), true);
 	builder.addWires(wireSrcA(), true);
 	builder.addWires(wireSrcB(), true);
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Transistor::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Transistor::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -199,11 +195,6 @@ void lcsm::model::Transistor::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuil
 
 void lcsm::model::Transistor::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

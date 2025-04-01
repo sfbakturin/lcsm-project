@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -38,17 +38,17 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *ground = circuit.find("ground");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *ground = circuit.find("ground");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(ground, CircuitType::Ground);
-	assertType(pin, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(ground, ComponentType::Ground);
+	assertType(pin, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
-static void test(LCSMState &state, const Circuit *ground, const Circuit *pin, const Circuit *wire, Width width)
+static void test(LCSMState &state, const Component *ground, const Component *pin, const Component *wire, Width width)
 {
 	// Indexes.
 	const Identifier groundId = ground->id();
@@ -72,9 +72,9 @@ static void test(LCSMState &state, const Circuit *ground, const Circuit *pin, co
 static void test1(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *ground = circuit.find("ground");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *ground = circuit.find("ground");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Extract models.
 	model::Ground *groundModel = static_cast< model::Ground * >(ground);

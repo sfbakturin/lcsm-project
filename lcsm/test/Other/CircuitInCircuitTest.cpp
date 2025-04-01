@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -47,8 +47,8 @@ static LCSMCircuit generator()
 
 	// Add circuit to circuit.
 	LCSMCircuitView view = circuit.addCircuit(getCircuit1());
-	lcsm::Circuit *input0 = view.find("Circuit0 Input");
-	lcsm::Circuit *output0 = view.find("Circuit0 Output");
+	lcsm::Component *input0 = view.find("Circuit0 Input");
+	lcsm::Component *output0 = view.find("Circuit0 Output");
 
 	// Make connections.
 	circuit.connect(input, input0, model::Pin::Port::External);
@@ -61,27 +61,27 @@ static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
 	LCSMCircuitView view = circuit.findCircuit("Circuit0");
-	Circuit *input = circuit.find("Input");
-	Circuit *output = circuit.find("Output");
-	Circuit *input0 = view.find("Circuit0 Input");
-	Circuit *output0 = view.find("Circuit0 Output");
+	Component *input = circuit.find("Input");
+	Component *output = circuit.find("Output");
+	Component *input0 = view.find("Circuit0 Input");
+	Component *output0 = view.find("Circuit0 Output");
 
 	// Check element's types.
 	assertTrue(view.present());
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(input0, CircuitType::Pin);
-	assertType(output0, CircuitType::Pin);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(input0, ComponentType::Pin);
+	assertType(output0, ComponentType::Pin);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
 	LCSMCircuitView view = circuit.findCircuit("Circuit0");
-	Circuit *input = circuit.find("Input");
-	Circuit *output = circuit.find("Output");
-	Circuit *input0 = view.find("Circuit0 Input");
-	Circuit *output0 = view.find("Circuit0 Output");
+	Component *input = circuit.find("Input");
+	Component *output = circuit.find("Output");
+	Component *input0 = view.find("Circuit0 Input");
+	Component *output0 = view.find("Circuit0 Output");
 
 	// Indexes.
 	const Identifier inputId = input->id();

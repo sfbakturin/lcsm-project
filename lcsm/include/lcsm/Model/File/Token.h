@@ -30,7 +30,7 @@ namespace lcsm
 
 			void swap(LCSMFileToken &other) noexcept;
 
-			LCSMFileKind kind();
+			LCSMFileKind kind() noexcept;
 
 			void setToken(LCSMFileKind kind) noexcept;
 			void setToken(unsigned long long i) noexcept;

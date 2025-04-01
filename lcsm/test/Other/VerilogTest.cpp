@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
@@ -392,68 +392,68 @@ static LCSMCircuit generator5()
 static void checker1(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *a = circuit.find("a");
-	Circuit *b = circuit.find("b");
-	Circuit *out = circuit.find("out");
-	Circuit *strength_example1 = circuit.find("strength_example1");
+	Component *a = circuit.find("a");
+	Component *b = circuit.find("b");
+	Component *out = circuit.find("out");
+	Component *strength_example1 = circuit.find("strength_example1");
 
 	// Check element's types.
-	assertType(a, CircuitType::Pin);
-	assertType(b, CircuitType::Pin);
-	assertType(out, CircuitType::Pin);
-	assertType(strength_example1, CircuitType::VerilogModule);
+	assertType(a, ComponentType::Pin);
+	assertType(b, ComponentType::Pin);
+	assertType(out, ComponentType::Pin);
+	assertType(strength_example1, ComponentType::VerilogModule);
 }
 
 static void checker2(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *or_test1 = circuit.find("or_test1");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *or_test1 = circuit.find("or_test1");
 
 	// Check element's types.
-	assertType(in, CircuitType::Pin);
-	assertType(out, CircuitType::Pin);
-	assertType(or_test1, CircuitType::VerilogModule);
+	assertType(in, ComponentType::Pin);
+	assertType(out, ComponentType::Pin);
+	assertType(or_test1, ComponentType::VerilogModule);
 }
 
 static void checker3(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *or_test2 = circuit.find("or_test2");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *or_test2 = circuit.find("or_test2");
 
 	// Check element's types.
-	assertType(in, CircuitType::Pin);
-	assertType(out, CircuitType::Pin);
-	assertType(or_test2, CircuitType::VerilogModule);
+	assertType(in, ComponentType::Pin);
+	assertType(out, ComponentType::Pin);
+	assertType(or_test2, ComponentType::VerilogModule);
 }
 
 static void checker4(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *andor_test = circuit.find("andor_test");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *andor_test = circuit.find("andor_test");
 
 	// Check element's types.
-	assertType(in, CircuitType::Pin);
-	assertType(out, CircuitType::Pin);
-	assertType(andor_test, CircuitType::VerilogModule);
+	assertType(in, ComponentType::Pin);
+	assertType(out, ComponentType::Pin);
+	assertType(andor_test, ComponentType::VerilogModule);
 }
 
 static void checker5(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *reg_test = circuit.find("reg_test");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *reg_test = circuit.find("reg_test");
 
 	// Check element's types.
-	assertType(in, CircuitType::Pin);
-	assertType(out, CircuitType::Pin);
-	assertType(reg_test, CircuitType::VerilogModule);
+	assertType(in, ComponentType::Pin);
+	assertType(out, ComponentType::Pin);
+	assertType(reg_test, ComponentType::VerilogModule);
 }
 
 static void test3_runTheVerilogModule(LCSMCircuit &circuit)
@@ -461,10 +461,10 @@ static void test3_runTheVerilogModule(LCSMCircuit &circuit)
 	// LCSMCircuit circuit = generator1();
 
 	// Find circuits.
-	Circuit *a = circuit.find("a");
-	Circuit *b = circuit.find("b");
-	Circuit *out = circuit.find("out");
-	Circuit *strengthExample = circuit.find("strength_example1");
+	Component *a = circuit.find("a");
+	Component *b = circuit.find("b");
+	Component *out = circuit.find("out");
+	Component *strengthExample = circuit.find("strength_example1");
 
 	// Extract models.
 	model::VerilogModule *strengthExampleModel = static_cast< model::VerilogModule * >(strengthExample);
@@ -533,9 +533,9 @@ static void test3_runTheVerilogModule(LCSMCircuit &circuit)
 static void test4_runTheVerilogModuleWithWideWires1(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *orTest = circuit.find("or_test1");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *orTest = circuit.find("or_test1");
 
 	// Extract models.
 	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(orTest);
@@ -600,9 +600,9 @@ static void test4_runTheVerilogModuleWithWideWires1(LCSMCircuit &circuit)
 static void test4_runTheVerilogModuleWithWideWires2(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *orTest = circuit.find("or_test2");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *orTest = circuit.find("or_test2");
 
 	// Extract models.
 	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(orTest);
@@ -667,9 +667,9 @@ static void test4_runTheVerilogModuleWithWideWires2(LCSMCircuit &circuit)
 static void test5_runTheVerilogModuleWithWideOut(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *andOrTest = circuit.find("andor_test");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *andOrTest = circuit.find("andor_test");
 
 	// Extract models.
 	model::VerilogModule *orTestModel = static_cast< model::VerilogModule * >(andOrTest);
@@ -734,9 +734,9 @@ static void test5_runTheVerilogModuleWithWideOut(LCSMCircuit &circuit)
 static void test6_runTheVerilogModuleWithRegs(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *in = circuit.find("in");
-	Circuit *out = circuit.find("out");
-	Circuit *regTest = circuit.find("reg_test");
+	Component *in = circuit.find("in");
+	Component *out = circuit.find("out");
+	Component *regTest = circuit.find("reg_test");
 
 	// Extract models.
 	model::VerilogModule *regTestModel = static_cast< model::VerilogModule * >(regTest);

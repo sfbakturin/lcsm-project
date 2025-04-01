@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Ground.h>
@@ -64,34 +64,34 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *a = circuit.find("a");
-	Circuit *b = circuit.find("b");
-	Circuit *c = circuit.find("c");
-	Circuit *power = circuit.find("power");
-	Circuit *ground = circuit.find("ground");
-	Circuit *p1 = circuit.find("p1");
-	Circuit *p2 = circuit.find("p2");
-	Circuit *n1 = circuit.find("n1");
-	Circuit *n2 = circuit.find("n2");
+	Component *a = circuit.find("a");
+	Component *b = circuit.find("b");
+	Component *c = circuit.find("c");
+	Component *power = circuit.find("power");
+	Component *ground = circuit.find("ground");
+	Component *p1 = circuit.find("p1");
+	Component *p2 = circuit.find("p2");
+	Component *n1 = circuit.find("n1");
+	Component *n2 = circuit.find("n2");
 
 	// Check element's types.
-	assertType(a, CircuitType::Pin);
-	assertType(b, CircuitType::Pin);
-	assertType(c, CircuitType::Pin);
-	assertType(power, CircuitType::Power);
-	assertType(ground, CircuitType::Ground);
-	assertType(p1, CircuitType::Transistor);
-	assertType(p2, CircuitType::Transistor);
-	assertType(n1, CircuitType::Transistor);
-	assertType(n2, CircuitType::Transistor);
+	assertType(a, ComponentType::Pin);
+	assertType(b, ComponentType::Pin);
+	assertType(c, ComponentType::Pin);
+	assertType(power, ComponentType::Power);
+	assertType(ground, ComponentType::Ground);
+	assertType(p1, ComponentType::Transistor);
+	assertType(p2, ComponentType::Transistor);
+	assertType(n1, ComponentType::Transistor);
+	assertType(n2, ComponentType::Transistor);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *a = circuit.find("a");
-	Circuit *b = circuit.find("b");
-	Circuit *c = circuit.find("c");
+	Component *a = circuit.find("a");
+	Component *b = circuit.find("b");
+	Component *c = circuit.find("c");
 
 	// Indexes.
 	const Identifier aId = a->id();

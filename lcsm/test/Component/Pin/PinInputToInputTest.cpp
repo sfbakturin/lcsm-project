@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -45,22 +45,22 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input1 = circuit.find("input1");
-	Circuit *input2 = circuit.find("input2");
-	Circuit *wire = circuit.find("wire");
+	Component *input1 = circuit.find("input1");
+	Component *input2 = circuit.find("input2");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(input1, CircuitType::Pin);
-	assertType(input2, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(input1, ComponentType::Pin);
+	assertType(input2, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input1 = circuit.find("input1");
-	Circuit *input2 = circuit.find("input2");
-	Circuit *wire = circuit.find("wire");
+	Component *input1 = circuit.find("input1");
+	Component *input2 = circuit.find("input2");
+	Component *wire = circuit.find("wire");
 
 	// Extract models.
 	model::Pin *input1Model = static_cast< model::Pin * >(input1);

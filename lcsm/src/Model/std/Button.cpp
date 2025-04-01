@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
@@ -17,7 +17,7 @@
 lcsm::model::Button::Button(bool activeOnPress) : lcsm::model::Button("", activeOnPress) {}
 
 lcsm::model::Button::Button(lcsm::label_t name, bool activeOnPress) :
-	lcsm::Circuit(name), m_activeOnPress(activeOnPress)
+	lcsm::Component(name), m_activeOnPress(activeOnPress)
 {
 }
 
@@ -70,12 +70,12 @@ lcsm::object_type_t lcsm::model::Button::objectType() const noexcept
 	return lcsm::ObjectType::Internal | lcsm::ObjectType::Input | lcsm::ObjectType::Root;
 }
 
-lcsm::CircuitType lcsm::model::Button::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Button::componentType() const noexcept
 {
-	return lcsm::CircuitType::Button;
+	return lcsm::ComponentType::Button;
 }
 
-void lcsm::model::Button::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Button::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (!wire)
@@ -83,7 +83,7 @@ void lcsm::model::Button::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::Button::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Button::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -93,12 +93,12 @@ void lcsm::model::Button::disconnectAll() noexcept
 	m_wire->disconnectAll();
 }
 
-void lcsm::model::Button::connect(lcsm::Circuit *circuit)
+void lcsm::model::Button::connect(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Button::Port::Wiring, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Button::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Button::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Button::Port p = static_cast< lcsm::model::Button::Port >(portId);
 	switch (p)
@@ -109,7 +109,7 @@ lcsm::Circuit *lcsm::model::Button::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Button::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Button::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_wire.get())
 		return lcsm::model::Button::Port::Wiring;
@@ -124,15 +124,6 @@ lcsm::portid_t lcsm::model::Button::defaultPort() const noexcept
 
 void lcsm::model::Button::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	// 'begincomponent'
-	writer.writeBeginComponent();
-
-	// circuittype <INTEGER>;
-	writer.writeCircuitTypeDeclaration(circuitType());
-
-	// id <IDENTIFIER>;
-	writer.writeIdDeclaration(id());
-
 	// name <STRING>;
 	writer.writeNameDeclaration(name());
 
@@ -144,14 +135,11 @@ void lcsm::model::Button::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model:
 
 	// Initialize wires.
 	builder.addWires(wire(), true);
-
-	// 'endcomponent'
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Button::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Button::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -168,11 +156,6 @@ void lcsm::model::Button::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder 
 
 void lcsm::model::Button::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

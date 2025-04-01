@@ -10,11 +10,12 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Value.h>
 
+#include <deque>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-lcsm::physical::Button::Button(lcsm::object_type_t objectType, bool activeOnPress) :
+lcsm::physical::Button::Button(lcsm::object_type_t objectType, bool activeOnPress) noexcept :
 	lcsm::EvaluatorNode(objectType), m_activeOnPress(activeOnPress), m_wasPolluted(false)
 {
 }
@@ -115,15 +116,12 @@ void lcsm::physical::Button::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Button::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Button::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
 	// Constants.
 	lcsm::EvaluatorNode *target = m_wire.get();
 	static const lcsm::DataBits T = lcsm::verilog::Bit::True;
 	static const lcsm::DataBits F = lcsm::verilog::Bit::False;
-
-	// Generated events.
-	std::vector< lcsm::Event > events;
 
 	// If it was polluted, then generate simulator's event.
 	// Otherwise, act normally.
@@ -135,8 +133,8 @@ std::vector< lcsm::Event > lcsm::physical::Button::invoke(const lcsm::Timestamp 
 		// Reset.
 		m_wasPolluted = false;
 
-		// Return events.
-		return events;
+		// Return.
+		return;
 	}
 
 	// Extract context.
@@ -167,11 +165,9 @@ std::vector< lcsm::Event > lcsm::physical::Button::invoke(const lcsm::Timestamp 
 
 	// Create write value.
 	events.push_back(lcsm::CreateWriteValueInstruction(this, target, std::move(pushed)));
-
-	return events;
 }
 
-void lcsm::physical::Button::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::Button::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_wire = node;
 }

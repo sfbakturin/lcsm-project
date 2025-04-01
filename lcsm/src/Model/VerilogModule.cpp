@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-static lcsm::Circuit *ByPortImpl(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, std::size_t &p) noexcept
+static lcsm::Component *ByPortImpl(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, std::size_t &p) noexcept
 {
 	if (wires.size() != 0)
 	{
@@ -39,7 +39,7 @@ lcsm::model::VerilogModule::VerilogModule(const std::shared_ptr< lcsm::verilog::
 }
 
 lcsm::model::VerilogModule::VerilogModule(const std::shared_ptr< lcsm::verilog::Module > &module, lcsm::label_t name) :
-	lcsm::Circuit(name), m_module(module)
+	lcsm::Component(name), m_module(module)
 {
 }
 
@@ -50,7 +50,7 @@ lcsm::model::VerilogModule::~VerilogModule() noexcept
 
 const lcsm::model::Wire *lcsm::model::VerilogModule::wire(lcsm::portid_t portId) const noexcept
 {
-	lcsm::Circuit *found = nullptr;
+	lcsm::Component *found = nullptr;
 	std::size_t p = static_cast< std::size_t >(portId);
 
 	// Check, if port is input.
@@ -279,12 +279,12 @@ lcsm::object_type_t lcsm::model::VerilogModule::objectType() const noexcept
 	return lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::VerilogModule::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::VerilogModule::componentType() const noexcept
 {
-	return lcsm::CircuitType::VerilogModule;
+	return lcsm::ComponentType::VerilogModule;
 }
 
-void lcsm::model::VerilogModule::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::VerilogModule::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *selected = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (selected == nullptr)
@@ -294,7 +294,7 @@ void lcsm::model::VerilogModule::connect(lcsm::portid_t portId, lcsm::Circuit *c
 	selected->connectToWire(circuit);
 }
 
-void lcsm::model::VerilogModule::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::VerilogModule::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -321,9 +321,9 @@ void lcsm::model::VerilogModule::disconnectAll() noexcept
 	m_outputs.clear();
 }
 
-lcsm::Circuit *lcsm::model::VerilogModule::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::VerilogModule::byPort(lcsm::portid_t portId) noexcept
 {
-	lcsm::Circuit *found = nullptr;
+	lcsm::Component *found = nullptr;
 	std::size_t p = static_cast< std::size_t >(portId);
 
 	// Check, if port is input.
@@ -350,7 +350,7 @@ lcsm::Circuit *lcsm::model::VerilogModule::byPort(lcsm::portid_t portId) noexcep
 	return nullptr;
 }
 
-static inline bool findPortImpl(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, const lcsm::Circuit *circuit)
+static inline bool findPortImpl(const std::vector< std::shared_ptr< lcsm::model::Wire > > &wires, const lcsm::Component *circuit)
 {
 	for (auto it = wires.begin(); it != wires.end(); it++)
 	{
@@ -362,7 +362,7 @@ static inline bool findPortImpl(const std::vector< std::shared_ptr< lcsm::model:
 	return false;
 }
 
-lcsm::portid_t lcsm::model::VerilogModule::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::VerilogModule::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (findPortImpl(m_inputs, circuit))
 	{
@@ -389,18 +389,8 @@ lcsm::portid_t lcsm::model::VerilogModule::defaultPort() const noexcept
 
 void lcsm::model::VerilogModule::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	// begincomponent
-	writer.writeBeginComponent();
-
-	// circuittype <INTEGER>;
-	writer.writeCircuitTypeDeclaration(circuitType());
-
-	// We're force to break the rules and make 'source' being the first.
 	// keyvalue source <STRING>;
 	writer.writeKeyValueEscapedDeclaration("source", m_module->source());
-
-	// id <IDENTIFIER>;
-	writer.writeIdDeclaration(id());
 
 	// name <STRING>;
 	writer.writeNameDeclaration(name());
@@ -431,14 +421,11 @@ void lcsm::model::VerilogModule::dump(lcsm::model::LCSMFileWriter &writer, lcsm:
 		// keyvalue inout<id> <IDENTIFIER>;
 		writer.writeKeyValueDeclaration(key.c_str(), child->id());
 	}
-
-	// endcomponent
-	writer.writeEndComponent();
 }
 
-void lcsm::model::VerilogModule::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::VerilogModule::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -460,10 +447,7 @@ void lcsm::model::VerilogModule::copy(lcsm::Circuit *circuit, lcsm::model::LCSMB
 
 void lcsm::model::VerilogModule::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' and 'source' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
+	// 'source' is already parsed, so we continue to 'endcomponent'
 
 	// name <STRING>;
 	setName(reader.exceptName());

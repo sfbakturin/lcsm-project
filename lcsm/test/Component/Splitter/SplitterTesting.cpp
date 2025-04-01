@@ -4,7 +4,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -41,19 +41,19 @@ LCSMCircuit lcsm_tests::generator()
 void lcsm_tests::checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *splitter = circuit.find("splitter");
-	Circuit *output1 = circuit.find("output1");
-	Circuit *output2 = circuit.find("output2");
+	Component *input = circuit.find("input");
+	Component *splitter = circuit.find("splitter");
+	Component *output1 = circuit.find("output1");
+	Component *output2 = circuit.find("output2");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(splitter, CircuitType::Splitter);
-	assertType(output1, CircuitType::Pin);
-	assertType(output2, CircuitType::Pin);
+	assertType(input, ComponentType::Pin);
+	assertType(splitter, ComponentType::Splitter);
+	assertType(output1, ComponentType::Pin);
+	assertType(output2, ComponentType::Pin);
 }
 
-void lcsm_tests::test2bit(LCSMState &state, const Circuit *input, const Circuit *output1, const Circuit *output2, const std::vector< TestData2bit > &testdatas)
+void lcsm_tests::test2bit(LCSMState &state, const Component *input, const Component *output1, const Component *output2, const std::vector< TestData2bit > &testdatas)
 {
 	const Identifier inputId = input->id();
 	const Identifier output1Id = output1->id();
@@ -86,10 +86,10 @@ void lcsm_tests::test2bit(LCSMState &state, const Circuit *input, const Circuit 
 
 void lcsm_tests::test3bit(
 	LCSMState &state,
-	const Circuit *input,
-	const Circuit *output1,
-	const Circuit *output2,
-	const Circuit *output3,
+	const Component *input,
+	const Component *output1,
+	const Component *output2,
+	const Component *output3,
 	const std::vector< TestData3bit > &testdatas)
 {
 	const Identifier inputId = input->id();

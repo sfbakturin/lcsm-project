@@ -1,6 +1,6 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
@@ -16,7 +16,7 @@
 void lcsm::model::LCSMBuilder::addWires(const lcsm::model::Wire *wire, bool isFirstComp)
 {
 	const lcsm::Identifier id1 = wire->id();
-	for (const lcsm::support::PointerView< lcsm::Circuit > &child : wire->wires())
+	for (const lcsm::support::PointerView< lcsm::Component > &child : wire->wires())
 	{
 		const lcsm::model::Wire *w = static_cast< const lcsm::model::Wire * >(child.get());
 		const lcsm::Identifier id2 = child->id();
@@ -48,8 +48,8 @@ void lcsm::model::LCSMBuilder::addWire(unsigned long long id1, unsigned long lon
 void lcsm::model::LCSMBuilder::addTunnels(const lcsm::model::Tunnel *tunnel)
 {
 	const lcsm::Identifier id = tunnel->id();
-	const std::vector< lcsm::Circuit * > &tunnels = tunnel->tunnels();
-	for (lcsm::Circuit *child : tunnels)
+	const std::vector< lcsm::Component * > &tunnels = tunnel->tunnels();
+	for (lcsm::Component *child : tunnels)
 	{
 		const lcsm::Identifier childId = child->id();
 		addTunnel(id, childId);

@@ -16,7 +16,6 @@ namespace lcsm
 		{
 		  public:
 			LCSMFileLexer(const std::shared_ptr< support::Reader > &source);
-			LCSMFileLexer(std::shared_ptr< support::Reader > &&source);
 
 			LCSMFileLexer(const LCSMFileLexer &other) = delete;
 			LCSMFileLexer(LCSMFileLexer &&other) noexcept;

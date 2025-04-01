@@ -15,12 +15,6 @@ lcsm::model::LCSMFileLexer::LCSMFileLexer(const std::shared_ptr< lcsm::support::
 	nextChar();
 }
 
-lcsm::model::LCSMFileLexer::LCSMFileLexer(std::shared_ptr< lcsm::support::Reader > &&source) :
-	m_source(std::move(source))
-{
-	nextChar();
-}
-
 lcsm::model::LCSMFileLexer::LCSMFileLexer(lcsm::model::LCSMFileLexer &&other) noexcept :
 	m_source(std::move(other.m_source)), m_token(std::move(other.m_token)), m_character(other.m_character),
 	m_previousTokens(std::move(other.m_previousTokens))
@@ -42,7 +36,7 @@ void lcsm::model::LCSMFileLexer::swap(lcsm::model::LCSMFileLexer &other)
 
 static inline bool IsNumber(const std::string &s) noexcept
 {
-	for (char c : s)
+	for (const char c : s)
 	{
 		if (!('0' <= c && c <= '9'))
 		{
@@ -116,7 +110,7 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 		// Set token to string, skip char and return token.
 		nextChar();
 		m_token.setToken(std::move(builder), false);
-		goto l_finish;
+		return m_token;
 	}
 
 	// Otherwise, that might be any other char.
@@ -124,14 +118,14 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 	{
 		m_token.setToken(kind);
 		nextChar();
-		goto l_finish;
+		return m_token;
 	}
 
 	// Check, if EOF.
 	if (m_character == lcsm::support::Reader::EndOfSource)
 	{
 		m_token.setEof();
-		goto l_finish;
+		return m_token;
 	}
 
 	// Continue parsing to blank character (non valid).
@@ -142,13 +136,12 @@ const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileLexer::nextToken()
 	if (kind >= 0)
 	{
 		m_token.setToken(kind);
-		goto l_finish;
+		return m_token;
 	}
 
 	// Otherwise, build this string as integer or identifier.
 	buildIntegerOrIdentifier(builder, m_token);
 
-l_finish:
 	return m_token;
 }
 

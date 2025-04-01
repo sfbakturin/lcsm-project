@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -42,22 +42,22 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *wire = circuit.find("wire");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *wire = circuit.find("wire");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *wire = circuit.find("wire");
 
 	// Testing data.
 	const std::vector< DataBits > testdatas = { { T }, { F } };

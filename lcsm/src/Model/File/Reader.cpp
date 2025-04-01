@@ -14,11 +14,6 @@
 
 lcsm::model::LCSMFileReader::LCSMFileReader(const std::shared_ptr< lcsm::support::Reader > &reader) : m_lexer(reader) {}
 
-lcsm::model::LCSMFileReader::LCSMFileReader(std::shared_ptr< lcsm::support::Reader > &&reader) :
-	m_lexer(std::move(reader))
-{
-}
-
 const lcsm::model::LCSMFileToken &lcsm::model::LCSMFileReader::next()
 {
 	return m_lexer.nextToken();
@@ -142,7 +137,7 @@ bool lcsm::model::LCSMFileReader::tryParseTunnel()
 	}
 }
 
-lcsm::target_t lcsm::model::LCSMFileReader::exceptCircuitType()
+lcsm::target_t lcsm::model::LCSMFileReader::exceptComponentType()
 {
 	// circuit_type --> 'circuittype' INTEGER ';'
 	if (next() != lcsm::model::LCSMFileKind::CircuitTypeKeyword)
@@ -153,12 +148,12 @@ lcsm::target_t lcsm::model::LCSMFileReader::exceptCircuitType()
 	{
 		throw std::logic_error("Excepted integer valued token, but got something else.");
 	}
-	const lcsm::target_t circuitType = static_cast< lcsm::target_t >(curr().asInteger());
+	const lcsm::target_t componentType = static_cast< lcsm::target_t >(curr().asInteger());
 	if (next() != lcsm::model::LCSMFileKind::SemicolonCharKeyword)
 	{
 		throw std::logic_error("Excepted ';', but got something else.");
 	}
-	return circuitType;
+	return componentType;
 }
 
 lcsm::Identifier lcsm::model::LCSMFileReader::exceptIdentifier()

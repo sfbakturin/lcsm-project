@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -92,18 +92,18 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *r = circuit.find("R");
-	Circuit *s = circuit.find("S");
-	Circuit *q = circuit.find("Q");
-	Circuit *nq = circuit.find("nQ");
+	Component *r = circuit.find("R");
+	Component *s = circuit.find("S");
+	Component *q = circuit.find("Q");
+	Component *nq = circuit.find("nQ");
 	LCSMCircuitView orNot1 = circuit.findCircuit("orNot1");
 	LCSMCircuitView orNot2 = circuit.findCircuit("orNot2");
 
 	// Check element's types.
-	assertType(r, CircuitType::Pin);
-	assertType(s, CircuitType::Pin);
-	assertType(q, CircuitType::Pin);
-	assertType(nq, CircuitType::Pin);
+	assertType(r, ComponentType::Pin);
+	assertType(s, ComponentType::Pin);
+	assertType(q, ComponentType::Pin);
+	assertType(nq, ComponentType::Pin);
 
 	assertTrue(orNot1.present());
 	assertTrue(orNot2.present());
@@ -112,10 +112,10 @@ static void checker(LCSMCircuit &circuit)
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *r = circuit.find("R");
-	Circuit *s = circuit.find("S");
-	Circuit *q = circuit.find("Q");
-	Circuit *nq = circuit.find("nQ");
+	Component *r = circuit.find("R");
+	Component *s = circuit.find("S");
+	Component *q = circuit.find("Q");
+	Component *nq = circuit.find("nQ");
 
 	// Indexes.
 	const Identifier rId = r->id();
@@ -134,6 +134,10 @@ static void test(LCSMCircuit &circuit)
 		{ { F }, { T }, { F }, { F } },
 		{ { T }, { F }, { F }, { F } },
 		{ { F }, { F }, { F }, { F } },
+		{ { T }, { T }, { F }, { F } },
+		{ { F }, { F }, { F }, { F } },
+		{ { F }, { T }, { F }, { F } },
+		{ { T }, { F }, { F }, { F } },
 		{ { F }, { F }, { F }, { F } },
 	};
 	// clang-format on

@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -49,34 +49,34 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input1 = circuit.find("input1");
-	Circuit *input2 = circuit.find("input2");
-	Circuit *output1 = circuit.find("output1");
-	Circuit *output2 = circuit.find("output2");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
-	Circuit *wire3 = circuit.find("wire3");
+	Component *input1 = circuit.find("input1");
+	Component *input2 = circuit.find("input2");
+	Component *output1 = circuit.find("output1");
+	Component *output2 = circuit.find("output2");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
+	Component *wire3 = circuit.find("wire3");
 
 	// Check element's types.
-	assertType(input1, CircuitType::Pin);
-	assertType(input2, CircuitType::Pin);
-	assertType(output1, CircuitType::Pin);
-	assertType(output2, CircuitType::Pin);
-	assertType(wire1, CircuitType::Wire);
-	assertType(wire2, CircuitType::Wire);
-	assertType(wire3, CircuitType::Wire);
+	assertType(input1, ComponentType::Pin);
+	assertType(input2, ComponentType::Pin);
+	assertType(output1, ComponentType::Pin);
+	assertType(output2, ComponentType::Pin);
+	assertType(wire1, ComponentType::Wire);
+	assertType(wire2, ComponentType::Wire);
+	assertType(wire3, ComponentType::Wire);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input1 = circuit.find("input1");
-	Circuit *input2 = circuit.find("input2");
-	Circuit *output1 = circuit.find("output1");
-	Circuit *output2 = circuit.find("output2");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
-	Circuit *wire3 = circuit.find("wire3");
+	Component *input1 = circuit.find("input1");
+	Component *input2 = circuit.find("input2");
+	Component *output1 = circuit.find("output1");
+	Component *output2 = circuit.find("output2");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
+	Component *wire3 = circuit.find("wire3");
 
 	// Extract models.
 	model::Pin *input1Model = static_cast< model::Pin * >(input1);

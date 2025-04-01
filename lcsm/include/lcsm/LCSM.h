@@ -15,7 +15,7 @@ namespace lcsm
 	using label_t = const char *;
 
 	/// Represents all implemented circuit elements in standard library.
-	enum CircuitType : target_t
+	enum ComponentType : target_t
 	{
 		Wire,				 ///< Wire
 		Tunnel,				 ///< Tunnel
@@ -34,7 +34,7 @@ namespace lcsm
 		LastCircuitType = VerilogModule + 1
 	};
 
-	LCSM_API const char *CircuitTypePretty(CircuitType circuitType) noexcept;
+	LCSM_API const char *CircuitTypePretty(ComponentType componentType) noexcept;
 
 	/// Represents ordering of invoking and generating physical node's events.
 	enum NodeType : target_t

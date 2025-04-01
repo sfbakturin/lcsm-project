@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -43,31 +43,31 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *tunnel1 = circuit.find("tunnel1");
-	Circuit *tunnel2 = circuit.find("tunnel2");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *tunnel1 = circuit.find("tunnel1");
+	Component *tunnel2 = circuit.find("tunnel2");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(tunnel1, CircuitType::Tunnel);
-	assertType(tunnel2, CircuitType::Tunnel);
-	assertType(wire1, CircuitType::Wire);
-	assertType(wire2, CircuitType::Wire);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(tunnel1, ComponentType::Tunnel);
+	assertType(tunnel2, ComponentType::Tunnel);
+	assertType(wire1, ComponentType::Wire);
+	assertType(wire2, ComponentType::Wire);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *tunnel1 = circuit.find("tunnel1");
-	Circuit *tunnel2 = circuit.find("tunnel2");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *tunnel1 = circuit.find("tunnel1");
+	Component *tunnel2 = circuit.find("tunnel2");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Extract models.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);

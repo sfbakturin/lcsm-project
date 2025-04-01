@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -21,7 +21,7 @@ lcsm::model::Clock::Clock(unsigned highDuration, unsigned lowDuration, unsigned 
 }
 
 lcsm::model::Clock::Clock(lcsm::label_t name, unsigned highDuration, unsigned lowDuration, unsigned phaseOffset) :
-	lcsm::Circuit(name), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
+	lcsm::Component(name), m_highDuration(highDuration), m_lowDuration(lowDuration), m_phaseOffset(phaseOffset)
 {
 }
 
@@ -88,9 +88,9 @@ lcsm::object_type_t lcsm::model::Clock::objectType() const noexcept
 	return lcsm::ObjectType::Root | lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::Clock::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Clock::componentType() const noexcept
 {
-	return lcsm::CircuitType::Clock;
+	return lcsm::ComponentType::Clock;
 }
 
 lcsm::Identifier lcsm::model::Clock::identify(lcsm::Identifier id) noexcept
@@ -99,7 +99,7 @@ lcsm::Identifier lcsm::model::Clock::identify(lcsm::Identifier id) noexcept
 	return m_wire->identify(m_id.next());
 }
 
-void lcsm::model::Clock::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Clock::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *selected = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (!selected)
@@ -107,7 +107,7 @@ void lcsm::model::Clock::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	selected->connectToWire(circuit);
 }
 
-void lcsm::model::Clock::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Clock::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -117,12 +117,12 @@ void lcsm::model::Clock::disconnectAll() noexcept
 	m_wire->disconnectAll();
 }
 
-void lcsm::model::Clock::connect(lcsm::Circuit *circuit)
+void lcsm::model::Clock::connect(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Clock::Port::Wiring, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Clock::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Clock::Port p = static_cast< lcsm::model::Clock::Port >(portId);
 	switch (p)
@@ -133,7 +133,7 @@ lcsm::Circuit *lcsm::model::Clock::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Clock::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Clock::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_wire.get())
 		return lcsm::model::Clock::Port::Wiring;
@@ -148,15 +148,6 @@ lcsm::portid_t lcsm::model::Clock::defaultPort() const noexcept
 
 void lcsm::model::Clock::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	// 'begincomponent'
-	writer.writeBeginComponent();
-
-	// circuittype <INTEGER>;
-	writer.writeCircuitTypeDeclaration(circuitType());
-
-	// id <INTEGER>;
-	writer.writeIdDeclaration(id());
-
 	// name <STRING>;
 	writer.writeNameDeclaration(name());
 
@@ -173,14 +164,11 @@ void lcsm::model::Clock::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::
 	writer.writeKeyValueDeclaration("wireid", wire()->id());
 
 	builder.addWires(wire(), true);
-
-	// 'endcomponent'
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Clock::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Clock::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -199,11 +187,6 @@ void lcsm::model::Clock::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &
 
 void lcsm::model::Clock::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

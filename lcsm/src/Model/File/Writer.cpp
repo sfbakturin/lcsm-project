@@ -13,11 +13,6 @@ lcsm::model::LCSMFileWriter::LCSMFileWriter(const std::shared_ptr< lcsm::support
 {
 }
 
-lcsm::model::LCSMFileWriter::LCSMFileWriter(std::shared_ptr< lcsm::support::Writer > &&writer) noexcept :
-	m_writer(std::move(writer)), m_indent(0)
-{
-}
-
 void lcsm::model::LCSMFileWriter::writeBeginCircuit()
 {
 	writeIndents();
@@ -74,7 +69,7 @@ void lcsm::model::LCSMFileWriter::writeEndTunnels()
 	m_writer->writeln(lcsm::model::KindToKeyword(lcsm::model::LCSMFileKind::EndTunnelsKeyword));
 }
 
-void lcsm::model::LCSMFileWriter::writeCircuitTypeDeclaration(int i)
+void lcsm::model::LCSMFileWriter::writeComponentTypeDeclaration(int i)
 {
 	const std::string s = std::to_string(i);
 	writeIndents();

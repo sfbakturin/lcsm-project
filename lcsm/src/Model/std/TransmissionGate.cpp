@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::TransmissionGate::TransmissionGate(lcsm::label_t name) : lcsm::Circuit(name) {}
+lcsm::model::TransmissionGate::TransmissionGate(lcsm::label_t name) : lcsm::Component(name) {}
 
 lcsm::model::TransmissionGate::~TransmissionGate() noexcept
 {
@@ -82,12 +82,12 @@ lcsm::object_type_t lcsm::model::TransmissionGate::objectType() const noexcept
 	return lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::TransmissionGate::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::TransmissionGate::componentType() const noexcept
 {
-	return lcsm::CircuitType::TransmissionGate;
+	return lcsm::ComponentType::TransmissionGate;
 }
 
-void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (!wire)
@@ -95,7 +95,7 @@ void lcsm::model::TransmissionGate::connect(lcsm::portid_t portId, lcsm::Circuit
 	wire->connectToWire(circuit);
 }
 
-void lcsm::model::TransmissionGate::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::TransmissionGate::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }
@@ -108,27 +108,27 @@ void lcsm::model::TransmissionGate::disconnectAll() noexcept
 	m_srcC->disconnectAll();
 }
 
-void lcsm::model::TransmissionGate::connectBase(lcsm::Circuit *circuit)
+void lcsm::model::TransmissionGate::connectBase(lcsm::Component *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::Base, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcA(lcsm::Circuit *circuit)
+void lcsm::model::TransmissionGate::connectSrcA(lcsm::Component *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcA, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcB(lcsm::Circuit *circuit)
+void lcsm::model::TransmissionGate::connectSrcB(lcsm::Component *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcB, circuit);
 }
 
-void lcsm::model::TransmissionGate::connectSrcC(lcsm::Circuit *circuit)
+void lcsm::model::TransmissionGate::connectSrcC(lcsm::Component *circuit)
 {
 	connect(lcsm::model::TransmissionGate::Port::SrcC, circuit);
 }
 
-lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::TransmissionGate::Port p = static_cast< lcsm::model::TransmissionGate::Port >(portId);
 	switch (p)
@@ -145,7 +145,7 @@ lcsm::Circuit *lcsm::model::TransmissionGate::byPort(lcsm::portid_t portId) noex
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::TransmissionGate::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::TransmissionGate::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_base.get())
 		return lcsm::model::TransmissionGate::Port::Base;
@@ -166,24 +166,30 @@ lcsm::portid_t lcsm::model::TransmissionGate::defaultPort() const noexcept
 
 void lcsm::model::TransmissionGate::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	writer.writeBeginComponent();
-	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(id());
+	// name <STRING>;
 	writer.writeNameDeclaration(name());
+
+	// keyvalue baseid <INTEGER>;
 	writer.writeKeyValueDeclaration("baseid", wireBase()->id());
+
+	// keyvalue srcaid <INTEGER>;
 	writer.writeKeyValueDeclaration("srcaid", wireSrcA()->id());
+
+	// keyvalue srcbid <INTEGER>;
 	writer.writeKeyValueDeclaration("srcbid", wireSrcB()->id());
+
+	// keyvalue srccid <INTEGER>;
 	writer.writeKeyValueDeclaration("srccid", wireSrcC()->id());
+
 	builder.addWires(wireBase(), true);
 	builder.addWires(wireSrcA(), true);
 	builder.addWires(wireSrcB(), true);
 	builder.addWires(wireSrcC(), true);
-	writer.writeEndComponent();
 }
 
-void lcsm::model::TransmissionGate::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::TransmissionGate::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -205,11 +211,6 @@ void lcsm::model::TransmissionGate::copy(lcsm::Circuit *circuit, lcsm::model::LC
 
 void lcsm::model::TransmissionGate::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

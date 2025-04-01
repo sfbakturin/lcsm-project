@@ -63,7 +63,7 @@ void lcsm::model::LCSMFileToken::swap(lcsm::model::LCSMFileToken &other) noexcep
 	std::swap(m_s, other.m_s);
 }
 
-lcsm::model::LCSMFileKind lcsm::model::LCSMFileToken::kind()
+lcsm::model::LCSMFileKind lcsm::model::LCSMFileToken::kind() noexcept
 {
 	return m_kind;
 }

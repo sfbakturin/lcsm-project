@@ -1,7 +1,7 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/DataBits.h>
@@ -91,14 +91,8 @@ bool SimulatorHandler::checkPollution(std::deque< lcsm::Event > &queue, const lc
 		{
 			continue;
 		}
-
 		already.insert(node);
-
-		std::vector< lcsm::Event > events = node->invoke(m_timestamp);
-		for (lcsm::Event &event : events)
-		{
-			queue.push_back(std::move(event));
-		}
+		node->invoke(m_timestamp, queue);
 	}
 
 	m_polluteCircuitRequesters.clear();
@@ -108,26 +102,28 @@ bool SimulatorHandler::checkPollution(std::deque< lcsm::Event > &queue, const lc
 
 lcsm::LCSMState::LCSMState(lcsm::LCSMEngine *engine) : m_engine(engine)
 {
-	for (auto &object : m_engine->m_objects)
+	using It = std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > >;
+
+	for (const It &object : m_engine->m_objects)
 	{
-		const lcsm::Identifier &id = object.first;
-		std::shared_ptr< lcsm::EvaluatorNode > &obj = object.second;
+		const lcsm::Identifier id = object.first;
+		const std::shared_ptr< lcsm::EvaluatorNode > &obj = object.second;
 
 		// Create context and setup physical object to new state.
 		obj->setContext(m_snapshot.allocate(id, obj->contextSize(), obj->privateContextSize()));
 	}
 
 	// Initialize all inputs.
-	for (auto &input : m_engine->m_realInputs)
+	for (It &input : m_engine->m_realInputs)
 	{
-		lcsm::support::PointerView< lcsm::EvaluatorNode > node = input.second;
+		const lcsm::support::PointerView< lcsm::EvaluatorNode > node = input.second;
 		m_roots.push_back(node);
 	}
 
 	// Initialize all roots.
-	for (auto &root : m_engine->m_realRoots)
+	for (It &root : m_engine->m_realRoots)
 	{
-		lcsm::support::PointerView< lcsm::EvaluatorNode > node = root.second;
+		const lcsm::support::PointerView< lcsm::EvaluatorNode > node = root.second;
 		m_roots.push_back(node);
 	}
 }
@@ -241,6 +237,14 @@ void lcsm::LCSMState::ticks(unsigned n)
 	}
 }
 
+template< typename T >
+static inline bool IsPresentedImpl(const std::unordered_set< lcsm::support::PointerView< T > > &set, const T *tgt)
+{
+	return std::find_if(set.begin(),
+						set.end(),
+						[tgt](const lcsm::support::PointerView< T > &elm) noexcept { return elm == tgt; }) != set.end();
+}
+
 void lcsm::LCSMState::tick()
 {
 	/* Tick. */
@@ -262,19 +266,13 @@ void lcsm::LCSMState::tick()
 	for (lcsm::support::PointerView< lcsm::EvaluatorNode > &root : m_roots)
 	{
 		/* Invoke and generate new instructions. */
-		std::vector< lcsm::Event > events = root->invoke(now);
-
-		/* Schedule events. */
-		for (lcsm::Event &event : events)
-		{
-			queue.push_back(event);
-		}
+		root->invoke(now, queue);
 	}
 
 	/* Main queue and visited elements. Generally, we should traverse over all elements only once to ensure, that
 	 * there is no looping in wires or elements. */
 	bool loop = true;
-	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > visited;
+	std::unordered_set< lcsm::support::PointerView< lcsm::EvaluatorNode > > visited;
 
 	/* Simulator handler. */
 	SimulatorHandler sm = now;
@@ -300,7 +298,6 @@ lMainLoop:
 				const std::size_t size = queue.size();
 
 				/* Find the minimum node type to ensure if everything is found. */
-				lcsm::target_t realType = nodeType;
 				for (const lcsm::Event &event : queue)
 				{
 					/* Targeting invoke in future node. */
@@ -308,15 +305,15 @@ lMainLoop:
 					const lcsm::EvaluatorNode *caller = instruction.caller();
 					const lcsm::EvaluatorNode *target = instruction.target();
 
-					/* Check if target is not in visited set. */
-					if (std::find(visited.begin(), visited.end(), caller) != visited.end())
+					/* Check if caller is not in visited set. */
+					if (IsPresentedImpl(visited, caller))
 					{
 						continue;
 					}
 
 					/* Find the min of real type and target's type. */
 					const lcsm::target_t targetNodeType = target->nodeType();
-					realType = std::min(realType, targetNodeType);
+					nodeType = std::min(nodeType, targetNodeType);
 				}
 
 				/* Extract all events from queue. */
@@ -328,20 +325,20 @@ lMainLoop:
 
 					/* Targeting invoke in future node. */
 					lcsm::Instruction &instruction = event.instruction();
-					lcsm::support::PointerView< lcsm::EvaluatorNode > caller = instruction.caller();
+					const lcsm::support::PointerView< lcsm::EvaluatorNode > caller = instruction.caller();
 					lcsm::support::PointerView< lcsm::EvaluatorNode > target = instruction.target();
 
-					/* Check if target is not in visited set. */
-					if (std::find(visited.begin(), visited.end(), caller) != visited.end())
+					/* Check if caller is not in visited set. */
+					if (IsPresentedImpl(visited, caller.get()))
 					{
-						queue.push_back(event);
+						queue.push_back(std::move(event));
 						continue;
 					}
 
 					/* Check event's target's type - if it's the one, then put instruction and remember, otherwise
 					 * put it to scheduler back. */
 					const lcsm::target_t targetNodeType = target->nodeType();
-					if (targetNodeType == realType)
+					if (targetNodeType == nodeType)
 					{
 						/* Push instruction to object's node. */
 						target->add(std::move(instruction));
@@ -356,7 +353,7 @@ lMainLoop:
 
 							/* Targeting invoke in future node. */
 							lcsm::Instruction &otherInstruction = otherEvent.instruction();
-							lcsm::support::PointerView< lcsm::EvaluatorNode > otherCaller = otherInstruction.caller();
+							const lcsm::support::PointerView< lcsm::EvaluatorNode > otherCaller = otherInstruction.caller();
 							lcsm::support::PointerView< lcsm::EvaluatorNode > otherTarget = otherInstruction.target();
 
 							/* Add to nodes, if caller is presented. */
@@ -368,16 +365,16 @@ lMainLoop:
 							else
 							{
 								/* If not, then return to queue. */
-								queue.push_back(otherEvent);
+								queue.push_back(std::move(otherEvent));
 							}
 						}
 						/* Mark as visited. */
-						visited.push_back(caller);
+						visited.insert(caller);
 					}
 					else
 					{
 						/* If non specific node is high as priority, then we should set iterator to begin. */
-						queue.push_back(event);
+						queue.push_back(std::move(event));
 					}
 				}
 
@@ -401,7 +398,7 @@ lMainLoop:
 					already.insert(node);
 
 					/* Invoke and generate new instructions. */
-					std::vector< lcsm::Event > events = node->invoke(now);
+					std::deque< lcsm::Event > events = node->invoke(now);
 
 					/* Schedule events. */
 					for (lcsm::Event &event : events)
@@ -475,10 +472,10 @@ lMainLoop:
 			}
 
 			/* Compare contexts. */
-			bool equals = copySnapshot.equalsStrict(m_snapshot);
+			const bool equals = copySnapshot.equalsStrict(m_snapshot);
 
 			/* Fixup contexts. */
-			for (std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > > &object : m_engine->m_objects)
+			for (const std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::EvaluatorNode > > &object : m_engine->m_objects)
 			{
 				const lcsm::Identifier id = object.first;
 				lcsm::EvaluatorNode *obj = object.second.get();

@@ -8,15 +8,16 @@
 #include <lcsm/Physical/std/Constant.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <deque>
 #include <stdexcept>
 #include <utility>
 
-lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, const lcsm::DataBits &databits) :
+lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, const lcsm::DataBits &databits) noexcept :
 	lcsm::EvaluatorNode(objectType), m_wasPolluted(false), m_databits(databits)
 {
 }
 
-lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, lcsm::DataBits &&databits) :
+lcsm::physical::Constant::Constant(lcsm::object_type_t objectType, lcsm::DataBits &&databits) noexcept :
 	lcsm::EvaluatorNode(objectType), m_wasPolluted(false), m_databits(std::move(databits))
 {
 }
@@ -103,16 +104,13 @@ void lcsm::physical::Constant::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction type!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Constant::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Constant::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
 	// Update context ONLY ONCE to be like a real constant element.
 	if (m_context->neverUpdate())
 	{
 		m_context->updateValues(now, { m_databits });
 	}
-
-	// Resulting events for future mini-steps.
-	std::vector< lcsm::Event > events;
 
 	// If it was polluted, then generate simulator's event.
 	// Otherwise, act normally.
@@ -124,14 +122,12 @@ std::vector< lcsm::Event > lcsm::physical::Constant::invoke(const lcsm::Timestam
 		// Reset.
 		m_wasPolluted = false;
 
-		// Return events.
-		return events;
+		// Return.
+		return;
 	}
 
 	// Write value to Wire.
 	events.push_back(lcsm::CreateWriteValueInstruction(this, m_connect.get(), m_databits));
-
-	return events;
 }
 
 void lcsm::physical::Constant::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept

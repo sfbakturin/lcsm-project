@@ -2,7 +2,7 @@
 #define LCSM_PHYSICAL_STD_VERILOG_H
 
 #include <lcsm/LCSM.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/Evaluator.h>
 #include <lcsm/Physical/Instruction.h>
@@ -34,7 +34,7 @@ namespace lcsm
 
 			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invoke(const Timestamp &now) override final;
+			virtual void invoke(const Timestamp &now, std::deque< Event > &events) override final;
 
 			void connectInput(const support::PointerView< EvaluatorNode > &input);
 			void connectInout(const support::PointerView< EvaluatorNode > &inout);

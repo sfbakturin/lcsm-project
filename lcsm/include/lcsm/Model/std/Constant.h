@@ -3,7 +3,7 @@
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -19,7 +19,7 @@ namespace lcsm
 {
 	namespace model
 	{
-		class LCSM_API Constant : public Circuit
+		class LCSM_API Constant : public Component
 		{
 		  public:
 			enum Port : portid_t
@@ -48,22 +48,22 @@ namespace lcsm
 			virtual Identifier identify(Identifier id) noexcept override final;
 
 			virtual object_type_t objectType() const noexcept override final;
-			virtual CircuitType circuitType() const noexcept override;
+			virtual ComponentType componentType() const noexcept override;
 
-			virtual void connect(portid_t portId, Circuit *circuit) override final;
+			virtual void connect(portid_t portId, Component *circuit) override final;
 
-			virtual void disconnect(Circuit *circuit) noexcept override final;
+			virtual void disconnect(Component *circuit) noexcept override final;
 			virtual void disconnectAll() noexcept override final;
 
-			void connect(Circuit *circuit);
+			void connect(Component *circuit);
 
-			virtual Circuit *byPort(portid_t portId) noexcept override final;
-			virtual portid_t findPort(const Circuit *circuit) const noexcept override final;
+			virtual Component *byPort(portid_t portId) noexcept override final;
+			virtual portid_t findPort(const Component *circuit) const noexcept override final;
 
 			virtual portid_t defaultPort() const noexcept override final;
 
 			virtual void dump(LCSMFileWriter &writer, LCSMBuilder &builder) const override final;
-			virtual void copy(Circuit *circuit, LCSMBuilder &builder) const override final;
+			virtual void copy(Component *circuit, LCSMBuilder &builder) const override final;
 			virtual void from(LCSMFileReader &reader, LCSMBuilder &builder) override final;
 
 		  private:

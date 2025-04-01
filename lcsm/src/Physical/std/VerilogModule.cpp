@@ -1,5 +1,5 @@
 #include <lcsm/LCSM.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Physical/Context.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Physical/Evaluator.h>
@@ -67,7 +67,7 @@ void lcsm::physical::VerilogModule::verifyContext()
 }
 
 static inline lcsm::portid_t
-	Find(const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > &wires, const lcsm::EvaluatorNode *toFind)
+	Find(const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > &wires, const lcsm::EvaluatorNode *toFind) noexcept
 {
 	for (lcsm::portid_t i = 0; i < static_cast< lcsm::portid_t >(wires.size()); i++)
 	{
@@ -138,7 +138,7 @@ static void GenerateEvents(
 	lcsm::EvaluatorNode *caller,
 	std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > > &wires,
 	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > &data,
-	std::vector< lcsm::Event > &events,
+	std::deque< lcsm::Event > &events,
 	lcsm::verilog::PortDirectionType portDirectionType)
 {
 	// Create write value events.
@@ -209,11 +209,8 @@ static void ExtractValues(
 	}
 }
 
-std::vector< lcsm::Event > lcsm::physical::VerilogModule::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::VerilogModule::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
-	// Generated events.
-	std::vector< lcsm::Event > events;
-
 	// Test bench data.
 	std::unordered_map< lcsm::verilog::PortDirectionType, std::vector< lcsm::DataBits > > testBenchData;
 
@@ -266,8 +263,6 @@ std::vector< lcsm::Event > lcsm::physical::VerilogModule::invoke(const lcsm::Tim
 	// Clear instants.
 	m_inputsInstants.clear();
 	m_inoutsInstants.clear();
-
-	return events;
 }
 
 void lcsm::physical::VerilogModule::connectInput(const lcsm::support::PointerView< lcsm::EvaluatorNode > &input)

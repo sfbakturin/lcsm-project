@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -12,19 +12,19 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Wire::Wire(lcsm::label_t name) : lcsm::Circuit(name) {}
+lcsm::model::Wire::Wire(lcsm::label_t name) : lcsm::Component(name) {}
 
 lcsm::model::Wire::~Wire() noexcept
 {
 	disconnectAll();
 }
 
-const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &lcsm::model::Wire::wires() const noexcept
+const std::vector< lcsm::support::PointerView< lcsm::Component > > &lcsm::model::Wire::wires() const noexcept
 {
 	return m_wires;
 }
 
-const lcsm::support::PointerView< lcsm::Circuit > &lcsm::model::Wire::connect() const noexcept
+const lcsm::support::PointerView< lcsm::Component > &lcsm::model::Wire::connect() const noexcept
 {
 	return m_connect;
 }
@@ -56,12 +56,12 @@ lcsm::object_type_t lcsm::model::Wire::objectType() const noexcept
 	return lcsm::ObjectType::Internal | lcsm::ObjectType::Wiring;
 }
 
-lcsm::CircuitType lcsm::model::Wire::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Wire::componentType() const noexcept
 {
-	return lcsm::CircuitType::Wire;
+	return lcsm::ComponentType::Wire;
 }
 
-void lcsm::model::Wire::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Wire::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	const lcsm::model::Wire::Port p = static_cast< lcsm::model::Wire::Port >(portId);
 
@@ -86,7 +86,7 @@ void lcsm::model::Wire::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit) noexcept
+void lcsm::model::Wire::disconnect(lcsm::Component *circuit) noexcept
 {
 	if (m_connect == circuit)
 	{
@@ -95,7 +95,7 @@ void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit) noexcept
 	}
 	else
 	{
-		std::vector< lcsm::support::PointerView< lcsm::Circuit > >::iterator found =
+		std::vector< lcsm::support::PointerView< lcsm::Component > >::iterator found =
 			std::find(m_wires.begin(), m_wires.end(), circuit);
 		if (found != m_wires.end())
 		{
@@ -106,22 +106,22 @@ void lcsm::model::Wire::disconnect(lcsm::Circuit *circuit) noexcept
 
 void lcsm::model::Wire::disconnectAll() noexcept
 {
-	for (lcsm::support::PointerView< lcsm::Circuit > &wire : m_wires)
+	for (lcsm::support::PointerView< lcsm::Component > &wire : m_wires)
 		wire->disconnect(this);
 	m_wires.clear();
 }
 
-void lcsm::model::Wire::connectToWire(lcsm::Circuit *circuit)
+void lcsm::model::Wire::connectToWire(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Wire::Port::Wiring, circuit);
 }
 
-void lcsm::model::Wire::connectConnect(lcsm::Circuit *circuit)
+void lcsm::model::Wire::connectConnect(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Wire::Port::Connect, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Wire::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Wire::Port p = static_cast< lcsm::model::Wire::Port >(portId);
 	switch (p)
@@ -134,7 +134,7 @@ lcsm::Circuit *lcsm::model::Wire::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Wire::findPort(const lcsm::Circuit *) const noexcept
+lcsm::portid_t lcsm::model::Wire::findPort(const lcsm::Component *) const noexcept
 {
 	return -1;
 }
@@ -146,26 +146,19 @@ lcsm::portid_t lcsm::model::Wire::defaultPort() const noexcept
 
 void lcsm::model::Wire::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	writer.writeBeginComponent();
-	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(id());
+	// name <STRING>;
 	writer.writeNameDeclaration(name());
+
 	builder.addWires(this, false);
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Wire::copy(lcsm::Circuit *, lcsm::model::LCSMBuilder &) const
+void lcsm::model::Wire::copy(lcsm::Component *, lcsm::model::LCSMBuilder &) const
 {
 	// Do nothing.
 }
 
-void lcsm::model::Wire::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
+void lcsm::model::Wire::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(reader.exceptIdentifier(), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 }

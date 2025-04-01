@@ -30,9 +30,9 @@ namespace lcsm
 
 			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invoke(const Timestamp &now) override final;
+			virtual void invoke(const Timestamp &now, std::deque< Event > &events) override final;
 
-			void connectToData(const support::PointerView< EvaluatorNode > &wire);
+			void connectToData(const support::PointerView< EvaluatorNode > &wire) noexcept;
 			void connectToDecimalPoint(const support::PointerView< EvaluatorNode > &wire);
 
 		  private:

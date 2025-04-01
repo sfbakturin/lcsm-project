@@ -12,7 +12,7 @@
 #include <lcsm/lcsmconfig.h>
 
 #include <cstddef>
-#include <vector>
+#include <deque>
 
 namespace lcsm
 {
@@ -35,8 +35,8 @@ namespace lcsm
 
 		virtual void add(Instruction &&instruction) = 0;
 
-		virtual std::vector< Event > invoke(const Timestamp &now) = 0;
-		// virtual void invokeImpl(const Timestamp &now, std::vector< Event > &events) = 0;
+		std::deque< Event > invoke(const Timestamp &now);
+		virtual void invoke(const Timestamp &now, std::deque< Event > &events) = 0;
 
 	  private:
 		object_type_t m_objectType;

@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Clock.h>
@@ -23,8 +23,8 @@ using namespace lcsm_tests;
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *clock = circuit.find("clock");
-	Circuit *pin = circuit.find("pin");
+	Component *clock = circuit.find("clock");
+	Component *pin = circuit.find("pin");
 
 	// Change Clock.
 	model::Clock *clockModel = static_cast< model::Clock * >(clock);

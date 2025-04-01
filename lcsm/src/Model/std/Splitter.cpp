@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -25,7 +25,7 @@ lcsm::model::Splitter::Splitter(lcsm::Width widthIn, lcsm::width_t widthOut) :
 }
 
 lcsm::model::Splitter::Splitter(lcsm::label_t name, lcsm::Width widthIn, lcsm::width_t widthOut) :
-	lcsm::Circuit(name), m_widthIn(widthIn), m_widthOut(widthOut)
+	lcsm::Component(name), m_widthIn(widthIn), m_widthOut(widthOut)
 {
 }
 
@@ -122,12 +122,12 @@ lcsm::object_type_t lcsm::model::Splitter::objectType() const noexcept
 	return lcsm::ObjectType::Internal;
 }
 
-lcsm::CircuitType lcsm::model::Splitter::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Splitter::componentType() const noexcept
 {
-	return lcsm::CircuitType::Splitter;
+	return lcsm::ComponentType::Splitter;
 }
 
-void lcsm::model::Splitter::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Splitter::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	lcsm::model::Wire *wire = static_cast< lcsm::model::Wire * >(byPort(portId));
 	if (!wire)
@@ -135,7 +135,7 @@ void lcsm::model::Splitter::connect(lcsm::portid_t portId, lcsm::Circuit *circui
 	wire->connectToWire(circuit);
 }
 
-lcsm::Circuit *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Splitter::Port p = static_cast< lcsm::model::Splitter::Port >(portId);
 	switch (p)
@@ -219,7 +219,7 @@ lcsm::Circuit *lcsm::model::Splitter::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Splitter::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_wireIn.get())
 	{
@@ -245,12 +245,6 @@ lcsm::portid_t lcsm::model::Splitter::defaultPort() const noexcept
 
 void lcsm::model::Splitter::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	writer.writeBeginComponent();
-
-	writer.writeCircuitTypeDeclaration(circuitType());
-
-	writer.writeIdDeclaration(id());
-
 	writer.writeNameDeclaration(name());
 
 	writer.writeKeyValueDeclaration("widthIn", static_cast< std::uint64_t >(widthIn()));
@@ -267,13 +261,11 @@ void lcsm::model::Splitter::dump(lcsm::model::LCSMFileWriter &writer, lcsm::mode
 		writer.writeKeyValueDeclaration(key.c_str(), m_wireOuts[i]->id());
 		builder.addWires(m_wireOuts[i].get(), true);
 	}
-
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Splitter::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Splitter::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -297,11 +289,6 @@ void lcsm::model::Splitter::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilde
 
 void lcsm::model::Splitter::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(lcsm::Identifier(reader.exceptIdentifier()), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 
@@ -322,7 +309,7 @@ void lcsm::model::Splitter::from(lcsm::model::LCSMFileReader &reader, lcsm::mode
 	}
 }
 
-void lcsm::model::Splitter::disconnect(lcsm::Circuit *) noexcept
+void lcsm::model::Splitter::disconnect(lcsm::Component *) noexcept
 {
 	// Do nothing.
 }

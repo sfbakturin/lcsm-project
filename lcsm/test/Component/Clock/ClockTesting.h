@@ -3,7 +3,7 @@
 
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/Verilog/Bit.h>
 
@@ -22,7 +22,7 @@ namespace lcsm_tests
 
 	LCSMCircuit generator();
 	void checker(LCSMCircuit &circuit);
-	void singleTest(LCSMState &state, const Circuit *clock, const Circuit *pin, const std::vector< TestData > &testdatas);
+	void singleTest(LCSMState &state, const Component *clock, const Component *pin, const std::vector< TestData > &testdatas);
 }	 // namespace lcsm_tests
 
 #endif /* LCSM_TEST_COMPONENT_CLOCK_CLOCKTESTING_H */

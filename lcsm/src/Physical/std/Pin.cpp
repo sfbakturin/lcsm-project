@@ -124,11 +124,8 @@ void lcsm::physical::Pin::add(lcsm::Instruction &&instruction)
 	}
 }
 
-std::vector< lcsm::Event > lcsm::physical::Pin::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Pin::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
-	/* Resulting events for future mini-steps. */
-	std::vector< lcsm::Event > events;
-
 	/* If it was polluted, then generate simulator's event. Otherwise, act normally. */
 	if (m_wasPolluted)
 	{
@@ -138,8 +135,8 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invoke(const lcsm::Timestamp &no
 		/* Reset. */
 		m_wasPolluted = false;
 
-		/* Return events. */
-		return events;
+		/* Return. */
+		return;
 	}
 
 	/* Invoke instants from external connect. */
@@ -185,16 +182,14 @@ std::vector< lcsm::Event > lcsm::physical::Pin::invoke(const lcsm::Timestamp &no
 		/* Write value to Wire. */
 		events.emplace_back(lcsm::CreateWriteValueInstruction(this, m_internalConnect.get(), value));
 	}
-
-	return events;
 }
 
-void lcsm::physical::Pin::connectInternal(const lcsm::support::PointerView< lcsm::EvaluatorNode > &internal)
+void lcsm::physical::Pin::connectInternal(const lcsm::support::PointerView< lcsm::EvaluatorNode > &internal) noexcept
 {
 	m_internalConnect = internal;
 }
 
-void lcsm::physical::Pin::connectExternal(const lcsm::support::PointerView< lcsm::EvaluatorNode > &external)
+void lcsm::physical::Pin::connectExternal(const lcsm::support::PointerView< lcsm::EvaluatorNode > &external) noexcept
 {
 	m_externalConnect = external;
 }

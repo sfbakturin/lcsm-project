@@ -4,7 +4,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Wire.h>
 #include <lcsm/Model/std/Constant.h>
 #include <lcsm/Model/std/Pin.h>
@@ -31,12 +31,12 @@ LCSMCircuit lcsm_tests::generator()
 void lcsm_tests::checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *constant = circuit.find("constant");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *constant = circuit.find("constant");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(constant, CircuitType::Constant);
-	assertType(pin, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(constant, ComponentType::Constant);
+	assertType(pin, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }

@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Ground.h>
@@ -52,31 +52,31 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *power = circuit.find("power");
-	Circuit *ground = circuit.find("ground");
-	Circuit *transistorP = circuit.find("transistorP");
-	Circuit *transistorN = circuit.find("transistorN");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *power = circuit.find("power");
+	Component *ground = circuit.find("ground");
+	Component *transistorP = circuit.find("transistorP");
+	Component *transistorN = circuit.find("transistorN");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(power, CircuitType::Power);
-	assertType(ground, CircuitType::Ground);
-	assertType(transistorP, CircuitType::Transistor);
-	assertType(transistorN, CircuitType::Transistor);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(power, ComponentType::Power);
+	assertType(ground, ComponentType::Ground);
+	assertType(transistorP, ComponentType::Transistor);
+	assertType(transistorN, ComponentType::Transistor);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	// Circuit *power = circuit.find("power");
-	// Circuit *ground = circuit.find("ground");
-	// Circuit *transistorP = circuit.find("transistorP");
-	// Circuit *transistorN = circuit.find("transistorN");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	// Component *power = circuit.find("power");
+	// Component *ground = circuit.find("ground");
+	// Component *transistorP = circuit.find("transistorP");
+	// Component *transistorN = circuit.find("transistorN");
 
 	// Indexes.
 	const Identifier inputId = input->id();

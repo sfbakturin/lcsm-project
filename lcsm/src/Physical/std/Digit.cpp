@@ -8,6 +8,7 @@
 #include <lcsm/Physical/std/Digit.h>
 #include <lcsm/Support/PointerView.hpp>
 
+#include <deque>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -124,7 +125,7 @@ void lcsm::physical::Digit::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Digit::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Digit::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &)
 {
 	// Extract values from context.
 	lcsm::DataBits valueData = m_context->getValue(0);
@@ -165,12 +166,9 @@ std::vector< lcsm::Event > lcsm::physical::Digit::invoke(const lcsm::Timestamp &
 	// Update context.
 	m_context->updateValues(now, { valueData, valueDecimalPoint });
 	verifyContext();
-
-	// No events from Digit.
-	return {};
 }
 
-void lcsm::physical::Digit::connectToData(const lcsm::support::PointerView< lcsm::EvaluatorNode > &wire)
+void lcsm::physical::Digit::connectToData(const lcsm::support::PointerView< lcsm::EvaluatorNode > &wire) noexcept
 {
 	m_data = wire;
 }

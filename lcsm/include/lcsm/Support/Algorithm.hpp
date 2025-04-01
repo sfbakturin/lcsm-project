@@ -14,7 +14,7 @@ namespace lcsm
 	{
 		template< typename Class >
 		LCSM_API inline Class &
-			CopyAssign(Class *that, const Class &other) noexcept(IsNothrowCopyAssign< Class >() && IsSwappable< Class >())
+			CopyAssign(Class *that, const Class &other) noexcept(std::is_nothrow_copy_constructible< Class >::value)
 		{
 			if (that != std::addressof(other))
 				Class(other).swap(*that);
@@ -22,7 +22,7 @@ namespace lcsm
 		}
 
 		template< typename Class >
-		LCSM_API inline Class &MoveAssign(Class *that, Class &&other) noexcept(IsNothrowMoveAssign< Class >())
+		LCSM_API inline Class &MoveAssign(Class *that, Class &&other) noexcept(std::is_nothrow_move_constructible< Class >::value)
 		{
 			if (that != std::addressof(other))
 				Class(std::move(other)).swap(*that);

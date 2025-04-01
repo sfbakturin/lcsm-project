@@ -4,7 +4,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -31,8 +31,14 @@ namespace lcsm_tests
 {
 	LCSMCircuit generator();
 	void checker(LCSMCircuit &circuit);
-	void test2bit(LCSMState &state, const Circuit *input, const Circuit *output1, const Circuit *output2, const std::vector< TestData2bit > &testdatas);
-	void test3bit(LCSMState &state, const Circuit *input, const Circuit *output1, const Circuit *output2, const Circuit *output3, const std::vector< TestData3bit > &testdatas);
+	void test2bit(LCSMState &state, const Component *input, const Component *output1, const Component *output2, const std::vector< TestData2bit > &testdatas);
+	void test3bit(
+		LCSMState &state,
+		const Component *input,
+		const Component *output1,
+		const Component *output2,
+		const Component *output3,
+		const std::vector< TestData3bit > &testdatas);
 }	 // namespace lcsm_tests
 
 #endif /* LCSM_TEST_COMPONENT_SPLITTER_SPLITTERTESTING_H */

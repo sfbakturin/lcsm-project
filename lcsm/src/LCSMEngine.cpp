@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
 #include <lcsm/Model/Width.h>
@@ -54,15 +54,15 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	lcsm::LCSMEngine engine;
 
 	// BFS in-future visited components.
-	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > queue;
+	std::deque< lcsm::support::PointerView< const lcsm::Component > > queue;
 
 	// Components.
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &components = circuit.components();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Component > > &components = circuit.components();
 
 	// Find all *In*/*Out* circuits and add them to BFS queue.
 	for (auto it = components.begin(); it != components.end(); it++)
 	{
-		lcsm::Circuit *circ = it->second.get();
+		lcsm::Component *circ = it->second.get();
 		if (lcsm::TestObjectType(circ->objectType(), lcsm::ObjectType::Root))
 		{
 			queue.emplace_back(circ);
@@ -73,8 +73,8 @@ lcsm::LCSMEngine lcsm::LCSMEngine::fromCircuit(const lcsm::LCSMCircuit &circuit)
 	engine.buildCircuit(queue);
 
 	// Components helpers.
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &inputs = circuit.inputs();
-	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Circuit > > &outputs = circuit.outputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Component > > &inputs = circuit.inputs();
+	const std::map< lcsm::Identifier, std::shared_ptr< lcsm::Component > > &outputs = circuit.outputs();
 
 	// Find all *In*/*Out*/*Root* circuit and add them to helpers.
 	for (auto it = engine.m_objects.begin(); it != engine.m_objects.end(); it++)
@@ -183,13 +183,13 @@ lcsm::support::PointerView< lcsm::EvaluatorNode > lcsm::LCSMEngine::registeredTu
 	return tunnelNode;
 }
 
-void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &queue)
+void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< const lcsm::Component > > &queue)
 {
 	std::unordered_set< lcsm::Identifier > visited;
 
 	while (!queue.empty())
 	{
-		const lcsm::support::PointerView< const lcsm::Circuit > circuit = queue.front();
+		const lcsm::support::PointerView< const lcsm::Component > circuit = queue.front();
 		queue.pop_front();
 
 		const std::unordered_set< lcsm::Identifier >::const_iterator found = visited.find(circuit->id());
@@ -201,18 +201,18 @@ void lcsm::LCSMEngine::buildCircuit(std::deque< lcsm::support::PointerView< cons
 }
 
 void lcsm::LCSMEngine::buildCircuit(
-	const lcsm::support::PointerView< const lcsm::Circuit > &circuit,
-	std::deque< lcsm::support::PointerView< const lcsm::Circuit > > &queue,
+	const lcsm::support::PointerView< const lcsm::Component > &circuit,
+	std::deque< lcsm::support::PointerView< const lcsm::Component > > &queue,
 	std::unordered_set< lcsm::Identifier > &visited)
 {
-	switch (circuit->circuitType())
+	switch (circuit->componentType())
 	{
-	case lcsm::CircuitType::Wire:
+	case lcsm::ComponentType::Wire:
 	{
 		// Extract Wire as model object.
 		const lcsm::model::Wire *wire = static_cast< const lcsm::model::Wire * >(circuit.get());
-		const std::vector< lcsm::support::PointerView< lcsm::Circuit > > &wireWires = wire->wires();
-		const lcsm::support::PointerView< lcsm::Circuit > &wireConnect = wire->connect();
+		const std::vector< lcsm::support::PointerView< lcsm::Component > > &wireWires = wire->wires();
+		const lcsm::support::PointerView< lcsm::Component > &wireConnect = wire->connect();
 		const lcsm::Identifier wireId = wire->id();
 
 		// Wire's tree node.
@@ -222,7 +222,7 @@ void lcsm::LCSMEngine::buildCircuit(
 		// Make connections from Wire object to his adjacent wires as
 		// tree's edges.
 		// Model guarantees, that wireWires (aka wire->wires()) is connected only to model::Wire.
-		for (const lcsm::support::PointerView< lcsm::Circuit > &wireChild : wireWires)
+		for (const lcsm::support::PointerView< lcsm::Component > &wireChild : wireWires)
 		{
 			const lcsm::Identifier wireChildId = wireChild->id();
 			lcsm::support::PointerView< lcsm::EvaluatorNode > wireChildEvaluatorNode = registeredWire(wireChildId);
@@ -240,12 +240,12 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Tunnel:
+	case lcsm::ComponentType::Tunnel:
 	{
 		// Extract Tunnel as model object.
 		const lcsm::model::Tunnel *tunnel = static_cast< const lcsm::model::Tunnel * >(circuit.get());
 		const lcsm::model::Wire *tunnelWire = tunnel->wire();
-		const std::vector< lcsm::Circuit * > &tunnelTunnels = tunnel->tunnels();
+		const std::vector< lcsm::Component * > &tunnelTunnels = tunnel->tunnels();
 		const lcsm::Identifier tunnelId = tunnel->id();
 		const lcsm::Identifier tunnelWireId = tunnelWire->id();
 
@@ -256,7 +256,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		// Make connections from Tunnel object to his adjacent tunnels as tree's edges. Model guarantees, that
 		// tunnelTunnels (aka tunnel->tunnels()) is connect only to model::Tunnel.
-		for (const lcsm::Circuit *tunnelChild : tunnelTunnels)
+		for (const lcsm::Component *tunnelChild : tunnelTunnels)
 		{
 			const lcsm::Identifier tunnelChildId = tunnelChild->id();
 			lcsm::support::PointerView< lcsm::EvaluatorNode > tunnelChildEvaluatorNode = registeredTunnel(tunnelChildId);
@@ -277,7 +277,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Pin:
+	case lcsm::ComponentType::Pin:
 	{
 		// Extract Pin as model object.
 		const lcsm::model::Pin *pin = static_cast< const lcsm::model::Pin * >(circuit.get());
@@ -313,7 +313,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Constant:
+	case lcsm::ComponentType::Constant:
 	{
 		// Extract Constant as model object.
 		const lcsm::model::Constant *constantModel = static_cast< const lcsm::model::Constant * >(circuit.get());
@@ -347,7 +347,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Power:
+	case lcsm::ComponentType::Power:
 	{
 		// Extract Power as model object.
 		const lcsm::model::Power *powerModel = static_cast< const lcsm::model::Power * >(circuit.get());
@@ -378,7 +378,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Ground:
+	case lcsm::ComponentType::Ground:
 	{
 		// Extract Ground as model object.
 		const lcsm::model::Ground *groundModel = static_cast< const lcsm::model::Ground * >(circuit.get());
@@ -410,7 +410,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Clock:
+	case lcsm::ComponentType::Clock:
 	{
 		// Extract Clock as model object.
 		const lcsm::model::Clock *clockModel = static_cast< const lcsm::model::Clock * >(circuit.get());
@@ -443,7 +443,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Transistor:
+	case lcsm::ComponentType::Transistor:
 	{
 		// Extract Transistor as model object.
 		const lcsm::model::Transistor *transistorModel = static_cast< const lcsm::model::Transistor * >(circuit.get());
@@ -493,7 +493,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::TransmissionGate:
+	case lcsm::ComponentType::TransmissionGate:
 	{
 		// Extract TransmissionGate as model object.
 		const lcsm::model::TransmissionGate *transmissionGateModel = circuit.getCast< lcsm::model::TransmissionGate >();
@@ -551,7 +551,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Button:
+	case lcsm::ComponentType::Button:
 	{
 		// Extract Button as model object.
 		const lcsm::model::Button *buttonModel = static_cast< const lcsm::model::Button * >(circuit.get());
@@ -584,7 +584,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Digit:
+	case lcsm::ComponentType::Digit:
 	{
 		// Extract Digit as model object.
 		const lcsm::model::Digit *digitModel = static_cast< const lcsm::model::Digit * >(circuit.get());
@@ -631,7 +631,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Probe:
+	case lcsm::ComponentType::Probe:
 	{
 		// Extract Probe as model object.
 		const lcsm::model::Probe *probeModel = static_cast< const lcsm::model::Probe * >(circuit.get());
@@ -662,7 +662,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::Splitter:
+	case lcsm::ComponentType::Splitter:
 	{
 		// Extract Splitter as model object.
 		const lcsm::model::Splitter *splitterModel = circuit.getCast< lcsm::model::Splitter >();
@@ -716,7 +716,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::VerilogModule:
+	case lcsm::ComponentType::VerilogModule:
 	{
 		// Extract VerilogModule as model object.
 		const lcsm::model::VerilogModule *verilogModuleModel = circuit.getCast< lcsm::model::VerilogModule >();
@@ -794,7 +794,7 @@ void lcsm::LCSMEngine::buildCircuit(
 
 		break;
 	}
-	case lcsm::CircuitType::LastCircuitType:
+	case lcsm::ComponentType::LastCircuitType:
 	{
 		throw std::logic_error("Non-targeted circuit found!");
 	}

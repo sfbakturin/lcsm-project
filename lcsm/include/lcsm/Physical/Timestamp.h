@@ -61,7 +61,7 @@ namespace std
 	template<>
 	struct hash< lcsm::Timestamp >
 	{
-		std::size_t operator()(const lcsm::Timestamp &object) const { return object.hashCode(); }
+		std::size_t operator()(const lcsm::Timestamp &object) const noexcept { return object.hashCode(); }
 	};
 }	 // namespace std
 

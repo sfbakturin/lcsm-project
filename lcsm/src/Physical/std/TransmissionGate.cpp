@@ -111,30 +111,27 @@ void lcsm::physical::TransmissionGate::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad port!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::TransmissionGate::invoke(const lcsm::Timestamp &)
+void lcsm::physical::TransmissionGate::invoke(const lcsm::Timestamp &, std::deque< Event > &)
 {
-	// Generated events.
-	std::vector< lcsm::Event > events;
-	// TODO: Implement TransmissionGate/Transistor, when Verilog will be supported.
-	return events;
+	// TODO: Implement me.
 }
 
-void lcsm::physical::TransmissionGate::connectBase(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::TransmissionGate::connectBase(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_base = node;
 }
 
-void lcsm::physical::TransmissionGate::connectSrcA(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::TransmissionGate::connectSrcA(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_srca = node;
 }
 
-void lcsm::physical::TransmissionGate::connectSrcB(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::TransmissionGate::connectSrcB(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_srcb = node;
 }
 
-void lcsm::physical::TransmissionGate::connectSrcC(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::TransmissionGate::connectSrcC(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_srcc = node;
 }

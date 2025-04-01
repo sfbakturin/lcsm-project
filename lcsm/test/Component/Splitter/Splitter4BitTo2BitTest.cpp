@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -22,10 +22,10 @@ using namespace lcsm_tests;
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *splitter = circuit.find("splitter");
-	Circuit *output1 = circuit.find("output1");
-	Circuit *output2 = circuit.find("output2");
+	Component *input = circuit.find("input");
+	Component *splitter = circuit.find("splitter");
+	Component *output1 = circuit.find("output1");
+	Component *output2 = circuit.find("output2");
 
 	// Change Splitter: widthIn = 4bit.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);

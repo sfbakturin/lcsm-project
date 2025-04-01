@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
@@ -22,18 +22,18 @@ using namespace lcsm_tests;
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output1 = circuit.find("output1");
-	Circuit *output2 = circuit.find("output2");
-	Circuit *output3 = circuit.find("output3");
-	Circuit *tunnel1 = circuit.find("tunnel1");
-	Circuit *tunnel2 = circuit.find("tunnel2");
-	Circuit *tunnel3 = circuit.find("tunnel3");
-	Circuit *tunnel4 = circuit.find("tunnel4");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
-	Circuit *wire3 = circuit.find("wire3");
-	Circuit *wire4 = circuit.find("wire4");
+	Component *input = circuit.find("input");
+	Component *output1 = circuit.find("output1");
+	Component *output2 = circuit.find("output2");
+	Component *output3 = circuit.find("output3");
+	Component *tunnel1 = circuit.find("tunnel1");
+	Component *tunnel2 = circuit.find("tunnel2");
+	Component *tunnel3 = circuit.find("tunnel3");
+	Component *tunnel4 = circuit.find("tunnel4");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
+	Component *wire3 = circuit.find("wire3");
+	Component *wire4 = circuit.find("wire4");
 
 	// Extract models.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);

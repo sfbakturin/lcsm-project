@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Physical/DataBits.h>
@@ -42,22 +42,22 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *wire = circuit.find("wire");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *wire = circuit.find("wire");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(wire, CircuitType::Wire);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(wire, ComponentType::Wire);
 }
 
 static void test1_removeOutput(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *wire = circuit.find("wire");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *wire = circuit.find("wire");
 
 	// Remove output.
 	circuit.remove(output);
@@ -111,7 +111,7 @@ static void test1_removeOutput(LCSMCircuit &circuit)
 void test2_removeInput(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
+	Component *input = circuit.find("input");
 
 	// Remove input.
 	circuit.remove(input);
@@ -131,7 +131,7 @@ void test2_removeInput(LCSMCircuit &circuit)
 void test3_removeWire(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *wire = circuit.find("wire");
+	Component *wire = circuit.find("wire");
 
 	// Remove wire.
 	circuit.remove(wire);

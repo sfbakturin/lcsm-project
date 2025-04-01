@@ -3,7 +3,7 @@
 
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Reader.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
@@ -53,29 +53,29 @@ namespace lcsm
 		bool present() const noexcept;
 		const LCSMCircuit *get() const noexcept;
 
-		Identifier globalId() const noexcept;
+		Identifier id() const noexcept;
 		const std::string &name() const noexcept;
 		void setName(label_t name);
 		void setName(const std::string &name);
 
-		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
-		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
-		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &components() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &inputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &outputs() const noexcept;
 
-		Circuit *find(Circuit *circuit) noexcept;
-		Circuit *find(Identifier id) noexcept;
-		Circuit *find(label_t name) noexcept;
-		Circuit *find(const std::string &name) noexcept;
+		Component *find(Component *circuit) noexcept;
+		Component *find(Identifier id) noexcept;
+		Component *find(label_t name) noexcept;
+		Component *find(const std::string &name) noexcept;
 
-		Circuit *findInput(Circuit *circuit) noexcept;
-		Circuit *findInput(Identifier id) noexcept;
-		Circuit *findInput(label_t name) noexcept;
-		Circuit *findInput(const std::string &name) noexcept;
+		Component *findInput(Component *circuit) noexcept;
+		Component *findInput(Identifier id) noexcept;
+		Component *findInput(label_t name) noexcept;
+		Component *findInput(const std::string &name) noexcept;
 
-		Circuit *findOutput(Circuit *circuit) noexcept;
-		Circuit *findOutput(Identifier id) noexcept;
-		Circuit *findOutput(label_t name) noexcept;
-		Circuit *findOutput(const std::string &name) noexcept;
+		Component *findOutput(Component *circuit) noexcept;
+		Component *findOutput(Identifier id) noexcept;
+		Component *findOutput(label_t name) noexcept;
+		Component *findOutput(const std::string &name) noexcept;
 
 	  private:
 		LCSMCircuit *m_circuit;
@@ -97,16 +97,16 @@ namespace lcsm
 		void swap(LCSMCircuit &other) noexcept;
 
 		LCSMCircuit copy() const;
-		Identifier globalId() const noexcept;
+		Identifier id() const noexcept;
 		const std::string &name() const noexcept;
 		void setName(label_t name);
 		void setName(const std::string &name);
 
-		const std::map< Identifier, std::shared_ptr< Circuit > > &components() const noexcept;
-		const std::map< Identifier, std::shared_ptr< Circuit > > &inputs() const noexcept;
-		const std::map< Identifier, std::shared_ptr< Circuit > > &outputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &components() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &inputs() const noexcept;
+		const std::map< Identifier, std::shared_ptr< Component > > &outputs() const noexcept;
 
-		Circuit *create(Circuit *circuit);
+		Component *create(Component *circuit);
 		model::Constant *createConstant(label_t name = "", Width width = Width::Bit1, value_t value = 0x1);
 		model::Ground *createGround(label_t name = "", Width width = Width::Bit1);
 		model::Power *createPower(label_t name = "", Width width = Width::Bit1);
@@ -123,42 +123,42 @@ namespace lcsm
 		model::VerilogModule *createVerilogModule(const verilog::Module &module);
 		model::VerilogModule *createVerilogModule(verilog::Module &&module);
 
-		Circuit *find(Circuit *circuit) noexcept;
-		Circuit *find(Identifier id) noexcept;
-		Circuit *find(label_t name) noexcept;
-		Circuit *find(const std::string &name) noexcept;
+		Component *find(Component *circuit);
+		Component *find(Identifier id);
+		Component *find(label_t name);
+		Component *find(const std::string &name);
 
-		Circuit *findInput(Circuit *circuit) noexcept;
-		Circuit *findInput(Identifier id) noexcept;
-		Circuit *findInput(label_t name) noexcept;
-		Circuit *findInput(const std::string &name) noexcept;
+		Component *findInput(const Component *circuit);
+		Component *findInput(Identifier id);
+		Component *findInput(label_t name);
+		Component *findInput(const std::string &name);
 
-		Circuit *findOutput(Circuit *circuit) noexcept;
-		Circuit *findOutput(Identifier id) noexcept;
-		Circuit *findOutput(label_t name) noexcept;
-		Circuit *findOutput(const std::string &name) noexcept;
+		Component *findOutput(const Component *circuit);
+		Component *findOutput(Identifier id);
+		Component *findOutput(label_t name);
+		Component *findOutput(const std::string &name);
 
-		bool remove(Circuit *circuit);
+		bool remove(Component *circuit);
 		bool remove(Identifier id);
 		bool remove(label_t name);
 		bool remove(const std::string &name);
 
 		LCSMCircuitView addCircuit(const LCSMCircuit &other);
 
-		LCSMCircuitView findCircuit(const LCSMCircuitView &circuit) noexcept;
-		LCSMCircuitView findCircuit(Identifier id) noexcept;
-		LCSMCircuitView findCircuit(label_t name) noexcept;
-		LCSMCircuitView findCircuit(const std::string &name) noexcept;
+		LCSMCircuitView findCircuit(const LCSMCircuitView &circuit);
+		LCSMCircuitView findCircuit(Identifier id);
+		LCSMCircuitView findCircuit(label_t name);
+		LCSMCircuitView findCircuit(const std::string &name);
 
 		bool removeCircuit(const LCSMCircuitView &circuit);
 		bool removeCircuit(Identifier id);
 		bool removeCircuit(label_t name);
 		bool removeCircuit(const std::string &name);
 
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2, portid_t port2);
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2, portid_t port2);
-		model::Wire *connect(Circuit *circuit1, portid_t port1, Circuit *circuit2);
-		model::Wire *connect(Circuit *circuit1, Circuit *circuit2);
+		model::Wire *connect(Component *circuit1, portid_t port1, Component *circuit2, portid_t port2);
+		model::Wire *connect(Component *circuit1, Component *circuit2, portid_t port2);
+		model::Wire *connect(Component *circuit1, portid_t port1, Component *circuit2);
+		model::Wire *connect(Component *circuit1, Component *circuit2);
 
 		std::string dumpToString() const;
 		void dumpToFile(const std::string &filename) const;
@@ -176,13 +176,13 @@ namespace lcsm
 
 		Identifier m_globalId;
 
-		std::map< Identifier, std::shared_ptr< Circuit > > m_components;
+		std::map< Identifier, std::shared_ptr< Component > > m_components;
 
-		std::map< Identifier, std::shared_ptr< Circuit > > m_inputs;
-		std::map< Identifier, std::shared_ptr< Circuit > > m_outputs;
+		std::map< Identifier, std::shared_ptr< Component > > m_inputs;
+		std::map< Identifier, std::shared_ptr< Component > > m_outputs;
 
-		std::map< Identifier, std::shared_ptr< Circuit > > m_componentWires;
-		std::map< Identifier, std::shared_ptr< Circuit > > m_connectorWires;
+		std::map< Identifier, std::shared_ptr< Component > > m_componentWires;
+		std::map< Identifier, std::shared_ptr< Component > > m_connectorWires;
 
 		std::unordered_map< Identifier, std::shared_ptr< LCSMCircuit > > m_circuits;
 		std::unordered_map< Identifier, std::shared_ptr< verilog::Module > > m_verilogModules;
@@ -196,21 +196,22 @@ namespace lcsm
 		LCSMCircuit copyImpl(const Identifier &entryId) const;
 
 		void dumpImpl(model::LCSMFileWriter &writer) const;
-		static LCSMCircuit fromImpl(model::LCSMFileReader &reader, model::LCSMBuilder &builder, std::size_t depth = 0);
+		static LCSMCircuit fromImpl(model::LCSMFileReader &reader, model::LCSMBuilder &builder);
+		static LCSMCircuit fromImpl(model::LCSMFileReader &reader, model::LCSMBuilder &builder, std::size_t depth);
 
 		std::shared_ptr< model::Wire > createHeadlessWire(label_t name = "");
 		std::shared_ptr< model::Wire > createIdentifiedWire(label_t name = "");
 		std::shared_ptr< model::Wire > createConnectorWire(label_t name = "");
 
-		Circuit *registerComponent(std::shared_ptr< Circuit > &circuit);
+		Component *registerComponent(std::shared_ptr< Component > &circuit);
 
-		std::shared_ptr< Circuit > preRegisterComponent(Circuit *circuit);
-		std::shared_ptr< Circuit > preRegisterComponent(std::shared_ptr< Circuit > &circuit);
+		std::shared_ptr< Component > preRegisterComponent(Component *circuit);
+		std::shared_ptr< Component > preRegisterComponent(std::shared_ptr< Component > &circuit);
 
-		Circuit *postRegisterComponent(Circuit *circuit);
-		Circuit *postRegisterComponent(std::shared_ptr< Circuit > &circuit);
+		Component *postRegisterComponent(Component *circuit);
+		Component *postRegisterComponent(std::shared_ptr< Component > &circuit);
 
-		Circuit *findGloballyComponentWire(Identifier id) noexcept;
+		Component *findGloballyComponentWire(Identifier id) noexcept;
 	};
 }	 // namespace lcsm
 

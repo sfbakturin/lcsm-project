@@ -11,7 +11,7 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/lcsmconfig.h>
 
-#include <vector>
+#include <deque>
 
 namespace lcsm
 {
@@ -20,8 +20,8 @@ namespace lcsm
 		class LCSM_API Constant : public EvaluatorNode
 		{
 		  public:
-			Constant(object_type_t objectType, const DataBits &databits);
-			Constant(object_type_t objectType, DataBits &&databits);
+			Constant(object_type_t objectType, const DataBits &databits) noexcept;
+			Constant(object_type_t objectType, DataBits &&databits) noexcept;
 
 			virtual NodeType nodeType() const noexcept override final;
 
@@ -34,7 +34,7 @@ namespace lcsm
 
 			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invoke(const Timestamp &now) override final;
+			virtual void invoke(const Timestamp &now, std::deque< Event > &events) override final;
 
 			void connect(const support::PointerView< EvaluatorNode > &node) noexcept;
 

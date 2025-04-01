@@ -18,7 +18,6 @@ namespace lcsm
 		{
 		  public:
 			LCSMFileWriter(const std::shared_ptr< support::Writer > &writer) noexcept;
-			LCSMFileWriter(std::shared_ptr< support::Writer > &&writer) noexcept;
 
 			void writeBeginCircuit();
 			void writeEndCircuit();
@@ -32,7 +31,7 @@ namespace lcsm
 			void writeBeginTunnels();
 			void writeEndTunnels();
 
-			void writeCircuitTypeDeclaration(int i);
+			void writeComponentTypeDeclaration(int i);
 			void writeIdDeclaration(Identifier id);
 			void writeNameDeclaration(const std::string &name);
 			void writeKeyValueDeclaration(const char *key, std::int64_t i);

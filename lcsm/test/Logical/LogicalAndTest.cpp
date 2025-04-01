@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Ground.h>
@@ -109,42 +109,42 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *a = circuit.findInput("a");
-	Circuit *b = circuit.findInput("b");
-	Circuit *c = circuit.findOutput("c");
+	Component *a = circuit.findInput("a");
+	Component *b = circuit.findInput("b");
+	Component *c = circuit.findOutput("c");
 	LCSMCircuitView viewAndNot = circuit.findCircuit("LogicalAndNot");
 	LCSMCircuitView viewNot = circuit.findCircuit("LogicalNot");
 
 	// Check element's types.
-	assertType(a, CircuitType::Pin);
-	assertType(b, CircuitType::Pin);
-	assertType(c, CircuitType::Pin);
+	assertType(a, ComponentType::Pin);
+	assertType(b, ComponentType::Pin);
+	assertType(c, ComponentType::Pin);
 
 	assertTrue(viewAndNot.present());
 	assertTrue(viewNot.present());
 
-	Circuit *aViewAndNot = viewAndNot.findInput("a");
-	Circuit *bViewAndNot = viewAndNot.findInput("b");
-	Circuit *cViewAndNot = viewAndNot.findOutput("c");
-	Circuit *inputViewNot = viewNot.findInput("input");
-	Circuit *outputViewNot = viewNot.findOutput("output");
+	Component *aViewAndNot = viewAndNot.findInput("a");
+	Component *bViewAndNot = viewAndNot.findInput("b");
+	Component *cViewAndNot = viewAndNot.findOutput("c");
+	Component *inputViewNot = viewNot.findInput("input");
+	Component *outputViewNot = viewNot.findOutput("output");
 
-	assertType(aViewAndNot, CircuitType::Pin);
-	assertType(bViewAndNot, CircuitType::Pin);
-	assertType(cViewAndNot, CircuitType::Pin);
-	assertType(inputViewNot, CircuitType::Pin);
-	assertType(outputViewNot, CircuitType::Pin);
+	assertType(aViewAndNot, ComponentType::Pin);
+	assertType(bViewAndNot, ComponentType::Pin);
+	assertType(cViewAndNot, ComponentType::Pin);
+	assertType(inputViewNot, ComponentType::Pin);
+	assertType(outputViewNot, ComponentType::Pin);
 }
 
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *a = circuit.find("a");
-	Circuit *b = circuit.find("b");
-	Circuit *c = circuit.find("c");
+	Component *a = circuit.find("a");
+	Component *b = circuit.find("b");
+	Component *c = circuit.find("c");
 	LCSMCircuitView viewAndNot = circuit.findCircuit("LogicalAndNot");
-	Circuit *aViewAndNot = viewAndNot.findInput("a");
-	Circuit *bViewAndNot = viewAndNot.findInput("b");
+	Component *aViewAndNot = viewAndNot.findInput("a");
+	Component *bViewAndNot = viewAndNot.findInput("b");
 
 	// Indexes.
 	const Identifier aId = a->id();

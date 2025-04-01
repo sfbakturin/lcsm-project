@@ -1,62 +1,62 @@
 #include <lcsm/LCSM.h>
 
-const char *lcsm::CircuitTypePretty(lcsm::CircuitType circuitType) noexcept
+const char *lcsm::CircuitTypePretty(lcsm::ComponentType componentType) noexcept
 {
-	switch (circuitType)
+	switch (componentType)
 	{
-	case lcsm::CircuitType::Wire:
+	case lcsm::ComponentType::Wire:
 	{
 		return "Wire";
 	}
-	case lcsm::CircuitType::Tunnel:
+	case lcsm::ComponentType::Tunnel:
 	{
 		return "Tunnel";
 	}
-	case lcsm::CircuitType::Pin:
+	case lcsm::ComponentType::Pin:
 	{
 		return "Pin";
 	}
-	case lcsm::CircuitType::Constant:
+	case lcsm::ComponentType::Constant:
 	{
 		return "Constant";
 	}
-	case lcsm::CircuitType::Power:
+	case lcsm::ComponentType::Power:
 	{
 		return "Power";
 	}
-	case lcsm::CircuitType::Ground:
+	case lcsm::ComponentType::Ground:
 	{
 		return "Ground";
 	}
-	case lcsm::CircuitType::Clock:
+	case lcsm::ComponentType::Clock:
 	{
 		return "Clock";
 	}
-	case lcsm::CircuitType::Transistor:
+	case lcsm::ComponentType::Transistor:
 	{
 		return "Transistor";
 	}
-	case lcsm::CircuitType::TransmissionGate:
+	case lcsm::ComponentType::TransmissionGate:
 	{
 		return "TransmissionGate";
 	}
-	case lcsm::CircuitType::Button:
+	case lcsm::ComponentType::Button:
 	{
 		return "Button";
 	}
-	case lcsm::CircuitType::Digit:
+	case lcsm::ComponentType::Digit:
 	{
 		return "Digit";
 	}
-	case lcsm::CircuitType::Probe:
+	case lcsm::ComponentType::Probe:
 	{
 		return "Probe";
 	}
-	case lcsm::CircuitType::Splitter:
+	case lcsm::ComponentType::Splitter:
 	{
 		return "Splitter";
 	}
-	case lcsm::CircuitType::VerilogModule:
+	case lcsm::ComponentType::VerilogModule:
 	{
 		return "VerilogModule";
 	}

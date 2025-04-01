@@ -3,7 +3,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -23,9 +23,9 @@ using namespace lcsm_tests;
 static void test(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *constant = circuit.find("constant");
-	Circuit *pin = circuit.find("pin");
-	Circuit *wire = circuit.find("wire");
+	Component *constant = circuit.find("constant");
+	Component *pin = circuit.find("pin");
+	Component *wire = circuit.find("wire");
 
 	// Extract models.
 	model::Constant *constantModel = static_cast< model::Constant * >(constant);

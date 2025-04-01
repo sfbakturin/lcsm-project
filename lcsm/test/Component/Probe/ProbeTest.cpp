@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/Wire.h>
@@ -48,22 +48,22 @@ static LCSMCircuit generator()
 static void checker(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *probe = circuit.find("probe");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *probe = circuit.find("probe");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Check element's types.
-	assertType(input, CircuitType::Pin);
-	assertType(output, CircuitType::Pin);
-	assertType(probe, CircuitType::Probe);
-	assertType(wire1, CircuitType::Wire);
-	assertType(wire2, CircuitType::Wire);
+	assertType(input, ComponentType::Pin);
+	assertType(output, ComponentType::Pin);
+	assertType(probe, ComponentType::Probe);
+	assertType(wire1, ComponentType::Wire);
+	assertType(wire2, ComponentType::Wire);
 }
 
 static void
-	testImpl(LCSMState &state, const Circuit *input, const Circuit *output, const Circuit *probe, const Circuit *wire1, const Circuit *wire2, const DataBits &expected)
+	testImpl(LCSMState &state, const Component *input, const Component *output, const Component *probe, const Component *wire1, const Component *wire2, const DataBits &expected)
 {
 	// Indexes.
 	const Identifier inputId = input->id();
@@ -95,11 +95,11 @@ static void
 static void test1(LCSMCircuit &circuit)
 {
 	// Find circuits.
-	Circuit *input = circuit.find("input");
-	Circuit *output = circuit.find("output");
-	Circuit *probe = circuit.find("probe");
-	Circuit *wire1 = circuit.find("wire1");
-	Circuit *wire2 = circuit.find("wire2");
+	Component *input = circuit.find("input");
+	Component *output = circuit.find("output");
+	Component *probe = circuit.find("probe");
+	Component *wire1 = circuit.find("wire1");
+	Component *wire2 = circuit.find("wire2");
 
 	// Extract models.
 	model::Pin *inputModel = static_cast< model::Pin * >(input);

@@ -2,7 +2,7 @@
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/LCSMEngine.h>
 #include <lcsm/LCSMState.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Physical/DataBits.h>
@@ -29,8 +29,8 @@ int main()
 	LCSMCircuit copyCircuit = circuit.copy();
 
 	// Find those input and output.
-	Circuit *input = circuit.find(i0->id());
-	Circuit *output = circuit.find(o0->id());
+	Component *input = circuit.find(i0->id());
+	Component *output = circuit.find(o0->id());
 
 	// Values to put to pin.
 	const std::vector< lcsm::DataBits > values = {

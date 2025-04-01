@@ -33,11 +33,11 @@ namespace lcsm
 
 			virtual void add(Instruction &&instruction) override final;
 
-			virtual std::vector< Event > invoke(const Timestamp &now) override final;
+			virtual void invoke(const Timestamp &now, std::deque< Event > &events) override final;
 
-			void connectBase(const support::PointerView< EvaluatorNode > &node);
-			void connectSrcA(const support::PointerView< EvaluatorNode > &node);
-			void connectSrcB(const support::PointerView< EvaluatorNode > &node);
+			void connectBase(const support::PointerView< EvaluatorNode > &node) noexcept;
+			void connectSrcA(const support::PointerView< EvaluatorNode > &node) noexcept;
+			void connectSrcB(const support::PointerView< EvaluatorNode > &node) noexcept;
 
 		  private:
 			model::Transistor::Type m_type;

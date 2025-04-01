@@ -146,7 +146,7 @@ void lcsm::physical::Transistor::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Transistor::invoke(const Timestamp &now)
+void lcsm::physical::Transistor::invoke(const Timestamp &now, std::deque< lcsm::Event > &events)
 {
 	// Constants.
 	static const lcsm::DataBits NO_VALUE(lcsm::Width::Bit1, lcsm::verilog::Strength::HighImpedance, lcsm::verilog::Bit::Undefined);
@@ -218,9 +218,6 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invoke(const Timestamp &n
 	lcsm::DataBits newValueSrcA = valueSrcA;
 	lcsm::DataBits newValueSrcB = valueSrcB;
 
-	// If new values equals to old and there is existing connection, then make events to write.
-	std::vector< lcsm::Event > events;
-
 	// Logisim Evolution extended.
 	const lcsm::verilog::Bit bitOpen =
 		(m_type == lcsm::model::Transistor::Type::N ? lcsm::verilog::Bit::True : lcsm::verilog::Bit::False);
@@ -288,21 +285,19 @@ std::vector< lcsm::Event > lcsm::physical::Transistor::invoke(const Timestamp &n
 
 	m_wasPollutedFromSrcA = false;
 	m_wasPollutedFromSrcB = false;
-
-	return events;
 }
 
-void lcsm::physical::Transistor::connectBase(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::Transistor::connectBase(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_base = node;
 }
 
-void lcsm::physical::Transistor::connectSrcA(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::Transistor::connectSrcA(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_srca = node;
 }
 
-void lcsm::physical::Transistor::connectSrcB(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node)
+void lcsm::physical::Transistor::connectSrcB(const lcsm::support::PointerView< lcsm::EvaluatorNode > &node) noexcept
 {
 	m_srcb = node;
 }

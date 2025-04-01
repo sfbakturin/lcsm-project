@@ -93,7 +93,7 @@ void lcsm::physical::Wire::add(lcsm::Instruction &&instruction)
 }
 
 static inline void
-	WireNeighbourInstructions(lcsm::EvaluatorNode *targetFrom, lcsm::EvaluatorNode *targetTo, const lcsm::DataBits &value, std::vector< lcsm::Event > &events)
+	WireNeighbourInstructions(lcsm::EvaluatorNode *targetFrom, lcsm::EvaluatorNode *targetTo, const lcsm::DataBits &value, std::deque< lcsm::Event > &events)
 {
 	/* Write wire's value to target. */
 	lcsm::Instruction I = lcsm::CreateWriteValueInstruction(targetFrom, targetTo, value);
@@ -104,15 +104,14 @@ static inline void WireNeighbourInstructions(
 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetFrom,
 	lcsm::support::PointerView< lcsm::EvaluatorNode > &targetTo,
 	const lcsm::DataBits &value,
-	std::vector< lcsm::Event > &events)
+	std::deque< lcsm::Event > &events)
 {
 	/* Write wire's value to target. */
 	WireNeighbourInstructions(targetFrom.get(), targetTo.get(), value, events);
 }
 
-std::vector< lcsm::Event > lcsm::physical::Wire::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Wire::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
-	std::vector< lcsm::Event > events;
 	lcsm::support::PointerView< lcsm::EvaluatorNode > targetFrom = this;
 
 	/* Check, if there is pollution - then, pollute on all non-callings for pollute. */
@@ -201,8 +200,6 @@ std::vector< lcsm::Event > lcsm::physical::Wire::invoke(const lcsm::Timestamp &n
 		/* Clear instants. */
 		m_instants.clear();
 	}
-
-	return events;
 }
 
 void lcsm::physical::Wire::connect(const lcsm::support::PointerView< lcsm::EvaluatorNode > &child)

@@ -1,6 +1,6 @@
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Builder.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Model/File/Writer.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Wire.h>
@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-lcsm::model::Tunnel::Tunnel(lcsm::label_t name) : lcsm::Circuit(name) {}
+lcsm::model::Tunnel::Tunnel(lcsm::label_t name) : lcsm::Component(name) {}
 
 lcsm::model::Tunnel::~Tunnel() noexcept
 {
@@ -27,7 +27,7 @@ const lcsm::model::Wire *lcsm::model::Tunnel::wire() const noexcept
 	return m_wire.get();
 }
 
-const std::vector< lcsm::Circuit * > &lcsm::model::Tunnel::tunnels() const noexcept
+const std::vector< lcsm::Component * > &lcsm::model::Tunnel::tunnels() const noexcept
 {
 	return m_tunnels;
 }
@@ -61,12 +61,12 @@ lcsm::object_type_t lcsm::model::Tunnel::objectType() const noexcept
 	return lcsm::ObjectType::Internal | lcsm::ObjectType::Wiring;
 }
 
-lcsm::CircuitType lcsm::model::Tunnel::circuitType() const noexcept
+lcsm::ComponentType lcsm::model::Tunnel::componentType() const noexcept
 {
-	return lcsm::CircuitType::Tunnel;
+	return lcsm::ComponentType::Tunnel;
 }
 
-void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
+void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Component *circuit)
 {
 	const lcsm::model::Tunnel::Port p = static_cast< lcsm::model::Tunnel::Port >(portId);
 	switch (p)
@@ -75,7 +75,7 @@ void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 		m_wire->connectToWire(circuit);
 		break;
 	case lcsm::model::Tunnel::Port::Tunneling:
-		if (circuit->circuitType() != circuitType())
+		if (circuit->componentType() != componentType())
 			throw std::logic_error("Can't connect non-Tunnel to Tunnel");
 		m_tunnels.push_back(circuit);
 		break;
@@ -84,9 +84,9 @@ void lcsm::model::Tunnel::connect(lcsm::portid_t portId, lcsm::Circuit *circuit)
 	}
 }
 
-void lcsm::model::Tunnel::disconnect(lcsm::Circuit *circuit) noexcept
+void lcsm::model::Tunnel::disconnect(lcsm::Component *circuit) noexcept
 {
-	const std::vector< lcsm::Circuit * >::const_iterator found = std::find(m_tunnels.begin(), m_tunnels.end(), circuit);
+	const std::vector< lcsm::Component * >::const_iterator found = std::find(m_tunnels.begin(), m_tunnels.end(), circuit);
 	if (found != m_tunnels.end())
 	{
 		m_tunnels.erase(found);
@@ -96,24 +96,24 @@ void lcsm::model::Tunnel::disconnect(lcsm::Circuit *circuit) noexcept
 void lcsm::model::Tunnel::disconnectAll() noexcept
 {
 	m_wire->disconnectAll();
-	for (lcsm::Circuit *tunnel : m_tunnels)
+	for (lcsm::Component *tunnel : m_tunnels)
 	{
 		tunnel->disconnect(this);
 	}
 	m_tunnels.clear();
 }
 
-void lcsm::model::Tunnel::connectToWire(lcsm::Circuit *circuit)
+void lcsm::model::Tunnel::connectToWire(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Tunnel::Port::Wiring, circuit);
 }
 
-void lcsm::model::Tunnel::connectTunnel(lcsm::Circuit *circuit)
+void lcsm::model::Tunnel::connectTunnel(lcsm::Component *circuit)
 {
 	connect(lcsm::model::Tunnel::Port::Tunneling, circuit);
 }
 
-lcsm::Circuit *lcsm::model::Tunnel::byPort(lcsm::portid_t portId) noexcept
+lcsm::Component *lcsm::model::Tunnel::byPort(lcsm::portid_t portId) noexcept
 {
 	const lcsm::model::Tunnel::Port p = static_cast< lcsm::model::Tunnel::Port >(portId);
 	switch (p)
@@ -126,7 +126,7 @@ lcsm::Circuit *lcsm::model::Tunnel::byPort(lcsm::portid_t portId) noexcept
 	return nullptr;
 }
 
-lcsm::portid_t lcsm::model::Tunnel::findPort(const lcsm::Circuit *circuit) const noexcept
+lcsm::portid_t lcsm::model::Tunnel::findPort(const lcsm::Component *circuit) const noexcept
 {
 	if (circuit == m_wire.get())
 		return lcsm::model::Tunnel::Port::Wiring;
@@ -141,19 +141,19 @@ lcsm::portid_t lcsm::model::Tunnel::defaultPort() const noexcept
 
 void lcsm::model::Tunnel::dump(lcsm::model::LCSMFileWriter &writer, lcsm::model::LCSMBuilder &builder) const
 {
-	writer.writeBeginComponent();
-	writer.writeCircuitTypeDeclaration(circuitType());
-	writer.writeIdDeclaration(id());
+	// name <STRING>;
 	writer.writeNameDeclaration(name());
+
+	// keyvalue wireid <INTEGER>;
 	writer.writeKeyValueDeclaration("wireid", wire()->id());
+
 	builder.addWires(wire(), true);
 	builder.addTunnels(this);
-	writer.writeEndComponent();
 }
 
-void lcsm::model::Tunnel::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder &builder) const
+void lcsm::model::Tunnel::copy(lcsm::Component *circuit, lcsm::model::LCSMBuilder &builder) const
 {
-	if (circuitType() != circuit->circuitType())
+	if (componentType() != circuit->componentType())
 	{
 		throw std::logic_error("Bad circuit type!");
 	}
@@ -170,11 +170,6 @@ void lcsm::model::Tunnel::copy(lcsm::Circuit *circuit, lcsm::model::LCSMBuilder 
 
 void lcsm::model::Tunnel::from(lcsm::model::LCSMFileReader &reader, lcsm::model::LCSMBuilder &builder)
 {
-	// 'circuittype' is already parsed, so we continue to 'endcomponent'
-
-	// id <IDENTIFIER>;
-	builder.oldToNew(lcsm::Identifier(reader.exceptIdentifier()), id());
-
 	// name <STRING>;
 	setName(reader.exceptName());
 

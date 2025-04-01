@@ -84,7 +84,7 @@ void lcsm::physical::Splitter::add(lcsm::Instruction &&instruction)
 		const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
 			m_outputs.begin(),
 			m_outputs.end(),
-			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
+			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) noexcept { return item == caller; });
 		if (foundOutput != m_outputs.end())
 		{
 			return;
@@ -105,7 +105,7 @@ void lcsm::physical::Splitter::add(lcsm::Instruction &&instruction)
 		const std::vector< lcsm::support::PointerView< lcsm::EvaluatorNode > >::const_iterator foundOutput = std::find_if(
 			m_outputs.begin(),
 			m_outputs.end(),
-			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) { return item == caller; });
+			[caller](const lcsm::support::PointerView< lcsm::EvaluatorNode > &item) noexcept { return item == caller; });
 		if (foundOutput != m_outputs.end())
 		{
 			m_wasPollutedOutput = true;
@@ -130,7 +130,7 @@ void lcsm::physical::Splitter::add(lcsm::Instruction &&instruction)
 	throw std::logic_error("Bad instruction!");
 }
 
-std::vector< lcsm::Event > lcsm::physical::Splitter::invoke(const lcsm::Timestamp &now)
+void lcsm::physical::Splitter::invoke(const lcsm::Timestamp &now, std::deque< lcsm::Event > &events)
 {
 	// Extract value from context.
 	lcsm::DataBits value = m_context->getValue(0);
@@ -154,7 +154,6 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invoke(const lcsm::Timestam
 	m_instants.clear();
 
 	// Create WriteValue instructions to outs with specified indexes for subdatabits.
-	std::vector< lcsm::Event > events;
 	for (std::size_t i = 0; i < m_indexes.size(); i++)
 	{
 		const std::pair< lcsm::width_t, lcsm::width_t > &index = m_indexes[i];
@@ -167,11 +166,9 @@ std::vector< lcsm::Event > lcsm::physical::Splitter::invoke(const lcsm::Timestam
 
 	// Save value to context.
 	m_context->updateValues(now, { value });
-
-	return events;
 }
 
-void lcsm::physical::Splitter::connectInput(const lcsm::support::PointerView< lcsm::EvaluatorNode > &input)
+void lcsm::physical::Splitter::connectInput(const lcsm::support::PointerView< lcsm::EvaluatorNode > &input) noexcept
 {
 	m_input = input;
 }

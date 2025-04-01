@@ -2,7 +2,7 @@
 #define LCSM_TESTING_ASSERTS_H
 
 #include <lcsm/LCSM.h>
-#include <lcsm/Model/Circuit.h>
+#include <lcsm/Model/Component.h>
 #include <lcsm/Physical/DataBits.h>
 #include <lcsm/lcsmconfig.h>
 
@@ -21,7 +21,7 @@ namespace lcsm
 		LCSM_API void assertEquals(const DataBits &actual, DataBits &&expected);
 		LCSM_API void assertEquals(std::size_t actual, std::size_t expected);
 
-		LCSM_API void assertType(const Circuit *circuit, CircuitType type);
+		LCSM_API void assertType(const Component *circuit, ComponentType type);
 
 		LCSM_API void assertTrue(bool actual);
 		LCSM_API void assertFalse(bool actual);
