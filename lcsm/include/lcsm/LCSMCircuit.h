@@ -87,6 +87,7 @@ namespace lcsm
 		LCSMCircuit() = default;
 		LCSMCircuit(label_t name);
 		LCSMCircuit(const std::string &name);
+		LCSMCircuit(std::string &&name);
 
 		LCSMCircuit(const LCSMCircuit &other);
 		LCSMCircuit(LCSMCircuit &&other) noexcept;

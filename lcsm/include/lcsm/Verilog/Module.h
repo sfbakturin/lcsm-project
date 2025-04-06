@@ -21,6 +21,7 @@ namespace lcsm
 		class LCSM_API Module
 		{
 		  public:
+			Module() noexcept = default;
 			Module(const Module &other);
 			Module(Module &&other) noexcept;
 
@@ -58,8 +59,6 @@ namespace lcsm
 			std::vector< std::pair< PortDirectionType, std::size_t > > m_ports;
 
 		  private:
-			Module() noexcept = default;
-
 			static Module parse(const std::shared_ptr< support::Reader > &source);
 		};
 	}	 // namespace verilog

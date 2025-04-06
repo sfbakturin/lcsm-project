@@ -45,6 +45,8 @@ lcsm::LCSMCircuit::LCSMCircuit(lcsm::label_t name) : m_name(name) {}
 
 lcsm::LCSMCircuit::LCSMCircuit(const std::string &name) : m_name(name) {}
 
+lcsm::LCSMCircuit::LCSMCircuit(std::string &&name) : m_name(std::move(name)) {}
+
 lcsm::LCSMCircuit::LCSMCircuit(const lcsm::LCSMCircuit &other) : m_name(other.m_name)
 {
 	static const lcsm::Identifier entryId;
