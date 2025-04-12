@@ -1,9 +1,11 @@
 #ifndef LCSM_VISUAL_CORE_PROJECT_H
 #define LCSM_VISUAL_CORE_PROJECT_H
 
-#include <Core/Scene.h>
+#include <Core/CoreScene.h>
+#include <GUI/GUIOptions.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Verilog/Module.h>
+#include <unordered_map>
 
 #include <QDateTime>
 #include <QHash>
@@ -28,9 +30,16 @@ class Project
 	bool isCircuitExists(const QString &name) const;
 	bool isVerilogExists(const QString &name) const;
 
-	void createEmptyCircuit(const QString &name);
-	void importCircuitFromFile(const QString &filename);
-	void importVerilogModule(const QString &filename);
+	QString createEmptyCircuit(const QString &name);
+	QString importCircuitFromFile(const QString &filename);
+	QString importVerilogModule(const QString &filename);
+	QString createVerilogModuleFromText(const QString &text);
+
+	CoreScene &getSceneOf(const QString &name);
+	const lcsm::LCSMCircuit &getCircuitOf(const QString &name);
+	const lcsm::verilog::Module &getVerilogOf(const QString &name);
+
+	void removeCircuitOrVerilog(const QString &name);
 
 	void save();
 
@@ -40,7 +49,9 @@ class Project
 
 	QHash< QString, lcsm::LCSMCircuit > m_circuits;
 	QHash< QString, lcsm::verilog::Module > m_verilogs;
-	QHash< QString, Scene > m_scenes;
+	std::unordered_map< QString, CoreScene > m_scenes;
+
+	GUIOptions m_options;
 };
 
 #endif /* LCSM_VISUAL_CORE_PROJECT_H */

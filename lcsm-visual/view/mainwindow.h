@@ -2,10 +2,13 @@
 #define LCSM_VISUAL_VIEW_MAINWINDOW_H
 
 #include <Core/Project.h>
+#include <GUI/GUIView.h>
+#include <View/DesignExplorerList.h>
 
 #include <QAction>
 #include <QGraphicsView>
 #include <QGroupBox>
+#include <QLabel>
 #include <QListView>
 #include <QMainWindow>
 #include <QObject>
@@ -14,6 +17,8 @@
 #include <QToolBar>
 #include <QWidget>
 #include <memory>
+
+class Item;
 
 class MainWindow : public QMainWindow
 {
@@ -46,28 +51,31 @@ class MainWindow : public QMainWindow
 	QAction *m_createEmptyCircuitAction;
 	QAction *m_importCircuitFromFileAction;
 	QAction *m_importVerilogModuleAction;
+	QAction *m_createVerilogModuleFromTextAction;
 
 	/* Design/Project/Circuit */
 
-	QListView *m_designProjectCircuitList;
+	DesignExplorerList *m_designProjectCircuitList;
 
 	/* Design/Project/Verilog */
 
-	QListView *m_designProjectVerilogList;
+	DesignExplorerList *m_designProjectVerilogList;
 
 	/* Design/Library */
 
-	QListView *m_designLibraryList;
+	DesignExplorerList *m_designLibraryList;
 
 	/* === EDITOR/SIMULATE === */
 
 	QToolBar *m_mapToolBar;
-	QGraphicsView *m_mapGraphicsView;
+	GUIView *m_mapView;
 
 	QAction *m_startAction;
 	QAction *m_resetAction;
 	QAction *m_stepAction;
 	QAction *m_loopAction;
+
+	QLabel *m_mapName;
 
 	/* === MENU === */
 
@@ -96,6 +104,15 @@ class MainWindow : public QMainWindow
 	void onCreateEmptyCircuit();
 	void onImportCircuitFromFile();
 	void onImportVerilogModule();
+	void onCreateVerilogModuleFromText();
+
+	void onOpen(const QString &item);
+	void onAddToSceneCircuit(const QString &name);
+	void onAddToSceneVerilog(const QString &name);
+	void onAddToSceneLibrary(const QString &name);
+	void onRemove(const QString &item);
+
+	void onShowItem(Item *item);
 
 	/* === MENU === */
 

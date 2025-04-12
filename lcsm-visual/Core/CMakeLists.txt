@@ -3,13 +3,13 @@
 # Add sources.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_VISUAL_SOURCES
-    COMMFILES Project.cpp Scene.cpp
+    COMMFILES Project.cpp CoreScene.cpp Library.cpp
 )
 
 # Add headers
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_VISUAL_HEADERS
-    COMMFILES Project.h Scene.h
+    COMMFILES Project.h CoreScene.h Library.h
 )
 
 # Cache variables for parent scope.

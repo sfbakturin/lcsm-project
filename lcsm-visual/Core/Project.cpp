@@ -1,3 +1,4 @@
+#include <Core/CoreScene.h>
 #include <Core/Project.h>
 #include <Support/Strings.h>
 #include <lcsm/LCSMCircuit.h>
@@ -9,7 +10,11 @@
 #include <QXmlStreamWriter>
 #include <memory>
 
-Project::Project(const QString &name) : m_name(name) {}
+static constexpr int HEIGHT = 4096;
+static constexpr int WIDTH = 4096;
+static constexpr int GRID_SIZE = 32;
+
+Project::Project(const QString &name) : m_name(name), m_options(HEIGHT, WIDTH, GRID_SIZE) {}
 
 const QString &Project::name() const noexcept
 {
@@ -31,7 +36,7 @@ bool Project::isSavePointDetermined() const noexcept
 	return !filename().isEmpty();
 }
 
-std::unique_ptr< Project > Project::fromFile(const QString &filename)
+std::unique_ptr< Project > Project::fromFile(const QString &)
 {
 	return nullptr;
 }
@@ -46,27 +51,66 @@ bool Project::isVerilogExists(const QString &name) const
 	return m_verilogs.contains(name);
 }
 
-void Project::createEmptyCircuit(const QString &n)
+QString Project::createEmptyCircuit(const QString &n)
 {
-	// std::string name = n.toStdString();
-	// m_circuits[n] = lcsm::LCSMCircuit(std::move(name));
 	m_circuits[n] = lcsm::LCSMCircuit(QtStringToAsciiStd(n));
+	m_scenes[n] = CoreScene(std::addressof(m_circuits[n]), std::addressof(m_options));
+	return n;
 }
 
-void Project::importCircuitFromFile(const QString &fn)
+QString Project::importCircuitFromFile(const QString &fn)
 {
 	std::string filename = fn.toStdString();
 	lcsm::LCSMCircuit circuit = lcsm::LCSMCircuit::fromFile(filename);
 	const QString name = QString::fromStdString(circuit.name());
 	m_circuits[name] = std::move(circuit);
+	m_scenes[name] = CoreScene(std::addressof(m_circuits[name]), std::addressof(m_options));
+	return name;
 }
 
-void Project::importVerilogModule(const QString &fn)
+QString Project::importVerilogModule(const QString &fn)
 {
 	std::string filename = fn.toStdString();
 	lcsm::verilog::Module module = lcsm::verilog::Module::fromFile(filename);
 	const QString name = QString::fromStdString(module.identifier());
 	m_verilogs[name] = std::move(module);
+	return name;
+}
+
+QString Project::createVerilogModuleFromText(const QString &s)
+{
+	std::string string = QtStringToAsciiStd(s);
+	lcsm::verilog::Module module = lcsm::verilog::Module::fromString(std::move(string));
+	const QString name = module.identifier().c_str();
+	m_verilogs[name] = std::move(module);
+	return name;
+}
+
+CoreScene &Project::getSceneOf(const QString &name)
+{
+	return m_scenes[name];
+}
+
+const lcsm::LCSMCircuit &Project::getCircuitOf(const QString &name)
+{
+	return m_circuits[name];
+}
+
+const lcsm::verilog::Module &Project::getVerilogOf(const QString &name)
+{
+	return m_verilogs[name];
+}
+
+void Project::removeCircuitOrVerilog(const QString &name)
+{
+	if (isCircuitExists(name))
+	{
+		m_circuits.remove(name);
+	}
+	else if (isVerilogExists(name))
+	{
+		m_verilogs.remove(name);
+	}
 }
 
 void Project::save() {}

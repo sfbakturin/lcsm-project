@@ -1,15 +1,15 @@
-# LCSM Visual item-part sources.
+# LCSM Visual gui-part sources.
 
 # Add sources.
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_VISUAL_SOURCES
-    COMMFILES Item.cpp PinItem.cpp CircuitItem.cpp ComponentItem.cpp VerilogItem.cpp MovableItem.cpp ImmovableItem.cpp WireItem.cpp
+    COMMFILES GUIView.cpp GUIScene.cpp GUIOptions.cpp
 )
 
 # Add headers
 LCSM_ADD_TO_TARGET(
     VARLIST LCSM_VISUAL_HEADERS
-    COMMFILES Item.h PinItem.h CircuitItem.h ComponentItem.h VerilogItem.h MovableItem.h ImmovableItem.h WireItem.h
+    COMMFILES GUIView.h GUIScene.h GUIOptions.h
 )
 
 # Cache variables for parent scope.

@@ -1,3 +1,9 @@
+#include <Core/CoreScene.h>
+#include <Core/Library.h>
+#include <Core/Project.h>
+#include <GUI/GUIView.h>
+#include <Items/Item.h>
+#include <View/DesignExplorerList.h>
 #include <View/MainWindow.h>
 
 #include <QDebug>
@@ -8,6 +14,7 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QKeySequence>
+#include <QLabel>
 #include <QLayout>
 #include <QListView>
 #include <QMainWindow>
@@ -15,6 +22,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSize>
 #include <QSplitter>
 #include <QString>
 #include <QTabWidget>
@@ -22,23 +30,31 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <cassert>
-#include <iostream>
 #include <memory>
 
 static constexpr QSize DEFAULT_WINDOW_SIZE(640, 480);
+
+static constexpr unsigned DESIGN_EXPLORER_LIST_OPTION_BASE =
+	DesignExplorerList::ListOption::AddeableToCircuit | DesignExplorerList::ListOption::Removeable;
+static constexpr unsigned DESIGN_EXPLORER_OPTIONS_CIRCUIT = DESIGN_EXPLORER_LIST_OPTION_BASE | DesignExplorerList::ListOption::Openable;
+static constexpr unsigned DESIGN_EXPLORER_OPTIONS_VERILOG = DESIGN_EXPLORER_LIST_OPTION_BASE;
+static constexpr unsigned DESIGN_EXPLORER_OPTIONS_LIBRARY = DesignExplorerList::ListOption::AddeableToCircuit;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
 	// Initialize main widget.
 	initWindow();
-	initWindowSetup();
 
 	// Initialize menu bar.
 	initMenu();
 
 	// Deactivate workspace, as there is no open project.
 	setWorkspace(false);
+
+	// Deactivate lists, as there is no open project.
+	m_designProjectCircuitList->setAddToSceneEnabled(false);
+	m_designProjectVerilogList->setAddToSceneEnabled(false);
+	m_designLibraryList->setAddToSceneEnabled(false);
 }
 
 void MainWindow::onClosing()
@@ -48,12 +64,19 @@ void MainWindow::onClosing()
 
 void MainWindow::onStart(bool triggered)
 {
+	// Freeze positions.
+	m_mapView->coreScene()->freeze(triggered);
+
+	// Unselect all.
+	m_mapView->coreScene()->aboutToBeCollected(false);
+
 	if (triggered)
 	{
 		// Activate actions.
 		m_resetAction->setEnabled(true);
 		m_stepAction->setEnabled(true);
 		m_loopAction->setEnabled(true);
+
 		// Deactivate design.
 		setEnabledDesign(false);
 	}
@@ -94,7 +117,8 @@ void MainWindow::onCreateEmptyCircuit()
 		}
 		else
 		{
-			m_project->createEmptyCircuit(name);
+			const QString added = m_project->createEmptyCircuit(name);
+			m_designProjectCircuitList->add(added);
 		}
 	}
 	else
@@ -108,7 +132,8 @@ void MainWindow::onImportCircuitFromFile()
 	QString filename = QFileDialog::getOpenFileName(this, tr("Import circuit from file..."), QDir::homePath());
 	if (!filename.isEmpty())
 	{
-		m_project->importCircuitFromFile(filename);
+		const QString added = m_project->importCircuitFromFile(filename);
+		m_designProjectCircuitList->add(added);
 	}
 	else
 	{
@@ -122,13 +147,72 @@ void MainWindow::onImportVerilogModule()
 		QFileDialog::getOpenFileName(this, tr("Import Verilog module..."), QDir::homePath(), tr("Verilog/SystemVerilog (*.v *.sv)"));
 	if (!filename.isEmpty())
 	{
-		m_project->importVerilogModule(filename);
+		const QString added = m_project->importVerilogModule(filename);
+		m_designProjectVerilogList->add(added);
 	}
 	else
 	{
 		throw std::logic_error("Attempt to import Verilog module with invalid path");
 	}
 }
+
+void MainWindow::onCreateVerilogModuleFromText()
+{
+	bool ok;
+	QString text = QInputDialog::getMultiLineText(this, tr("Create Verilog module from text..."), tr("Text:"), "", &ok);
+	if (ok && !text.isEmpty())
+	{
+		const QString added = m_project->createVerilogModuleFromText(text);
+		m_designProjectVerilogList->add(added);
+	}
+}
+
+void MainWindow::onOpen(const QString &name)
+{
+	// Set simulate tools activated.
+	setEnabledSimulate(true);
+	// Open circuit.
+	m_mapView->setCoreScene(std::addressof(m_project->getSceneOf(name)));
+	// Set design list activate.
+	m_designProjectCircuitList->setAddToSceneEnabled(true);
+	m_designProjectVerilogList->setAddToSceneEnabled(true);
+	m_designLibraryList->setAddToSceneEnabled(true);
+	// Set selected name.
+	m_mapName->setText(name);
+}
+
+void MainWindow::onAddToSceneCircuit(const QString &name)
+{
+	CoreScene *coreScene = m_mapView->coreScene();
+	coreScene->add(m_project->getCircuitOf(name));
+}
+
+void MainWindow::onAddToSceneVerilog(const QString &name)
+{
+	CoreScene *coreScene = m_mapView->coreScene();
+	coreScene->add(m_project->getVerilogOf(name));
+}
+
+void MainWindow::onAddToSceneLibrary(const QString &name)
+{
+	CoreScene *coreScene = m_mapView->coreScene();
+	coreScene->add(Library::getItem(name, coreScene));
+}
+
+void MainWindow::onRemove(const QString &item)
+{
+	// TODO: unset and deactivate simulate tools only when item is opened.
+	m_mapView->unsetCoreScene();
+	setEnabledSimulate(false);
+	m_designProjectCircuitList->setAddToSceneEnabled(false);
+	m_designProjectVerilogList->setAddToSceneEnabled(false);
+	m_designLibraryList->setAddToSceneEnabled(false);
+	m_mapName->setText(tr("<not selected>"));
+	// Remove from project.
+	m_project->removeCircuitOrVerilog(item);
+}
+
+void MainWindow::onShowItem(Item *item) {}
 
 void MainWindow::onNewProject()
 {
@@ -137,9 +221,11 @@ void MainWindow::onNewProject()
 	if (ok && !name.isEmpty())
 	{
 		// Create new project.
-		m_project = std::make_unique< Project >(name);
-		// Activate workspace.
-		setWorkspace(true);
+		m_project = std::unique_ptr< Project >(new Project(name));
+		// Activate workspace, except the simulate tools.
+		setEnabledDesign(true);
+		setEnabledMenu(true);
+		setTitle(true);
 	}
 }
 
@@ -150,8 +236,10 @@ void MainWindow::onOpenProject()
 	{
 		// Open existing project.
 		m_project = Project::fromFile(filename);
-		// Activate workspace.
-		setWorkspace(true);
+		// Activate workspace, except the simulate tools.
+		setEnabledDesign(true);
+		setEnabledMenu(true);
+		setTitle(true);
 	}
 }
 
@@ -189,13 +277,13 @@ void MainWindow::initWindow()
 void MainWindow::initWindowWidgets()
 {
 	// === WINDOW WIDGET and LAYOUT ===
-	std::unique_ptr< QWidget > windowWidget = std::make_unique< QWidget >();
-	QHBoxLayout *windowLayout = new QHBoxLayout(windowWidget.get());
+	QWidget *windowWidget = new QWidget();
+	QHBoxLayout *windowLayout = new QHBoxLayout(windowWidget);
 
 	// === LEFT PANEL ===
 	{
 		// Left panel's splitter.
-		QSplitter *splitter = new QSplitter(Qt::Orientation::Vertical, windowWidget.get());
+		QSplitter *splitter = new QSplitter(Qt::Orientation::Vertical, windowWidget);
 
 		// Left panel: design explorer tab.
 		m_designExplorerTab = new QTabWidget(splitter);
@@ -206,8 +294,17 @@ void MainWindow::initWindowWidgets()
 
 		// Left panel: design explorer - select Project - list view of items in project and button to add.
 		m_designExplorerProjectTab = new QTabWidget(designExplorerProjectWidget);
-		m_designProjectCircuitList = new QListView(m_designExplorerProjectTab);
-		m_designProjectVerilogList = new QListView(m_designExplorerProjectTab);
+
+		m_designProjectCircuitList = new DesignExplorerList(DESIGN_EXPLORER_OPTIONS_CIRCUIT, m_designExplorerProjectTab);
+		m_designProjectVerilogList = new DesignExplorerList(DESIGN_EXPLORER_OPTIONS_VERILOG, m_designExplorerProjectTab);
+
+		connect(m_designProjectCircuitList, SIGNAL(open(QString)), SLOT(onOpen(QString)));
+		connect(m_designProjectVerilogList, SIGNAL(open(QString)), SLOT(onOpen(QString)));
+		connect(m_designProjectCircuitList, SIGNAL(addToScene(QString)), SLOT(onAddToSceneCircuit(QString)));
+		connect(m_designProjectVerilogList, SIGNAL(addToScene(QString)), SLOT(onAddToSceneVerilog(QString)));
+		connect(m_designProjectCircuitList, SIGNAL(remove(QString)), SLOT(onRemove(QString)));
+		connect(m_designProjectVerilogList, SIGNAL(remove(QString)), SLOT(onRemove(QString)));
+
 		m_designExplorerProjectTab->addTab(m_designProjectCircuitList, tr("Circuit"));
 		m_designExplorerProjectTab->addTab(m_designProjectVerilogList, tr("Verilog"));
 
@@ -228,6 +325,9 @@ void MainWindow::initWindowWidgets()
 		// Import Verilog module...
 		m_importVerilogModuleAction = m_designExplorerMenu->addAction(tr("Import Verilog module..."));
 
+		// Create Verilog module from text...
+		m_createVerilogModuleFromTextAction = m_designExplorerMenu->addAction(tr("Create Verilog module from text..."));
+
 		designExplorerProjectLayout->addWidget(m_designExplorerProjectTab);
 		designExplorerProjectLayout->addWidget(m_designExplorerProjectButton);
 
@@ -235,7 +335,9 @@ void MainWindow::initWindowWidgets()
 		QWidget *designExplorerLibraryWidget = new QWidget(m_designExplorerTab);
 		QVBoxLayout *designExplorerLibraryLayout = new QVBoxLayout(designExplorerLibraryWidget);
 
-		m_designLibraryList = new QListView(designExplorerLibraryWidget);
+		m_designLibraryList = new DesignExplorerList(DESIGN_EXPLORER_OPTIONS_LIBRARY, designExplorerLibraryWidget);
+
+		connect(m_designLibraryList, SIGNAL(addToScene(QString)), SLOT(onAddToSceneLibrary(QString)));
 
 		designExplorerLibraryLayout->addWidget(m_designLibraryList);
 
@@ -257,7 +359,7 @@ void MainWindow::initWindowWidgets()
 	// === RIGHT PANEL ===
 	{
 		// Right panel's splitter.
-		QSplitter *splitter = new QSplitter(Qt::Orientation::Vertical, windowWidget.get());
+		QSplitter *splitter = new QSplitter(Qt::Orientation::Vertical, windowWidget);
 
 		// Right panel: tool bar and actions.
 		m_mapToolBar = new QToolBar(splitter);
@@ -276,11 +378,18 @@ void MainWindow::initWindowWidgets()
 		m_loopAction = m_mapToolBar->addAction(tr("LOOP"));
 		m_loopAction->setCheckable(true);
 
+		// ---
+		m_mapToolBar->addSeparator();
+
+		// Naming.
+		m_mapName = new QLabel(tr("<not selected>"), m_mapToolBar);
+		m_mapToolBar->addWidget(m_mapName);
+
 		// Right panel: main map.
-		m_mapGraphicsView = new QGraphicsView(splitter);
+		m_mapView = new GUIView(splitter);
 
 		splitter->addWidget(m_mapToolBar);
-		splitter->addWidget(m_mapGraphicsView);
+		splitter->addWidget(m_mapView);
 		splitter->setStretchFactor(0, 0);
 		splitter->setStretchFactor(1, 1);
 
@@ -296,8 +405,9 @@ void MainWindow::initWindowWidgets()
 	connect(m_createEmptyCircuitAction, SIGNAL(triggered(bool)), SLOT(onCreateEmptyCircuit()));
 	connect(m_importCircuitFromFileAction, SIGNAL(triggered(bool)), SLOT(onImportCircuitFromFile()));
 	connect(m_importVerilogModuleAction, SIGNAL(triggered(bool)), SLOT(onImportVerilogModule()));
+	connect(m_createVerilogModuleFromTextAction, SIGNAL(triggered(bool)), SLOT(onCreateVerilogModuleFromText()));
 
-	m_widget = std::move(windowWidget);
+	m_widget = std::unique_ptr< QWidget >(windowWidget);
 }
 
 void MainWindow::initWindowSetup()
@@ -305,6 +415,11 @@ void MainWindow::initWindowSetup()
 	// Central widget and sizes.
 	setCentralWidget(m_widget.get());
 	resize(DEFAULT_WINDOW_SIZE);
+	// Setup default list.
+	for (const QString &name : Library::DefaultList)
+	{
+		m_designLibraryList->add(name);
+	}
 }
 
 void MainWindow::initMenu()
@@ -352,7 +467,7 @@ void MainWindow::initMenuFile()
 	QAction *fileMenuExit = fileMenu->addAction(tr("Exit"));
 	fileMenuExit->setShortcut(QKeySequence::Quit);
 	fileMenuExit->setToolTip(tr("Close application"));
-	connect(fileMenuExit, SIGNAL(triggered(bool)), SLOT(onClosing()));
+	connect(fileMenuExit, SIGNAL(triggered(bool)), SLOT(close()));
 }
 
 void MainWindow::initMenuEdit()
@@ -392,6 +507,7 @@ void MainWindow::setEnabledSimulate(bool enabled)
 		m_startAction->setEnabled(enabled);
 		m_startAction->setChecked(false);
 		m_loopAction->setChecked(false);
+		m_mapName->setEnabled(enabled);
 		return;
 	}
 
@@ -399,6 +515,7 @@ void MainWindow::setEnabledSimulate(bool enabled)
 	m_resetAction->setEnabled(enabled);
 	m_stepAction->setEnabled(enabled);
 	m_loopAction->setEnabled(enabled);
+	m_mapName->setEnabled(enabled);
 }
 
 void MainWindow::setEnabledDesign(bool enabled)
