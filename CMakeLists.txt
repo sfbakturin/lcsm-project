@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
 PROJECT(LogicalCircuitStateMachine LANGUAGES CXX
         DESCRIPTION " LCSM project is a set of tools and libraries that provide construction and simulation of simple logic circuits for educational purposes."
         HOMEPAGE_URL "https://github.com/sfbakturin/lcsm-project"
@@ -24,6 +24,8 @@ OPTION(BUILD_ENABLE_WERROR "Treat all warnings as compile errors." OFF)
 INCLUDE(GNUInstallDirs)
 INCLUDE(CMakePackageConfigHelpers)
 INCLUDE(CTest)
+
+FIND_PACKAGE(Python COMPONENTS Interpreter)
 
 ENABLE_TESTING()
 
@@ -60,23 +62,6 @@ FUNCTION(LCSM_BASE_SETUP_TARGET targetName)
     ENDIF()
     IF(WIN32)
         TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC _CRT_SECURE_NO_WARNINGS)
-    ENDIF()
-
-    # LCSM configs.
-    IF(BUILD_SHARED_LIBS)
-        TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC LCSM_CONFIG_LIBRARY_SHARED)
-    ELSE()
-        TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC LCSM_CONFIG_LIBRARY_STATIC)
-    ENDIF()
-
-    IF(WIN32)
-        TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC LCSM_CONFIG_SYSTEM_WIN32)
-    ELSEIF(UNIX)
-        TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC LCSM_CONFIG_SYSTEM_UNIX)
-    ENDIF()
-
-    IF(MSVC)
-        TARGET_COMPILE_DEFINITIONS(${targetName} PUBLIC LCSM_CONFIG_COMPILER_MSVC)
     ENDIF()
 ENDFUNCTION()
 
