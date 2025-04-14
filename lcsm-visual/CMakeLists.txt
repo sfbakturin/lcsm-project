@@ -41,7 +41,7 @@ TARGET_SOURCES(lcsm-visual
 
 TARGET_INCLUDE_DIRECTORIES(lcsm-visual
     PUBLIC
-    Core Items Support View
+    Support Core GUI Items View
 )
 
 # Link Qt5.

@@ -4,6 +4,7 @@
 #include <Core/Project.h>
 #include <GUI/GUIView.h>
 #include <View/DesignExplorerList.h>
+#include <View/PropertiesList.h>
 
 #include <QAction>
 #include <QGraphicsView>
@@ -41,6 +42,7 @@ class MainWindow : public QMainWindow
 
 	QTabWidget *m_designExplorerTab;
 	QGroupBox *m_designPropertiesGroupBox;
+	PropertiesList *m_designPropertiesList;
 
 	/* Design/Project */
 
@@ -113,6 +115,7 @@ class MainWindow : public QMainWindow
 	void onRemove(const QString &item);
 
 	void onShowItem(Item *item);
+	void onRemoveItem();
 
 	/* === MENU === */
 

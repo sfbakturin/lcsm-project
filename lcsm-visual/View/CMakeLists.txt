@@ -2,14 +2,24 @@
 
 # Add sources.
 LCSM_ADD_TO_TARGET(
-    VARLIST LCSM_VISUAL_SOURCES
-    COMMFILES MainWindow.cpp DesignExplorerList.cpp
+    VARLIST
+        LCSM_VISUAL_SOURCES
+    COMMFILES
+        MainWindow.cpp
+        DesignExplorerList.cpp
+        PropertiesList.cpp
+        SimulateDialog.cpp
 )
 
 # Add headers
 LCSM_ADD_TO_TARGET(
-    VARLIST LCSM_VISUAL_HEADERS
-    COMMFILES MainWindow.h DesignExplorerList.h
+    VARLIST
+        LCSM_VISUAL_HEADERS
+    COMMFILES
+        MainWindow.h
+        DesignExplorerList.h
+        PropertiesList.h
+        SimulateDialog.h
 )
 
 # Cache variables for parent scope.

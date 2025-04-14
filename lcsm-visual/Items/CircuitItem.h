@@ -9,9 +9,11 @@
 #include <QPointF>
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
+#include <QVariant>
 #include <QWidget>
 
 class CoreScene;
+class PropertiesList;
 
 class CircuitItem : public MovableItem
 {
@@ -27,10 +29,16 @@ class CircuitItem : public MovableItem
 
 	virtual QPointF relativePositionOfPort(lcsm::portid_t portId) const override final;
 
+	virtual void setProperty(int key, const QVariant &value) override final;
+	virtual void setPropertiesList(PropertiesList *propertiesList) override final;
+
 	const lcsm::LCSMCircuitView &circuit() const noexcept;
 
   protected:
 	virtual void connect() override final;
+
+	virtual bool rotateActionEnabled() const noexcept override final;
+	virtual bool putValueActionEnabled() const noexcept override final;
 
   private:
 	lcsm::LCSMCircuitView m_view;

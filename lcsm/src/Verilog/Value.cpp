@@ -212,7 +212,7 @@ namespace lcsm
 std::string lcsm::verilog::Value::toString() const
 {
 	std::string s = "{";
-	s.push_back(lcsm::verilog::BitPretty(m_bit));
+	s.append(lcsm::verilog::BitPretty(m_bit));
 	s.append(", ");
 	s.append(lcsm::verilog::StrengthPretty(m_strength));
 	s.push_back('}');

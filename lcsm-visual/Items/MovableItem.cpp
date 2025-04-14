@@ -2,9 +2,11 @@
 #include <GUI/GUIOptions.h>
 #include <Items/Item.h>
 #include <Items/MovableItem.h>
+#include <Items/WireLine.h>
 #include <lcsm/Model/Identifier.h>
 
 #include <QGraphicsItem>
+#include <QList>
 #include <QPointF>
 #include <QRectF>
 #include <QVariant>
@@ -26,7 +28,12 @@ static inline qreal clamp(qreal vl, qreal lo, qreal hi) noexcept
 
 QVariant MovableItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-	if (change == GraphicsItemChange::ItemPositionChange)
+	if (change == QGraphicsItem::GraphicsItemChange::ItemPositionHasChanged)
+	{
+		adjust();
+	}
+
+	if (change == QGraphicsItem::GraphicsItemChange::ItemPositionChange && scene() != nullptr)
 	{
 		const QPointF pos = value.toPointF();
 		const qreal gs = static_cast< qreal >(options()->gridSize());
@@ -41,5 +48,6 @@ QVariant MovableItem::itemChange(GraphicsItemChange change, const QVariant &valu
 
 		return QPointF(nx, ny);
 	}
+
 	return QGraphicsItem::itemChange(change, value);
 }

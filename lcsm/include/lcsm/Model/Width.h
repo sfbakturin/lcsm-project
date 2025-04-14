@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 namespace lcsm
 {
@@ -42,6 +43,8 @@ namespace lcsm
 	// clang-format on
 
 	LCSM_API Width StrongToWidth(unsigned long long width);
+	LCSM_API std::string WidthToString(Width width);
+	LCSM_API const char *WidthToCStr(Width width) noexcept;
 }	 // namespace lcsm
 
 #endif /* LCSM_MODEL_WIDTH_H */

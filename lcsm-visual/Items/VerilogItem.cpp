@@ -9,6 +9,7 @@
 #include <QPointF>
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
+#include <QVariant>
 #include <QWidget>
 
 VerilogItem::VerilogItem(CoreScene *scene, lcsm::model::VerilogModule *verilogModule, GUIOptions *options) :
@@ -38,9 +39,23 @@ QPointF VerilogItem::relativePositionOfPort(lcsm::portid_t portId) const
 	return QPointF();
 }
 
+void VerilogItem::setProperty(int key, const QVariant &value) {}
+
+void VerilogItem::setPropertiesList(PropertiesList *propertiesList) {}
+
 lcsm::Component *VerilogItem::component() noexcept
 {
 	return m_verilogModule;
 }
 
 void VerilogItem::connect() {}
+
+bool VerilogItem::rotateActionEnabled() const noexcept
+{
+	return true;
+}
+
+bool VerilogItem::putValueActionEnabled() const noexcept
+{
+	return false;
+}

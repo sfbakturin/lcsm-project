@@ -1,7 +1,13 @@
 # Add sources.
 LCSM_ADD_TO_TARGET(
-    VARLIST LCSM_SOURCES
-    COMMFILES Kind.cpp Token.cpp Lexer.cpp Reader.cpp Writer.cpp
+    VARLIST
+        LCSM_SOURCES
+    COMMFILES
+        Kind.cpp
+        Token.cpp
+        Lexer.cpp
+        Reader.cpp
+        Writer.cpp
 )
 
 # Cache variable for parent scope.

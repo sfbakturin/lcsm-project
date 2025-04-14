@@ -8,6 +8,7 @@
 #include <QString>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <map>
 #include <memory>
 
 static constexpr int HEIGHT = 4096;

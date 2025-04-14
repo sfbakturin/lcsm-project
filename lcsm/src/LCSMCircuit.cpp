@@ -779,6 +779,53 @@ lcsm::LCSMCircuit lcsm::LCSMCircuit::fromFile(const char *filename)
 	return lcsm::LCSMCircuit::fromImpl(reader, builder);
 }
 
+static inline bool TestExpectedObjectType(const lcsm::Component *component, lcsm::ObjectType expected) noexcept
+{
+	const lcsm::object_type_t type = component->objectType();
+	return lcsm::TestObjectType(type, expected);
+}
+
+bool lcsm::LCSMCircuit::isInput(const lcsm::Component *component) noexcept
+{
+	return (component != nullptr && TestExpectedObjectType(component, lcsm::ObjectType::Input));
+}
+
+bool lcsm::LCSMCircuit::isOutput(const lcsm::Component *component) noexcept
+{
+	return (component != nullptr && TestExpectedObjectType(component, lcsm::ObjectType::Output));
+}
+
+void lcsm::LCSMCircuit::commitProperties(lcsm::Component *component)
+{
+	if (component)
+	{
+		const lcsm::Identifier id = component->id();
+		m_inputs.erase(id);
+		m_outputs.erase(id);
+		std::shared_ptr< lcsm::Component > item = m_components[id];
+		if (lcsm::LCSMCircuit::isInput(component))
+		{
+			m_inputs[id] = item;
+		}
+		if (lcsm::LCSMCircuit::isOutput(component))
+		{
+			m_outputs[id] = item;
+		}
+	}
+	else
+	{
+		for (std::pair< const lcsm::Identifier, std::shared_ptr< lcsm::Component > > &item : m_components)
+		{
+			commitProperties(item.second.get());
+		}
+	}
+}
+
+void lcsm::LCSMCircuit::commitProperties()
+{
+	commitProperties(nullptr);
+}
+
 void lcsm::LCSMCircuit::copyImpl(lcsm::LCSMCircuit *newCircuit, lcsm::model::LCSMBuilder &builder, const Identifier &entryId, std::size_t depth) const
 {
 	// Re-entry global Id.
@@ -1272,17 +1319,9 @@ lcsm::Component *lcsm::LCSMCircuit::postRegisterComponent(lcsm::Component *circu
 
 lcsm::Component *lcsm::LCSMCircuit::postRegisterComponent(std::shared_ptr< lcsm::Component > &circuit)
 {
-	const lcsm::object_type_t objectType = circuit->objectType();
-	const lcsm::Identifier id = circuit->id();
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Input))
-	{
-		m_inputs[id] = circuit;
-	}
-	if (lcsm::TestObjectType(objectType, lcsm::ObjectType::Output))
-	{
-		m_outputs[id] = circuit;
-	}
-	return circuit.get();
+	lcsm::Component *c = circuit.get();
+	commitProperties(c);
+	return c;
 }
 
 lcsm::Component *lcsm::LCSMCircuit::findGloballyComponentWire(lcsm::Identifier id) noexcept

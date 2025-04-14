@@ -21,7 +21,7 @@ namespace lcsm
 		static constexpr std::array< Bit, 2 > Bits = { Bit::False, Bit::True };
 
 		LCSM_API std::ostream &operator<<(std::ostream &os, const Bit &b);
-		LCSM_API char BitPretty(const Bit &b) noexcept;
+		LCSM_API const char *BitPretty(const Bit &b) noexcept;
 	}	 // namespace verilog
 }	 // namespace lcsm
 

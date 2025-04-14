@@ -170,6 +170,12 @@ namespace lcsm
 		static LCSMCircuit fromFile(const std::string &filename);
 		static LCSMCircuit fromFile(const char *filename);
 
+		static bool isInput(const Component *component) noexcept;
+		static bool isOutput(const Component *component) noexcept;
+
+		void commitProperties(Component *component);
+		void commitProperties();
+
 	  private:
 		// God, I swear WE NEED THIS.
 		// FIXME: Somehow this need to be dead...

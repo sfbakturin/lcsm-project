@@ -14,6 +14,7 @@
 #include <QWidget>
 
 class CoreScene;
+class PropertiesList;
 
 class PinItem : public ComponentItem
 {
@@ -26,11 +27,21 @@ class PinItem : public ComponentItem
 
 	virtual QPointF relativePositionOfPort(lcsm::portid_t portId) const override final;
 
+	virtual void setProperty(int key, const QVariant &value) override final;
+	virtual void setPropertiesList(PropertiesList *propertiesList) override final;
+
   protected:
 	virtual void connect() override final;
 
+	virtual bool rotateActionEnabled() const noexcept override final;
+	virtual bool putValueActionEnabled() const noexcept override final;
+
   private:
 	lcsm::model::Pin *m_pin;
+
+	int m_nameKey;
+	int m_outputKey;
+	int m_widthKey;
 
   private:
 	QPointF relativePositionOfPort() const noexcept;

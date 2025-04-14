@@ -3,19 +3,26 @@
 #include <Items/ComponentItem.h>
 #include <Items/MovableItem.h>
 #include <Items/PinItem.h>
+#include <Support/Strings.h>
+#include <View/PropertiesList.h>
 #include <lcsm/LCSM.h>
+#include <lcsm/Model/Width.h>
 #include <lcsm/Model/std/Pin.h>
 
-#include <QDebug>
+#include <QList>
 #include <QObject>
 #include <QPainter>
 #include <QPointF>
 #include <QRectF>
+#include <QString>
 #include <QStyleOptionGraphicsItem>
+#include <QVariant>
 #include <QWidget>
+#include <string>
+#include <utility>
 
 PinItem::PinItem(CoreScene *scene, lcsm::model::Pin *pin, GUIOptions *options) :
-	ComponentItem(scene, pin, options), m_pin(pin)
+	ComponentItem(scene, pin, options), m_pin(pin), m_nameKey(0), m_outputKey(0), m_widthKey(0)
 {
 }
 
@@ -24,6 +31,7 @@ QRectF PinItem::boundingRect() const
 	const qreal gridSize = static_cast< qreal >(options()->gridSize());
 	const qreal width = static_cast< qreal >(2 * gridSize);
 	const qreal extend = static_cast< qreal >(3 * gridSize);
+
 	switch (m_direction)
 	{
 	case Item::ItemDirection::East:
@@ -37,10 +45,11 @@ QRectF PinItem::boundingRect() const
 		return QRectF(0, 0, width, extend);
 	}
 	}
+
 	return QRectF();
 }
 
-void PinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void PinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
 	const qreal gridSize = static_cast< qreal >(options()->gridSize());
 	const qreal width = static_cast< qreal >(2 * gridSize);
@@ -55,7 +64,7 @@ void PinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 	const QString tin = QObject::tr("Input");
 	const QString tout = QObject::tr("Output");
 
-	const QBrush selected = (isSelected() ? Qt::red : (aboutToBeConnected() ? Qt::blue : Qt::black));
+	const QBrush selected = (isSelected() ? Qt::gray : (aboutToBeConnected() ? Qt::blue : Qt::black));
 
 	// Draw bounds 1.
 	{
@@ -102,8 +111,8 @@ QPointF PinItem::relativePositionOfPort(lcsm::portid_t portId) const
 	{
 		const QPointF rel = relativePositionOfPort();
 		const QPointF off = offsetBoundingRect();
-		const QPointF p = rel + off;
-		return QPointF(p.x(), p.y());
+		const QPointF ps = rel + off;
+		return QPointF(ps.x(), ps.y());
 	}
 	default:
 	{
@@ -114,15 +123,73 @@ QPointF PinItem::relativePositionOfPort(lcsm::portid_t portId) const
 	throw std::logic_error("Bad port!");
 }
 
+void PinItem::setProperty(int key, const QVariant &value)
+{
+	// Name.
+	if (key == m_nameKey)
+	{
+		const QString s = value.toString();
+		std::string name = QtStringToAsciiStd(s);
+		m_pin->setName(std::move(name));
+	}
+	// Output?
+	else if (key == m_outputKey)
+	{
+		m_pin->setOutput(value.toBool());
+		m_coreScene->commitProperties(m_pin);
+		update();
+	}
+	// Width
+	else if (key == m_widthKey)
+	{
+		const uint width = value.toUInt();
+		m_pin->setWidth(static_cast< lcsm::Width >(width));
+		update();
+	}
+}
+
+void PinItem::setPropertiesList(PropertiesList *propertiesList)
+{
+	// Name
+	const QString name = m_pin->name().c_str();
+	m_nameKey = propertiesList->addEditableItem(QObject::tr("Name"), name);
+
+	// Output?
+	m_outputKey = propertiesList->addBooleanItem(QObject::tr("Output?"), QObject::tr("No"), QObject::tr("Yes"), m_pin->output());
+
+	// Width
+	QList< QString > stringChoices;
+	QList< QVariant > valueChoices;
+	for (lcsm::Width w : lcsm::Widths)
+	{
+		const QString s = lcsm::WidthToCStr(w);
+		const QVariant v = w;
+		stringChoices << s;
+		valueChoices << v;
+	}
+	m_widthKey = propertiesList->addChoicesItem(QObject::tr("Width"), stringChoices, valueChoices, m_pin->width());
+}
+
 void PinItem::connect()
 {
 	m_coreScene->connection(id(), lcsm::model::Pin::Port::Internal);
+}
+
+bool PinItem::rotateActionEnabled() const noexcept
+{
+	return true;
+}
+
+bool PinItem::putValueActionEnabled() const noexcept
+{
+	return !m_pin->output();
 }
 
 QPointF PinItem::relativePositionOfPort() const noexcept
 {
 	const qreal gridSize = static_cast< qreal >(options()->gridSize());
 	const qreal width = static_cast< qreal >(2 * gridSize);
+
 	switch (m_direction)
 	{
 	case Item::ItemDirection::East:
@@ -142,12 +209,14 @@ QPointF PinItem::relativePositionOfPort() const noexcept
 		return QPointF(gridSize, 0.0);
 	}
 	}
+
 	return QPoint();
 }
 
 QPointF PinItem::offsetBoundingRect() const noexcept
 {
 	const qreal gridSize = static_cast< qreal >(options()->gridSize());
+
 	switch (m_direction)
 	{
 	case Item::ItemDirection::East:
@@ -168,5 +237,6 @@ QPointF PinItem::offsetBoundingRect() const noexcept
 		break;
 	}
 	}
+
 	return QPointF();
 }

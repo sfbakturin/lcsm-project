@@ -5,6 +5,9 @@
 #include <Items/MovableItem.h>
 #include <lcsm/Model/Component.h>
 
+#include <QList>
+#include <QVariant>
+
 class CoreScene;
 
 class ComponentItem : public MovableItem

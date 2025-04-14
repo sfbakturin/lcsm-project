@@ -3,8 +3,10 @@
 
 #include <GUI/GUIOptions.h>
 #include <lcsm/LCSM.h>
+#include <lcsm/LCSMState.h>
 #include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
+#include <lcsm/Support/PointerView.hpp>
 
 #include <QAction>
 #include <QGraphicsItem>
@@ -15,6 +17,8 @@
 #include <memory>
 
 class CoreScene;
+class WireLine;
+class PropertiesList;
 
 class Item : public QGraphicsItem
 {
@@ -48,8 +52,8 @@ class Item : public QGraphicsItem
 	const GUIOptions *options() const noexcept;
 	void setOptions(GUIOptions *options) noexcept;
 
-	void setFreeze(bool freeze) noexcept;
-	bool freeze() const noexcept;
+	void setSimulate(bool simulate) noexcept;
+	bool simulate() const noexcept;
 
 	void rotateRight();
 	void rotateLeft();
@@ -60,6 +64,16 @@ class Item : public QGraphicsItem
 	virtual QPointF relativePositionOfPort(lcsm::portid_t portId) const = 0;
 	QPointF absolutePositionOfPort(lcsm::portid_t portId) const;
 
+	void addWireLine(WireLine *wireLine);
+	void removeWireLine(WireLine *wireLine);
+	QList< WireLine * > &wireLines() noexcept;
+
+	void setState(lcsm::LCSMState *state) noexcept;
+	void resetState() noexcept;
+
+	virtual void setProperty(int key, const QVariant &value) = 0;
+	virtual void setPropertiesList(PropertiesList *propertiesList) = 0;
+
   protected:
 	void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 	void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -69,21 +83,34 @@ class Item : public QGraphicsItem
 
 	virtual void connect() = 0;
 
+	void adjust();
+
+	virtual bool rotateActionEnabled() const noexcept = 0;
+	virtual bool putValueActionEnabled() const noexcept = 0;
+
   protected:
 	CoreScene *m_coreScene;
 	lcsm::Identifier m_id;
 	GUIOptions *m_options;
 
-	std::unique_ptr< QMenu > m_contextMenu;
-	QAction *m_connectAction;
-	QAction *m_removeAction;
-	QAction *m_rotateRightAction;
-	QAction *m_rotateLeftAction;
+	std::unique_ptr< QMenu > m_designContextMenu;
+	lcsm::support::PointerView< QAction > m_connectAction;
+	lcsm::support::PointerView< QAction > m_removeAction;
+	lcsm::support::PointerView< QAction > m_rotateRightAction;
+	lcsm::support::PointerView< QAction > m_rotateLeftAction;
 
-	bool m_freeze;
+	std::unique_ptr< QMenu > m_simulateContextMenu;
+	lcsm::support::PointerView< QAction > m_putValueAction;
+	lcsm::support::PointerView< QAction > m_showValueAction;
+
 	bool m_aboutToBeConnected;
+	bool m_simulate;
 
 	ItemDirection m_direction;
+
+	QList< WireLine * > m_wireLines;
+
+	lcsm::support::PointerView< lcsm::LCSMState > m_state;
 };
 
 #endif /* LCSM_VISUAL_ITEMS_ITEM_H */

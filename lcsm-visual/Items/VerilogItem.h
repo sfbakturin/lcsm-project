@@ -9,9 +9,11 @@
 #include <QPointF>
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
+#include <QVariant>
 #include <QWidget>
 
 class CoreScene;
+class PropertiesList;
 
 class VerilogItem : public MovableItem
 {
@@ -26,10 +28,16 @@ class VerilogItem : public MovableItem
 
 	virtual QPointF relativePositionOfPort(lcsm::portid_t portId) const override final;
 
+	virtual void setProperty(int key, const QVariant &value) override final;
+	virtual void setPropertiesList(PropertiesList *propertiesList) override final;
+
 	lcsm::Component *component() noexcept;
 
   protected:
 	virtual void connect() override final;
+
+	virtual bool rotateActionEnabled() const noexcept override final;
+	virtual bool putValueActionEnabled() const noexcept override final;
 
   private:
 	lcsm::model::VerilogModule *m_verilogModule;

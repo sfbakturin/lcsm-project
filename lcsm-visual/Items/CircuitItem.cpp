@@ -2,12 +2,14 @@
 #include <GUI/GUIOptions.h>
 #include <Items/CircuitItem.h>
 #include <Items/Item.h>
+#include <View/PropertiesList.h>
 #include <lcsm/LCSMCircuit.h>
 
 #include <QPainter>
 #include <QPointF>
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
+#include <QVariant>
 #include <QWidget>
 
 CircuitItem::CircuitItem(CoreScene *scene, const lcsm::LCSMCircuitView &view, GUIOptions *options) :
@@ -37,9 +39,23 @@ QPointF CircuitItem::relativePositionOfPort(lcsm::portid_t portId) const
 	return QPointF();
 }
 
+void CircuitItem::setProperty(int key, const QVariant &value) {}
+
+void CircuitItem::setPropertiesList(PropertiesList *propertiesList) {}
+
 const lcsm::LCSMCircuitView &CircuitItem::circuit() const noexcept
 {
 	return m_view;
 }
 
 void CircuitItem::connect() {}
+
+bool CircuitItem::rotateActionEnabled() const noexcept
+{
+	return true;
+}
+
+bool CircuitItem::putValueActionEnabled() const noexcept
+{
+	return false;
+}

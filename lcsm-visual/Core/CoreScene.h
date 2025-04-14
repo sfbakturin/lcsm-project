@@ -8,19 +8,27 @@
 #include <Items/Item.h>
 #include <lcsm/LCSM.h>
 #include <lcsm/LCSMCircuit.h>
+#include <lcsm/LCSMEngine.h>
+#include <lcsm/LCSMState.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/std/Pin.h>
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
 #include <unordered_map>
 
+#include <QAction>
 #include <QGraphicsScene>
+#include <QMenu>
+#include <QObject>
+#include <QPoint>
 #include <memory>
 
-class CoreScene
+class CoreScene : public QObject
 {
+	Q_OBJECT
+
   public:
-	CoreScene() = default;
+	CoreScene();
 	CoreScene(lcsm::LCSMCircuit *circuit, GUIOptions *options);
 	~CoreScene() noexcept = default;
 
@@ -39,14 +47,21 @@ class CoreScene
 
 	void connection(lcsm::Identifier id, lcsm::portid_t portId);
 	void resetConnection();
-
 	void add(const lcsm::LCSMCircuit &circuit);
 	void add(const lcsm::verilog::Module &module);
 	void add(ComponentItem *componentItem);
 
-	void freeze(bool freeze);
 	void aboutToBeCollected(bool aboutToBeCollected);
 	void removeItem(Item *item);
+	void commitProperties(lcsm::Component *component);
+
+	void startSimulate(bool start);
+	void stepSimulate();
+	void loopSimulate(bool start);
+
+  signals:
+	void showItem(Item *item);
+	void removeItem();
 
   private:
 	lcsm::support::PointerView< GUIOptions > m_options;
@@ -57,14 +72,14 @@ class CoreScene
 
 	lcsm::support::PointerView< GUIView > m_view;
 
-	/* === CONTEXT MENU === */
-	// TODO: Make only one menu for all items.
-
 	/* === CONNECTION === */
-
 	lcsm::Identifier m_connectionId1;
 	lcsm::portid_t m_connectionPortId1;
 	bool m_connection1;
+
+	/* === SIMULATE === */
+	std::unique_ptr< lcsm::LCSMEngine > m_engine;
+	std::unique_ptr< lcsm::LCSMState > m_state;
 
   private:
 	void addImpl(Item *item);

@@ -5,6 +5,7 @@
 #include <Items/Item.h>
 #include <View/DesignExplorerList.h>
 #include <View/MainWindow.h>
+#include <View/PropertiesList.h>
 
 #include <QDebug>
 #include <QDir>
@@ -64,9 +65,6 @@ void MainWindow::onClosing()
 
 void MainWindow::onStart(bool triggered)
 {
-	// Freeze positions.
-	m_mapView->coreScene()->freeze(triggered);
-
 	// Unselect all.
 	m_mapView->coreScene()->aboutToBeCollected(false);
 
@@ -94,6 +92,9 @@ void MainWindow::onStart(bool triggered)
 		// Activate design.
 		setEnabledDesign(true);
 	}
+
+	// Start/stop simulate.
+	m_mapView->coreScene()->startSimulate(triggered);
 }
 
 void MainWindow::onReset()
@@ -101,9 +102,15 @@ void MainWindow::onReset()
 	onStart(false);
 }
 
-void MainWindow::onStep() {}
+void MainWindow::onStep()
+{
+	m_mapView->coreScene()->stepSimulate();
+}
 
-void MainWindow::onLoop(bool triggered) {}
+void MainWindow::onLoop(bool triggered)
+{
+	m_mapView->coreScene()->loopSimulate(triggered);
+}
 
 void MainWindow::onCreateEmptyCircuit()
 {
@@ -172,7 +179,14 @@ void MainWindow::onOpen(const QString &name)
 	// Set simulate tools activated.
 	setEnabledSimulate(true);
 	// Open circuit.
+	if (m_mapView->coreScene())
+	{
+		disconnect(m_mapView->coreScene(), SIGNAL(showItem(Item *)));
+		disconnect(m_mapView->coreScene(), SIGNAL(removeItem()));
+	}
 	m_mapView->setCoreScene(std::addressof(m_project->getSceneOf(name)));
+	connect(m_mapView->coreScene(), SIGNAL(showItem(Item *)), SLOT(onShowItem(Item *)));
+	connect(m_mapView->coreScene(), SIGNAL(removeItem()), SLOT(onRemoveItem()));
 	// Set design list activate.
 	m_designProjectCircuitList->setAddToSceneEnabled(true);
 	m_designProjectVerilogList->setAddToSceneEnabled(true);
@@ -207,12 +221,20 @@ void MainWindow::onRemove(const QString &item)
 	m_designProjectCircuitList->setAddToSceneEnabled(false);
 	m_designProjectVerilogList->setAddToSceneEnabled(false);
 	m_designLibraryList->setAddToSceneEnabled(false);
-	m_mapName->setText(tr("<not selected>"));
+	m_mapName->setText(tr("not selected"));
 	// Remove from project.
 	m_project->removeCircuitOrVerilog(item);
 }
 
-void MainWindow::onShowItem(Item *item) {}
+void MainWindow::onShowItem(Item *item)
+{
+	m_designPropertiesList->setCurrentItem(item);
+}
+
+void MainWindow::onRemoveItem()
+{
+	m_designPropertiesList->clearAll();
+}
 
 void MainWindow::onNewProject()
 {
@@ -347,6 +369,12 @@ void MainWindow::initWindowWidgets()
 
 		// Left panel: properties.
 		m_designPropertiesGroupBox = new QGroupBox(tr("Properties"), splitter);
+		QVBoxLayout *designPropertiesGroupBoxLayout = new QVBoxLayout(m_designPropertiesGroupBox);
+
+		m_designPropertiesList = new PropertiesList(m_designPropertiesGroupBox);
+		designPropertiesGroupBoxLayout->addWidget(m_designPropertiesList);
+
+		m_designPropertiesGroupBox->setLayout(designPropertiesGroupBoxLayout);
 
 		splitter->addWidget(m_designExplorerTab);
 		splitter->addWidget(m_designPropertiesGroupBox);

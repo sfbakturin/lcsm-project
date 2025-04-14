@@ -138,7 +138,6 @@ CONFIGURE_PACKAGE_CONFIG_FILE(
 # Generate and install export file.
 INSTALL(EXPORT "LCSMTargets"
     FILE "LCSMTargets.cmake"
-    NAMESPACE LCSM::
     DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake"
 )
 

@@ -5,11 +5,11 @@
 #include <GUI/GUIOptions.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Verilog/Module.h>
-#include <unordered_map>
 
 #include <QDateTime>
 #include <QHash>
 #include <QString>
+#include <map>
 #include <memory>
 
 class Project
@@ -49,7 +49,7 @@ class Project
 
 	QHash< QString, lcsm::LCSMCircuit > m_circuits;
 	QHash< QString, lcsm::verilog::Module > m_verilogs;
-	std::unordered_map< QString, CoreScene > m_scenes;
+	std::map< QString, CoreScene > m_scenes;
 
 	GUIOptions m_options;
 };

@@ -2,14 +2,34 @@
 
 # Add sources.
 LCSM_ADD_TO_TARGET(
-    VARLIST LCSM_VISUAL_SOURCES
-    COMMFILES Item.cpp PinItem.cpp CircuitItem.cpp ComponentItem.cpp VerilogItem.cpp MovableItem.cpp ImmovableItem.cpp WireItem.cpp
+    VARLIST
+        LCSM_VISUAL_SOURCES
+    COMMFILES
+        Item.cpp
+        PinItem.cpp
+        CircuitItem.cpp
+        ComponentItem.cpp
+        VerilogItem.cpp
+        MovableItem.cpp
+        ImmovableItem.cpp
+        WireItem.cpp
+        WireLine.cpp
 )
 
 # Add headers
 LCSM_ADD_TO_TARGET(
-    VARLIST LCSM_VISUAL_HEADERS
-    COMMFILES Item.h PinItem.h CircuitItem.h ComponentItem.h VerilogItem.h MovableItem.h ImmovableItem.h WireItem.h
+    VARLIST
+        LCSM_VISUAL_HEADERS
+    COMMFILES
+        Item.h
+        PinItem.h
+        CircuitItem.h
+        ComponentItem.h
+        VerilogItem.h
+        MovableItem.h
+        ImmovableItem.h
+        WireItem.h
+        WireLine.h
 )
 
 # Cache variables for parent scope.

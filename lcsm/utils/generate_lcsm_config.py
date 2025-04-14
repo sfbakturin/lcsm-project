@@ -56,5 +56,7 @@ def __main():
 
     stream.write(header_suffix)
 
+    stream.close()
+
 if __name__ == "__main__":
     __main()

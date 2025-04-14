@@ -8,6 +8,9 @@
 #include <Items/PinItem.h>
 #include <Items/VerilogItem.h>
 #include <Items/WireItem.h>
+#include <Items/WireLine.h>
+#include <lcsm/LCSMEngine.h>
+#include <lcsm/LCSMState.h>
 #include <lcsm/Model/Component.h>
 #include <lcsm/Model/Identifier.h>
 #include <lcsm/Model/Verilog.h>
@@ -16,13 +19,22 @@
 #include <lcsm/Support/PointerView.hpp>
 #include <lcsm/Verilog/Module.h>
 
+#include <QAction>
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QHash>
+#include <QLineF>
+#include <QMenu>
 #include <QObject>
+#include <QPointF>
 #include <QRectF>
 #include <memory>
 #include <utility>
+
+CoreScene::CoreScene() :
+	m_options(nullptr), m_scene(nullptr), m_circuit(nullptr), m_connectionPortId1(0), m_connection1(false)
+{
+}
 
 CoreScene::CoreScene(lcsm::LCSMCircuit *circuit, GUIOptions *options) :
 	m_options(options), m_scene(new GUIScene(options->sceneRect(), options->gridSize())), m_circuit(circuit),
@@ -69,11 +81,9 @@ void CoreScene::setView(GUIView *view) noexcept
 	m_view = view;
 }
 
-void setView(GUIView *view) noexcept;
-
 void CoreScene::connection(lcsm::Identifier id, lcsm::portid_t portId)
 {
-	if (m_connection1)
+	if (m_connection1 && m_connectionId1 != id)
 	{
 		// Connect in backend.
 		lcsm::Component *c1 = m_circuit->find(m_connectionId1);
@@ -83,8 +93,27 @@ void CoreScene::connection(lcsm::Identifier id, lcsm::portid_t portId)
 		// Create GUI Wire item.
 		lcsm::support::PointerView< Item > item1 = m_items[m_connectionId1];
 		lcsm::support::PointerView< Item > item2 = m_items[id];
-		WireItem *item = new WireItem(item1.get(), item2.get(), m_connectionPortId1, portId, this, wire);
+
+		WireItem *item = new WireItem(this, wire, m_options.get());
+		WireLine *line1 = new WireLine(item1.get(), item, m_connectionPortId1, lcsm::model::Wire::Port::Wiring);
+		WireLine *line2 = new WireLine(item2.get(), item, portId, lcsm::model::Wire::Port::Wiring);
+		line1->setZValue(0.0);
+		line2->setZValue(0.0);
+
+		const QPointF p1 = item1->absolutePositionOfPort(m_connectionPortId1);
+		const QPointF p2 = item2->absolutePositionOfPort(portId);
+
+		const qreal gs = static_cast< qreal >(m_options->gridSize());
+
+		QPointF pos = QLineF(p1, p2).center();
+		pos.setX(qRound(pos.x() / gs) * gs);
+		pos.setY(qRound(pos.y() / gs) * gs);
+
+		item->setPos(pos);
+
 		addImpl(item);
+		m_scene->addItem(line1);
+		m_scene->addItem(line2);
 
 		// Reset GUI and non-GUI connection-action.
 		item1->setAboutToBeConnected(false);
@@ -130,14 +159,6 @@ void CoreScene::add(ComponentItem *item)
 	addImpl(item);
 }
 
-void CoreScene::freeze(bool freeze)
-{
-	for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
-	{
-		it.second->setFreeze(freeze);
-	}
-}
-
 void CoreScene::aboutToBeCollected(bool aboutToBeCollected)
 {
 	for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
@@ -159,7 +180,6 @@ void CoreScene::removeItem(Item *item)
 		lcsm::Component *component = componentItem->component();
 		m_items.erase(component->id());
 		m_circuit->remove(component);
-		// TODO: Remove all painted wires.
 		break;
 	}
 	case Item::ItemType::CircuitItemTy:
@@ -168,7 +188,6 @@ void CoreScene::removeItem(Item *item)
 		const lcsm::LCSMCircuitView &circuit = circuitItem->circuit();
 		m_items.erase(circuit.id());
 		m_circuit->removeCircuit(circuit);
-		// TODO: Remove all painted wires.
 		break;
 	}
 	case Item::ItemType::VerilogItemTy:
@@ -177,7 +196,6 @@ void CoreScene::removeItem(Item *item)
 		lcsm::Component *component = verilogItem->component();
 		m_items.erase(component->id());
 		m_circuit->remove(component);
-		// TODO: Remove all painted wires.
 		break;
 	}
 	case Item::ItemType::WireItemTy:
@@ -186,11 +204,63 @@ void CoreScene::removeItem(Item *item)
 		lcsm::Component *wire = wireItem->wire();
 		m_items.erase(wire->id());
 		m_circuit->remove(wire);
-		// TODO: Remove all painted wires.
 		break;
 	}
 	}
+
+	// Remove all painted wires.
+	for (WireLine *wireLine : item->wireLines())
+	{
+		Item *i1 = wireLine->item1();
+		Item *i2 = wireLine->item2();
+		Item *i = (item == i1 ? i2 : i1);
+		i->removeWireLine(wireLine);
+		m_scene->removeItem(wireLine);
+	}
+
+	// Reset to default.
+	m_connection1 = false;
+
+	// Make everyone connected know that there is removed item.
+	emit removeItem();
 }
+
+void CoreScene::commitProperties(lcsm::Component *component)
+{
+	m_circuit->commitProperties(component);
+}
+
+void CoreScene::startSimulate(bool start)
+{
+	if (start)
+	{
+		m_engine = std::unique_ptr< lcsm::LCSMEngine >(new lcsm::LCSMEngine(lcsm::LCSMEngine::fromCircuit(m_circuit.cref())));
+		m_state = std::unique_ptr< lcsm::LCSMState >(new lcsm::LCSMState(m_engine->fork()));
+		for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
+		{
+			it.second->setSimulate(true);
+			it.second->setState(m_state.get());
+		}
+	}
+	else
+	{
+		m_state.reset();
+		m_engine.reset();
+		for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
+		{
+			it.second->setSimulate(false);
+			it.second->resetState();
+		}
+	}
+}
+
+void CoreScene::stepSimulate()
+{
+	m_state->tick();
+	m_scene->update();
+}
+
+void CoreScene::loopSimulate(bool start) {}
 
 void CoreScene::addImpl(Item *item)
 {
