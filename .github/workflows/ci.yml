@@ -56,7 +56,7 @@ jobs:
 
       - name: Build
         run: |
-          cmake . -G ${{ matrix.toolchain.cmake-generator }} -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} ${{ env.LCSM_CMAKE_FLAGS }}
+          cmake . -G "${{ matrix.toolchain.cmake-generator }}" -D CMAKE_BUILD_TYPE=${{ matrix.buildtype }} ${{ env.LCSM_CMAKE_FLAGS }}
           cmake --build . --config ${{ matrix.buildtype }} --parallel
 
       - name: Test (exclude Verilog)
