@@ -83,10 +83,13 @@ class Item : public QGraphicsItem
 
 	virtual void connect() = 0;
 
+	void directionChanged();
 	void adjust();
 
 	virtual bool rotateActionEnabled() const noexcept = 0;
 	virtual bool putValueActionEnabled() const noexcept = 0;
+
+	virtual lcsm::width_t inputWidth() const noexcept = 0;
 
   protected:
 	CoreScene *m_coreScene;

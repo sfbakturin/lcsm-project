@@ -25,7 +25,7 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CMakePackageConfigHelpers)
 INCLUDE(CTest)
 
-FIND_PACKAGE(Python COMPONENTS Interpreter)
+FIND_PACKAGE(Python COMPONENTS REQUIRED Interpreter)
 
 ENABLE_TESTING()
 

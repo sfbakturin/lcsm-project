@@ -2,6 +2,7 @@
 #include <GUI/GUIOptions.h>
 #include <Items/MovableItem.h>
 #include <Items/VerilogItem.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/Component.h>
 #include <lcsm/Model/Verilog.h>
 
@@ -58,4 +59,9 @@ bool VerilogItem::rotateActionEnabled() const noexcept
 bool VerilogItem::putValueActionEnabled() const noexcept
 {
 	return false;
+}
+
+lcsm::width_t VerilogItem::inputWidth() const noexcept
+{
+	return lcsm::Width::QuadWord;
 }

@@ -54,7 +54,7 @@ bool Project::isVerilogExists(const QString &name) const
 
 QString Project::createEmptyCircuit(const QString &n)
 {
-	m_circuits[n] = lcsm::LCSMCircuit(QtStringToAsciiStd(n));
+	m_circuits[n] = lcsm::LCSMCircuit(n.toStdString());
 	m_scenes[n] = CoreScene(std::addressof(m_circuits[n]), std::addressof(m_options));
 	return n;
 }
@@ -80,9 +80,8 @@ QString Project::importVerilogModule(const QString &fn)
 
 QString Project::createVerilogModuleFromText(const QString &s)
 {
-	std::string string = QtStringToAsciiStd(s);
-	lcsm::verilog::Module module = lcsm::verilog::Module::fromString(std::move(string));
-	const QString name = module.identifier().c_str();
+	lcsm::verilog::Module module = lcsm::verilog::Module::fromString(s.toStdString());
+	const QString name = QString::fromStdString(module.identifier());
 	m_verilogs[name] = std::move(module);
 	return name;
 }

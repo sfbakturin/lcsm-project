@@ -3,6 +3,7 @@
 
 #include <GUI/GUIOptions.h>
 #include <Items/MovableItem.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/Verilog.h>
 
 #include <QPainter>
@@ -38,6 +39,8 @@ class VerilogItem : public MovableItem
 
 	virtual bool rotateActionEnabled() const noexcept override final;
 	virtual bool putValueActionEnabled() const noexcept override final;
+
+	virtual lcsm::width_t inputWidth() const noexcept override final;
 
   private:
 	lcsm::model::VerilogModule *m_verilogModule;

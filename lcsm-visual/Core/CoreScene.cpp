@@ -37,9 +37,10 @@ CoreScene::CoreScene() :
 }
 
 CoreScene::CoreScene(lcsm::LCSMCircuit *circuit, GUIOptions *options) :
-	m_options(options), m_scene(new GUIScene(options->sceneRect(), options->gridSize())), m_circuit(circuit),
+	m_options(options), m_scene(new GUIScene(options->sceneRect(), this, options->gridSize())), m_circuit(circuit),
 	m_connectionPortId1(0), m_connection1(false)
 {
+	m_scene->setCoreScene(this);
 }
 
 CoreScene::CoreScene(CoreScene &&other) noexcept :
@@ -159,11 +160,19 @@ void CoreScene::add(ComponentItem *item)
 	addImpl(item);
 }
 
-void CoreScene::aboutToBeCollected(bool aboutToBeCollected)
+void CoreScene::aboutToBeConnected(bool aboutToBeConnected)
 {
 	for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
 	{
-		it.second->setAboutToBeConnected(aboutToBeCollected);
+		it.second->setAboutToBeConnected(aboutToBeConnected);
+	}
+}
+
+void CoreScene::setSelected(bool selected)
+{
+	for (std::pair< const lcsm::Identifier, lcsm::support::PointerView< Item > > &it : m_items)
+	{
+		it.second->setSelected(selected);
 	}
 }
 
@@ -260,7 +269,10 @@ void CoreScene::stepSimulate()
 	m_scene->update();
 }
 
-void CoreScene::loopSimulate(bool start) {}
+void CoreScene::loopSimulate(bool start)
+{
+	Q_UNUSED(start);
+}
 
 void CoreScene::addImpl(Item *item)
 {

@@ -66,7 +66,11 @@ void MainWindow::onClosing()
 void MainWindow::onStart(bool triggered)
 {
 	// Unselect all.
-	m_mapView->coreScene()->aboutToBeCollected(false);
+	m_mapView->coreScene()->aboutToBeConnected(false);
+	m_mapView->coreScene()->setSelected(false);
+
+	// Kill properties.
+	m_designPropertiesList->clearAll();
 
 	if (triggered)
 	{
@@ -442,7 +446,7 @@ void MainWindow::initWindowSetup()
 {
 	// Central widget and sizes.
 	setCentralWidget(m_widget.get());
-	resize(DEFAULT_WINDOW_SIZE);
+	setMinimumSize(DEFAULT_WINDOW_SIZE);
 	// Setup default list.
 	for (const QString &name : Library::DefaultList)
 	{

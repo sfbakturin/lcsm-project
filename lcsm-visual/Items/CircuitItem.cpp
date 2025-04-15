@@ -3,6 +3,7 @@
 #include <Items/CircuitItem.h>
 #include <Items/Item.h>
 #include <View/PropertiesList.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/LCSMCircuit.h>
 
 #include <QPainter>
@@ -58,4 +59,9 @@ bool CircuitItem::rotateActionEnabled() const noexcept
 bool CircuitItem::putValueActionEnabled() const noexcept
 {
 	return false;
+}
+
+lcsm::width_t CircuitItem::inputWidth() const noexcept
+{
+	return lcsm::Width::QuadWord;
 }

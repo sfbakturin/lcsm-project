@@ -32,8 +32,11 @@ PropertiesList::~PropertiesList() noexcept
 void PropertiesList::setCurrentItem(Item *item)
 {
 	clearAll();
-	m_currentItem = item;
-	item->setPropertiesList(this);
+	if (item != nullptr)
+	{
+		m_currentItem = item;
+		item->setPropertiesList(this);
+	}
 }
 
 int PropertiesList::addEditableItem(const QString &key, const QString &value)

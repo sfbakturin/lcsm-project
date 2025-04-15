@@ -3,6 +3,7 @@
 
 #include <GUI/GUIOptions.h>
 #include <Items/MovableItem.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/LCSMCircuit.h>
 
 #include <QPainter>
@@ -39,6 +40,8 @@ class CircuitItem : public MovableItem
 
 	virtual bool rotateActionEnabled() const noexcept override final;
 	virtual bool putValueActionEnabled() const noexcept override final;
+
+	virtual lcsm::width_t inputWidth() const noexcept override final;
 
   private:
 	lcsm::LCSMCircuitView m_view;

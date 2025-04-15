@@ -3,6 +3,7 @@
 
 #include <GUI/GUIOptions.h>
 #include <Items/ComponentItem.h>
+#include <lcsm/LCSM.h>
 #include <lcsm/Model/std/Pin.h>
 
 #include <QPainter>
@@ -36,10 +37,13 @@ class PinItem : public ComponentItem
 	virtual bool rotateActionEnabled() const noexcept override final;
 	virtual bool putValueActionEnabled() const noexcept override final;
 
+	virtual lcsm::width_t inputWidth() const noexcept override final;
+
   private:
 	lcsm::model::Pin *m_pin;
 
 	int m_nameKey;
+	int m_facingKey;
 	int m_outputKey;
 	int m_widthKey;
 

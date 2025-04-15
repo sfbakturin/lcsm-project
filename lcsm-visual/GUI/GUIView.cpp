@@ -26,6 +26,7 @@ void GUIView::setCoreScene(CoreScene *coreScene)
 	if (m_coreScene)
 	{
 		setScene(m_coreScene->scene());
+		m_coreScene->scene()->setCoreScene(coreScene);
 		m_coreScene->setView(this);
 	}
 }

@@ -43,6 +43,8 @@ class WireItem : public MovableItem
 	virtual bool rotateActionEnabled() const noexcept override final;
 	virtual bool putValueActionEnabled() const noexcept override final;
 
+	virtual lcsm::width_t inputWidth() const noexcept override final;
+
   private:
 	lcsm::model::Wire *m_wire;
 

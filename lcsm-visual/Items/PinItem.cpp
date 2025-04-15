@@ -3,7 +3,6 @@
 #include <Items/ComponentItem.h>
 #include <Items/MovableItem.h>
 #include <Items/PinItem.h>
-#include <Support/Strings.h>
 #include <View/PropertiesList.h>
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Width.h>
@@ -22,7 +21,7 @@
 #include <utility>
 
 PinItem::PinItem(CoreScene *scene, lcsm::model::Pin *pin, GUIOptions *options) :
-	ComponentItem(scene, pin, options), m_pin(pin), m_nameKey(0), m_outputKey(0), m_widthKey(0)
+	ComponentItem(scene, pin, options), m_pin(pin), m_nameKey(0), m_facingKey(0), m_outputKey(0), m_widthKey(0)
 {
 }
 
@@ -71,7 +70,15 @@ void PinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
 		painter->setBrush(selected);
 		const QPointF p1 = offset;
 		const QPointF p2 = QPointF(width, width) + offset;
-		painter->drawRect(QRectF(p1, p2));
+		const QRectF rect = QRectF(p1, p2);
+		if (m_pin->output())
+		{
+			painter->drawEllipse(rect);
+		}
+		else
+		{
+			painter->drawRect(rect);
+		}
 	}
 
 	// Draw bounds 2.
@@ -79,7 +86,15 @@ void PinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
 		painter->setBrush(Qt::white);
 		const QPointF p1 = QPointF(bound, bound) + offset;
 		const QPointF p2 = QPointF(boundWidth, boundWidth) + offset;
-		painter->drawRect(QRectF(p1, p2));
+		const QRectF rect = QRectF(p1, p2);
+		if (m_pin->output())
+		{
+			painter->drawEllipse(rect);
+		}
+		else
+		{
+			painter->drawRect(rect);
+		}
 	}
 
 	// Draw port.
@@ -129,8 +144,14 @@ void PinItem::setProperty(int key, const QVariant &value)
 	if (key == m_nameKey)
 	{
 		const QString s = value.toString();
-		std::string name = QtStringToAsciiStd(s);
-		m_pin->setName(std::move(name));
+		m_pin->setName(s.toStdString());
+	}
+	// Facing
+	else if (key == m_facingKey)
+	{
+		const uint direction = value.toUInt();
+		m_direction = static_cast< Item::ItemDirection >(direction);
+		directionChanged();
 	}
 	// Output?
 	else if (key == m_outputKey)
@@ -151,23 +172,37 @@ void PinItem::setProperty(int key, const QVariant &value)
 void PinItem::setPropertiesList(PropertiesList *propertiesList)
 {
 	// Name
-	const QString name = m_pin->name().c_str();
-	m_nameKey = propertiesList->addEditableItem(QObject::tr("Name"), name);
+	{
+		const QString name = QString::fromStdString(m_pin->name());
+		m_nameKey = propertiesList->addEditableItem(QObject::tr("Name"), name);
+	}
+
+	// Facing.
+	{
+		const QList< QString > stringChoices = { QObject::tr("North"), QObject::tr("South"), QObject::tr("East"), QObject::tr("West") };
+		const QList< QVariant > valueChoices = { Item::ItemDirection::North, Item::ItemDirection::South, Item::ItemDirection::East, Item::ItemDirection::West };
+		m_facingKey = propertiesList->addChoicesItem(QObject::tr("Facing"), stringChoices, valueChoices, m_direction);
+	}
 
 	// Output?
-	m_outputKey = propertiesList->addBooleanItem(QObject::tr("Output?"), QObject::tr("No"), QObject::tr("Yes"), m_pin->output());
+	{
+		m_outputKey =
+			propertiesList->addBooleanItem(QObject::tr("Output?"), QObject::tr("No"), QObject::tr("Yes"), m_pin->output());
+	}
 
 	// Width
-	QList< QString > stringChoices;
-	QList< QVariant > valueChoices;
-	for (lcsm::Width w : lcsm::Widths)
 	{
-		const QString s = lcsm::WidthToCStr(w);
-		const QVariant v = w;
-		stringChoices << s;
-		valueChoices << v;
+		QList< QString > stringChoices;
+		QList< QVariant > valueChoices;
+		for (lcsm::Width w : lcsm::Widths)
+		{
+			const QString s = lcsm::WidthToCStr(w);
+			const QVariant v = w;
+			stringChoices << s;
+			valueChoices << v;
+		}
+		m_widthKey = propertiesList->addChoicesItem(QObject::tr("Width"), stringChoices, valueChoices, m_pin->width());
 	}
-	m_widthKey = propertiesList->addChoicesItem(QObject::tr("Width"), stringChoices, valueChoices, m_pin->width());
 }
 
 void PinItem::connect()
@@ -183,6 +218,11 @@ bool PinItem::rotateActionEnabled() const noexcept
 bool PinItem::putValueActionEnabled() const noexcept
 {
 	return !m_pin->output();
+}
+
+lcsm::width_t PinItem::inputWidth() const noexcept
+{
+	return m_pin->width();
 }
 
 QPointF PinItem::relativePositionOfPort() const noexcept

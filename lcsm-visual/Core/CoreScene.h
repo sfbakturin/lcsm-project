@@ -51,7 +51,8 @@ class CoreScene : public QObject
 	void add(const lcsm::verilog::Module &module);
 	void add(ComponentItem *componentItem);
 
-	void aboutToBeCollected(bool aboutToBeCollected);
+	void aboutToBeConnected(bool aboutToBeConnected);
+	void setSelected(bool selected);
 	void removeItem(Item *item);
 	void commitProperties(lcsm::Component *component);
 

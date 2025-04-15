@@ -2,6 +2,7 @@
 #define LCSM_VISUAL_GUI_GUISCENE_H
 
 #include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QRectF>
 #include <QWidget>
@@ -11,7 +12,7 @@ class CoreScene;
 class GUIScene : public QGraphicsScene
 {
   public:
-	explicit GUIScene(const QRectF &rect = QRectF(), int gridSize = 8);
+	explicit GUIScene(const QRectF &rect = QRectF(), CoreScene *coreScene = nullptr, int gridSize = 8);
 	~GUIScene() noexcept = default;
 
 	CoreScene *coreScene() noexcept;
@@ -22,6 +23,8 @@ class GUIScene : public QGraphicsScene
 
   protected:
 	void drawBackground(QPainter *painter, const QRectF &rect) override;
+
+	void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
   private:
 	CoreScene *m_coreScene;

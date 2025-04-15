@@ -1,13 +1,17 @@
 #include <Core/CoreScene.h>
 #include <GUI/GUIScene.h>
 
+#include <QGraphicsItem>
 #include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QPen>
 #include <QRectF>
+#include <QTransform>
 #include <QWidget>
 
-GUIScene::GUIScene(const QRectF &rect, int gridSize) : QGraphicsScene(rect), m_coreScene(nullptr), m_gridSize(gridSize)
+GUIScene::GUIScene(const QRectF &rect, CoreScene *coreScene, int gridSize) :
+	QGraphicsScene(rect), m_coreScene(coreScene), m_gridSize(gridSize)
 {
 }
 
@@ -44,4 +48,19 @@ void GUIScene::drawBackground(QPainter *painter, const QRectF &)
 			painter->drawPoint(x, y);
 		}
 	}
+}
+
+void GUIScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+	QGraphicsItem *item = itemAt(event->scenePos(), QTransform());
+
+	if (item == nullptr)
+	{
+		// De-select all.
+		m_coreScene->setSelected(false);
+		// Kill info.
+		emit m_coreScene->showItem(nullptr);
+	}
+
+	QGraphicsScene::mousePressEvent(event);
 }

@@ -72,15 +72,13 @@ static constexpr uint DIRECT = 4;
 void Item::rotateRight()
 {
 	m_direction = static_cast< Item::ItemDirection >((m_direction + 1) % DIRECT);
-	prepareGeometryChange();
-	adjust();
+	directionChanged();
 }
 
 void Item::rotateLeft()
 {
 	m_direction = static_cast< Item::ItemDirection >(m_direction == 0 ? Item::ItemDirection::North : (m_direction - 1) % DIRECT);
-	prepareGeometryChange();
-	adjust();
+	directionChanged();
 }
 
 void Item::setAboutToBeConnected(bool aboutToBeConnected)
@@ -206,7 +204,7 @@ void Item::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	else if (m_putValueAction == selected)
 	{
 		bool ok;
-		const lcsm::DataBits databits = SimulateDialog::PutValue(lcsm::Width::QuadWord, std::addressof(ok));
+		const lcsm::DataBits databits = SimulateDialog::PutValue(inputWidth(), std::addressof(ok));
 		if (ok)
 		{
 			m_state->putValue(id(), { databits });
@@ -216,6 +214,12 @@ void Item::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	{
 		SimulateDialog::ShowValue(m_state.cptr(), id());
 	}
+}
+
+void Item::directionChanged()
+{
+	prepareGeometryChange();
+	adjust();
 }
 
 void Item::adjust()

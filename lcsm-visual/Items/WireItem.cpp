@@ -4,7 +4,6 @@
 #include <Items/MovableItem.h>
 #include <Items/WireItem.h>
 #include <Items/WireLine.h>
-#include <Support/Strings.h>
 #include <View/PropertiesList.h>
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Wire.h>
@@ -78,16 +77,17 @@ void WireItem::setProperty(int key, const QVariant &value)
 	if (key == m_nameKey)
 	{
 		const QString s = value.toString();
-		std::string name = QtStringToAsciiStd(s);
-		m_wire->setName(std::move(name));
+		m_wire->setName(s.toStdString());
 	}
 }
 
 void WireItem::setPropertiesList(PropertiesList *propertiesList)
 {
-	// Name.
-	const QString name = m_wire->name().c_str();
-	m_nameKey = propertiesList->addEditableItem(QObject::tr("Name"), name);
+	// Name
+	{
+		const QString name = QString::fromStdString(m_wire->name());
+		m_nameKey = propertiesList->addEditableItem(QObject::tr("Name"), name);
+	}
 }
 
 void WireItem::connect()
@@ -103,4 +103,9 @@ bool WireItem::rotateActionEnabled() const noexcept
 bool WireItem::putValueActionEnabled() const noexcept
 {
 	return false;
+}
+
+lcsm::width_t WireItem::inputWidth() const noexcept
+{
+	return lcsm::Width::QuadWord;
 }
