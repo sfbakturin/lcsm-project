@@ -156,10 +156,28 @@ static void test(LCSMCircuit &circuit)
 	// Testing data.
 	// clang-format off
 	const std::vector< TestData > testdatas = {
+		{ { T }, { T }, { T } },
+		{ { F }, { T }, { F } },
+
 		{ { F }, { F }, { F } },
 		{ { F }, { T }, { F } },
 		{ { T }, { F }, { F } },
 		{ { T }, { T }, { T } },
+
+		{ { F }, { F }, { F } },
+		{ { T }, { F }, { F } },
+		{ { F }, { T }, { F } },
+		{ { T }, { T }, { T } },
+
+		{ { T }, { F }, { F } },
+		{ { F }, { F }, { F } },
+		{ { F }, { T }, { F } },
+		{ { T }, { T }, { T } },
+
+		{ { T }, { F }, { F } },
+		{ { F }, { F }, { F } },
+		{ { T }, { T }, { T } },
+		{ { F }, { T }, { F } },
 	};
 	// clang-format on
 

@@ -32,21 +32,27 @@
 #include <utility>
 
 CoreScene::CoreScene() :
-	m_options(nullptr), m_scene(nullptr), m_circuit(nullptr), m_connectionPortId1(0), m_connection1(false)
+	m_connectionPortId1(0), m_connection1(false), m_connectionAsCircuit1(false), m_connectionAsCircuitIsInput1(false),
+	m_connectionAsCircuitPortId1(0)
 {
 }
 
-CoreScene::CoreScene(lcsm::LCSMCircuit *circuit, GUIOptions *options) :
-	m_options(options), m_scene(new GUIScene(options->sceneRect(), this, options->gridSize())), m_circuit(circuit),
-	m_connectionPortId1(0), m_connection1(false)
+CoreScene::CoreScene(Project *project, lcsm::LCSMCircuit *circuit, GUIOptions *options) :
+	m_project(project), m_options(options), m_scene(new GUIScene(options->sceneRect(), this, options->gridSize())),
+	m_circuit(circuit), m_connectionPortId1(0), m_connection1(false), m_connectionAsCircuit1(false),
+	m_connectionAsCircuitIsInput1(false), m_connectionAsCircuitPortId1(0)
 {
-	m_scene->setCoreScene(this);
 }
 
 CoreScene::CoreScene(CoreScene &&other) noexcept :
-	m_options(std::move(other.m_options)), m_items(std::move(other.m_items)), m_scene(std::move(other.m_scene)),
-	m_circuit(std::move(other.m_circuit)), m_view(std::move(other.m_view)), m_connectionId1(std::move(other.m_connectionId1)),
-	m_connectionPortId1(other.m_connectionPortId1), m_connection1(other.m_connection1)
+	m_project(std::move(other.m_project)), m_options(std::move(other.m_options)), m_items(std::move(other.m_items)),
+	m_scene(std::move(other.m_scene)), m_circuit(std::move(other.m_circuit)), m_view(std::move(other.m_view)),
+	m_connectionId1(std::move(other.m_connectionId1)), m_connectionPortId1(other.m_connectionPortId1),
+	m_connection1(other.m_connection1), m_connectionAsCircuitId1(std::move(other.m_connectionAsCircuitId1)),
+	m_connectionAsCircuitComponentId1(std::move(other.m_connectionAsCircuitComponentId1)),
+	m_connectionAsCircuitView1(std::move(other.m_connectionAsCircuitView1)),
+	m_connectionAsCircuit1(other.m_connectionAsCircuit1), m_connectionAsCircuitIsInput1(other.m_connectionAsCircuitIsInput1),
+	m_connectionAsCircuitPortId1(other.m_connectionAsCircuitPortId1)
 {
 }
 
@@ -57,6 +63,7 @@ CoreScene &CoreScene::operator=(CoreScene &&other)
 
 void CoreScene::swap(CoreScene &other)
 {
+	std::swap(m_project, other.m_project);
 	std::swap(m_options, other.m_options);
 	std::swap(m_items, other.m_items);
 	std::swap(m_scene, other.m_scene);
@@ -65,6 +72,12 @@ void CoreScene::swap(CoreScene &other)
 	std::swap(m_connectionId1, other.m_connectionId1);
 	std::swap(m_connectionPortId1, other.m_connectionPortId1);
 	std::swap(m_connection1, other.m_connection1);
+	std::swap(m_connectionAsCircuitId1, other.m_connectionAsCircuitId1);
+	std::swap(m_connectionAsCircuitComponentId1, other.m_connectionAsCircuitComponentId1);
+	std::swap(m_connectionAsCircuitView1, other.m_connectionAsCircuitView1);
+	std::swap(m_connectionAsCircuit1, other.m_connectionAsCircuit1);
+	std::swap(m_connectionAsCircuitIsInput1, other.m_connectionAsCircuitIsInput1);
+	std::swap(m_connectionAsCircuitPortId1, other.m_connectionAsCircuitPortId1);
 }
 
 GUIScene *CoreScene::scene() noexcept
@@ -84,7 +97,17 @@ void CoreScene::setView(GUIView *view) noexcept
 
 void CoreScene::connection(lcsm::Identifier id, lcsm::portid_t portId)
 {
-	if (m_connection1 && m_connectionId1 != id)
+	lcsm::support::PointerView< Item > item1;
+	lcsm::support::PointerView< Item > item2;
+
+	WireItem *item = nullptr;
+	WireLine *line1 = nullptr;
+	WireLine *line2 = nullptr;
+
+	QPointF p1;
+	QPointF p2;
+
+	if (m_connection1)
 	{
 		// Connect in backend.
 		lcsm::Component *c1 = m_circuit->find(m_connectionId1);
@@ -92,18 +115,44 @@ void CoreScene::connection(lcsm::Identifier id, lcsm::portid_t portId)
 		lcsm::model::Wire *wire = m_circuit->connect(c1, m_connectionPortId1, c2, portId);
 
 		// Create GUI Wire item.
-		lcsm::support::PointerView< Item > item1 = m_items[m_connectionId1];
-		lcsm::support::PointerView< Item > item2 = m_items[id];
+		item1 = m_items[m_connectionId1];
+		item2 = m_items[id];
 
-		WireItem *item = new WireItem(this, wire, m_options.get());
-		WireLine *line1 = new WireLine(item1.get(), item, m_connectionPortId1, lcsm::model::Wire::Port::Wiring);
-		WireLine *line2 = new WireLine(item2.get(), item, portId, lcsm::model::Wire::Port::Wiring);
-		line1->setZValue(0.0);
-		line2->setZValue(0.0);
+		item = new WireItem(this, wire, m_options.get());
+		line1 = new WireLine(item1.get(), item, m_connectionPortId1, lcsm::model::Wire::Port::Wiring);
+		line2 = new WireLine(item2.get(), item, portId, lcsm::model::Wire::Port::Wiring);
 
-		const QPointF p1 = item1->absolutePositionOfPort(m_connectionPortId1);
-		const QPointF p2 = item2->absolutePositionOfPort(portId);
+		p1 = item1->absolutePositionOfPort(m_connectionPortId1);
+		p2 = item2->absolutePositionOfPort(portId);
+	}
+	else if (m_connectionAsCircuit1)
+	{
+		// Connect in backend.
+		lcsm::Component *c1 = m_circuit->find(id);
+		lcsm::Component *c2 = m_connectionAsCircuitView1.find(m_connectionAsCircuitComponentId1);
+		lcsm::model::Wire *wire = m_circuit->connect(c1, portId, c2, lcsm::model::Pin::Port::External);
 
+		// Create GUI Wire item.
+		item1 = m_items[id];
+		item2 = m_items[m_connectionAsCircuitId1];
+
+		item = new WireItem(this, wire, m_options.get());
+		line1 = new WireLine(item1.get(), item, portId, lcsm::model::Wire::Port::Wiring);
+		line2 = new WireLine(item2.get(), item, m_connectionAsCircuitPortId1, lcsm::model::Wire::Port::Wiring);
+
+		p1 = item1->absolutePositionOfPort(portId);
+		p2 = item2->absolutePositionOfPort(m_connectionAsCircuitPortId1);
+	}
+	else
+	{
+		m_connectionId1 = id;
+		m_connectionPortId1 = portId;
+		m_connection1 = true;
+		m_items[id]->setAboutToBeConnected(true);
+	}
+
+	if (item != nullptr)
+	{
 		const qreal gs = static_cast< qreal >(m_options->gridSize());
 
 		QPointF pos = QLineF(p1, p2).center();
@@ -120,13 +169,88 @@ void CoreScene::connection(lcsm::Identifier id, lcsm::portid_t portId)
 		item1->setAboutToBeConnected(false);
 		item2->setAboutToBeConnected(false);
 		m_connection1 = false;
+		m_connectionAsCircuit1 = false;
+	}
+}
+
+void CoreScene::connectionAsCircuit(lcsm::Identifier circuitId, lcsm::Identifier componentId, lcsm::LCSMCircuitView &view, bool isInput, int portId)
+{
+	lcsm::support::PointerView< Item > item1;
+	lcsm::support::PointerView< Item > item2;
+
+	WireItem *item = nullptr;
+	WireLine *line1 = nullptr;
+	WireLine *line2 = nullptr;
+
+	QPointF p1;
+	QPointF p2;
+
+	if (m_connection1)
+	{
+		// Connect in backend.
+		lcsm::Component *c1 = m_circuit->find(m_connectionId1);
+		lcsm::Component *c2 = view.find(componentId);
+		lcsm::model::Wire *wire = m_circuit->connect(c1, m_connectionPortId1, c2, lcsm::model::Pin::Port::External);
+
+		// Create GUI Wire item.
+		item1 = m_items[m_connectionId1];
+		item2 = m_items[circuitId];
+
+		item = new WireItem(this, wire, m_options.get());
+		line1 = new WireLine(item1.get(), item, m_connectionPortId1, lcsm::model::Wire::Port::Wiring);
+		line2 = new WireLine(item2.get(), item, portId, lcsm::model::Wire::Port::Wiring);
+
+		p1 = item1->absolutePositionOfPort(m_connectionPortId1);
+		p2 = item2->absolutePositionOfPort(portId);
+	}
+	else if (m_connectionAsCircuit1)
+	{
+		// Connect in backend.
+		lcsm::Component *c1 = m_connectionAsCircuitView1.find(m_connectionAsCircuitComponentId1);
+		lcsm::Component *c2 = view.find(componentId);
+		lcsm::model::Wire *wire = m_circuit->connect(c1, lcsm::model::Pin::Port::External, c2, lcsm::model::Pin::Port::External);
+
+		// Create GUI Wire item.
+		item1 = m_items[m_connectionAsCircuitId1];
+		item2 = m_items[circuitId];
+
+		item = new WireItem(this, wire, m_options.get());
+		line1 = new WireLine(item1.get(), item, m_connectionAsCircuitPortId1, lcsm::model::Wire::Port::Wiring);
+		line2 = new WireLine(item2.get(), item, portId, lcsm::model::Wire::Port::Wiring);
+
+		p1 = item1->absolutePositionOfPort(m_connectionAsCircuitPortId1);
+		p2 = item2->absolutePositionOfPort(portId);
 	}
 	else
 	{
-		m_connectionId1 = id;
-		m_connectionPortId1 = portId;
-		m_connection1 = true;
-		m_items[id]->setAboutToBeConnected(true);
+		m_connectionAsCircuitId1 = circuitId;
+		m_connectionAsCircuitComponentId1 = componentId;
+		m_connectionAsCircuitView1 = view;
+		m_connectionAsCircuitIsInput1 = isInput;
+		m_connectionAsCircuitPortId1 = portId;
+		m_connectionAsCircuit1 = true;
+		m_items[circuitId]->setAboutToBeConnected(true);
+	}
+
+	if (item != nullptr)
+	{
+		const qreal gs = static_cast< qreal >(m_options->gridSize());
+
+		QPointF pos = QLineF(p1, p2).center();
+		pos.setX(qRound(pos.x() / gs) * gs);
+		pos.setY(qRound(pos.y() / gs) * gs);
+
+		item->setPos(pos);
+
+		addImpl(item);
+		m_scene->addItem(line1);
+		m_scene->addItem(line2);
+
+		// Reset GUI and non-GUI connection-action.
+		item1->setAboutToBeConnected(false);
+		item2->setAboutToBeConnected(false);
+		m_connection1 = false;
+		m_connectionAsCircuit1 = false;
 	}
 }
 
@@ -136,7 +260,12 @@ void CoreScene::resetConnection()
 	{
 		m_items[m_connectionId1]->setAboutToBeConnected(false);
 	}
+	if (m_connectionAsCircuit1)
+	{
+		m_items[m_connectionAsCircuitId1]->setAboutToBeConnected(false);
+	}
 	m_connection1 = false;
+	m_connectionAsCircuit1 = false;
 }
 
 void CoreScene::add(const lcsm::LCSMCircuit &circuit)
@@ -149,7 +278,7 @@ void CoreScene::add(const lcsm::LCSMCircuit &circuit)
 void CoreScene::add(const lcsm::verilog::Module &module)
 {
 	lcsm::model::VerilogModule *verilogModule = m_circuit->createVerilogModule(module);
-	Item *item = new VerilogItem(this, verilogModule);
+	Item *item = new VerilogItem(this, verilogModule, std::addressof(module));
 	addImpl(item);
 }
 

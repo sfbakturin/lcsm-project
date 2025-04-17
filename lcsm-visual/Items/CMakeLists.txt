@@ -14,6 +14,13 @@ LCSM_ADD_TO_TARGET(
         ImmovableItem.cpp
         WireItem.cpp
         WireLine.cpp
+        ConstantItem.cpp
+        PowerItem.cpp
+        GroundItem.cpp
+        ClockItem.cpp
+        SplitterItem.cpp
+        TransistorItem.cpp
+        TunnelItem.cpp
 )
 
 # Add headers
@@ -30,6 +37,13 @@ LCSM_ADD_TO_TARGET(
         ImmovableItem.h
         WireItem.h
         WireLine.h
+        ConstantItem.h
+        PowerItem.h
+        GroundItem.h
+        ClockItem.h
+        SplitterItem.h
+        TransistorItem.h
+        TunnelItem.h
 )
 
 # Cache variables for parent scope.

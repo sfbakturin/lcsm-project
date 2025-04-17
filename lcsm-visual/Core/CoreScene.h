@@ -23,13 +23,15 @@
 #include <QPoint>
 #include <memory>
 
+class Project;
+
 class CoreScene : public QObject
 {
 	Q_OBJECT
 
   public:
 	CoreScene();
-	CoreScene(lcsm::LCSMCircuit *circuit, GUIOptions *options);
+	CoreScene(Project *project, lcsm::LCSMCircuit *circuit, GUIOptions *options);
 	~CoreScene() noexcept = default;
 
 	CoreScene(const CoreScene &other) = delete;
@@ -46,6 +48,7 @@ class CoreScene : public QObject
 	void setView(GUIView *view) noexcept;
 
 	void connection(lcsm::Identifier id, lcsm::portid_t portId);
+	void connectionAsCircuit(lcsm::Identifier circuitId, lcsm::Identifier componentId, lcsm::LCSMCircuitView &view, bool isInput, int portId);
 	void resetConnection();
 	void add(const lcsm::LCSMCircuit &circuit);
 	void add(const lcsm::verilog::Module &module);
@@ -65,6 +68,7 @@ class CoreScene : public QObject
 	void removeItem();
 
   private:
+	lcsm::support::PointerView< Project > m_project;
 	lcsm::support::PointerView< GUIOptions > m_options;
 
 	std::unordered_map< lcsm::Identifier, lcsm::support::PointerView< Item > > m_items;
@@ -77,6 +81,14 @@ class CoreScene : public QObject
 	lcsm::Identifier m_connectionId1;
 	lcsm::portid_t m_connectionPortId1;
 	bool m_connection1;
+
+	/* === CONNECTION AS CIRCUIT === */
+	lcsm::Identifier m_connectionAsCircuitId1;
+	lcsm::Identifier m_connectionAsCircuitComponentId1;
+	lcsm::LCSMCircuitView m_connectionAsCircuitView1;
+	bool m_connectionAsCircuit1;
+	bool m_connectionAsCircuitIsInput1;
+	int m_connectionAsCircuitPortId1;
 
 	/* === SIMULATE === */
 	std::unique_ptr< lcsm::LCSMEngine > m_engine;

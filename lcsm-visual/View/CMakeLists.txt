@@ -9,6 +9,7 @@ LCSM_ADD_TO_TARGET(
         DesignExplorerList.cpp
         PropertiesList.cpp
         SimulateDialog.cpp
+        DesignDialog.cpp
 )
 
 # Add headers
@@ -20,6 +21,7 @@ LCSM_ADD_TO_TARGET(
         DesignExplorerList.h
         PropertiesList.h
         SimulateDialog.h
+        DesignDialog.h
 )
 
 # Cache variables for parent scope.

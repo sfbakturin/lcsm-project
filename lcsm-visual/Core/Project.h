@@ -43,6 +43,8 @@ class Project
 
 	void save();
 
+	void exportToFile(const QString &name, const QString &filename);
+
   private:
 	QString m_name;
 	QString m_filename;

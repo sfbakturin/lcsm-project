@@ -19,7 +19,8 @@ class DesignExplorerList : public QListView
 	{
 		Openable = 1 << 0,
 		AddeableToCircuit = 1 << 1,
-		Removeable = 1 << 2
+		Removeable = 1 << 2,
+		ExportableToFile = 1 << 3
 	};
 
   public:
@@ -36,6 +37,7 @@ class DesignExplorerList : public QListView
 	void open(const QString &item);
 	void addToScene(const QString &item);
 	void remove(const QString &item);
+	void exportToFile(const QString &item);
 
   private slots:
 	void onShowContextMenu(const QPoint &pos);
@@ -48,6 +50,7 @@ class DesignExplorerList : public QListView
 	QAction *m_openAction;
 	QAction *m_addToSceneAction;
 	QAction *m_removeAction;
+	QAction *m_exportToFileAction;
 
 	int m_openedIndex;
 };

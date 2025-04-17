@@ -1,17 +1,15 @@
-#ifndef LCSM_VISUAL_ITEMS_CIRCUITITEM_H
-#define LCSM_VISUAL_ITEMS_CIRCUITITEM_H
+#ifndef LCMS_VISUAL_ITEMS_CONSTANTITEM_H
+#define LCMS_VISUAL_ITEMS_CONSTANTITEM_H
 
+#include <lcsm/Model/std/Constant.h>
 #include <GUI/GUIOptions.h>
-#include <Items/MovableItem.h>
+#include <Items/ComponentItem.h>
 #include <lcsm/LCSM.h>
-#include <lcsm/LCSMCircuit.h>
-#include <lcsm/Model/Identifier.h>
 
-#include <QList>
 #include <QPainter>
+#include <QPoint>
 #include <QPointF>
 #include <QRectF>
-#include <QString>
 #include <QStyleOptionGraphicsItem>
 #include <QVariant>
 #include <QWidget>
@@ -19,14 +17,11 @@
 class CoreScene;
 class PropertiesList;
 
-class CircuitItem : public MovableItem
+class ConstantItem : public ComponentItem
 {
   public:
-	CircuitItem(CoreScene *scene, const lcsm::LCSMCircuitView &view, GUIOptions *options = nullptr);
-	~CircuitItem() noexcept = default;
-
-	virtual ItemType ty() const noexcept override final;
-	virtual void reid() noexcept override final;
+	ConstantItem(CoreScene *scene, lcsm::model::Constant *constant, GUIOptions *options = nullptr);
+	~ConstantItem() noexcept = default;
 
 	virtual QRectF boundingRect() const override;
 	virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -35,8 +30,6 @@ class CircuitItem : public MovableItem
 
 	virtual void setProperty(int key, const QVariant &value) override final;
 	virtual void setPropertiesList(PropertiesList *propertiesList) override final;
-
-	const lcsm::LCSMCircuitView &circuit() const noexcept;
 
   protected:
 	virtual void connect() override final;
@@ -47,15 +40,12 @@ class CircuitItem : public MovableItem
 	virtual lcsm::width_t inputWidth() const noexcept override final;
 
   private:
-	qreal circuitWidth() const noexcept;
-	qreal circuitHeight() const noexcept;
+	lcsm::model::Constant *m_constant;
 
-  private:
-	lcsm::LCSMCircuitView m_view;
-	QList< QString > m_portStrings;
-	QList< lcsm::Identifier > m_portInputIds;
-	QList< lcsm::Identifier > m_portOutputIds;
+	int m_nameKey;
 	int m_facingKey;
+	int m_widthKey;
+	int m_valueKey;
 };
 
-#endif /* LCSM_VISUAL_ITEMS_CIRCUITITEM_H */
+#endif /* LCMS_VISUAL_ITEMS_CONSTANTITEM_H */

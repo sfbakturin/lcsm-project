@@ -1,6 +1,7 @@
 #include <Items/Item.h>
 #include <View/PropertiesList.h>
 
+#include <QAbstractSpinBox>
 #include <QComboBox>
 #include <QDebug>
 #include <QHash>
@@ -10,6 +11,7 @@
 #include <QList>
 #include <QObject>
 #include <QPair>
+#include <QSpinBox>
 #include <QString>
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -54,6 +56,26 @@ int PropertiesList::addEditableItem(const QString &key, const QString &value)
 	};
 	connect(edit, &QLineEdit::returnPressed, editChanged);
 	connect(edit, &QLineEdit::editingFinished, editChanged);
+	return index;
+}
+
+int PropertiesList::addNumericalItem(const QString &key, int value, int minValue, int maxValue)
+{
+	const int index = addItem();
+	QLabel *label = new QLabel(key);
+	QSpinBox *spin = new QSpinBox();
+	spin->setMinimum(minValue);
+	spin->setMaximum(maxValue);
+	spin->setValue(value);
+	setCellWidget(index, 0, label);
+	setCellWidget(index, 1, spin);
+	m_labels.append(label);
+	m_numericals[index] = spin;
+	const auto numericalChanged = [this, row = index](int value)
+	{
+		this->onNumericalChanged(row, value);
+	};
+	connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), numericalChanged);
 	return index;
 }
 
@@ -125,6 +147,7 @@ void PropertiesList::clearAll()
 	}
 	m_labels.clear();
 	m_editables.clear();
+	m_numericals.clear();
 	m_booleans.clear();
 	m_choices.clear();
 	m_currentItem.reset();
@@ -135,6 +158,11 @@ void PropertiesList::clearAll()
 void PropertiesList::onEditChanged(int row)
 {
 	const QString value = m_editables[row]->text();
+	m_currentItem->setProperty(row, value);
+}
+
+void PropertiesList::onNumericalChanged(int row, int value)
+{
 	m_currentItem->setProperty(row, value);
 }
 

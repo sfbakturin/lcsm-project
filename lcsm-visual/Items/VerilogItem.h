@@ -5,10 +5,14 @@
 #include <Items/MovableItem.h>
 #include <lcsm/LCSM.h>
 #include <lcsm/Model/Verilog.h>
+#include <lcsm/Verilog/Module.h>
 
+#include <QList>
 #include <QPainter>
+#include <QPair>
 #include <QPointF>
 #include <QRectF>
+#include <QString>
 #include <QStyleOptionGraphicsItem>
 #include <QVariant>
 #include <QWidget>
@@ -18,8 +22,16 @@ class PropertiesList;
 
 class VerilogItem : public MovableItem
 {
+  private:
+	enum class PortTypeItem
+	{
+		Input,
+		Output,
+		Inout
+	};
+
   public:
-	VerilogItem(CoreScene *scene, lcsm::model::VerilogModule *verilogModule, GUIOptions *options = nullptr);
+	VerilogItem(CoreScene *scene, lcsm::model::VerilogModule *verilogModule, const lcsm::verilog::Module *module, GUIOptions *options = nullptr);
 
 	virtual ItemType ty() const noexcept override final;
 	virtual void reid() noexcept override final;
@@ -43,7 +55,15 @@ class VerilogItem : public MovableItem
 	virtual lcsm::width_t inputWidth() const noexcept override final;
 
   private:
+	qreal verilogWidth() const noexcept;
+	qreal verilogHeight() const noexcept;
+
+	QPair< PortTypeItem, int > getTypeAndIndexFrom(lcsm::portid_t portId) const;
+
+  private:
 	lcsm::model::VerilogModule *m_verilogModule;
+	QList< QString > m_portStrings;
+	int m_facingKey;
 };
 
 #endif /* LCSM_VISUAL_ITEMS_VERILOGITEM_H */

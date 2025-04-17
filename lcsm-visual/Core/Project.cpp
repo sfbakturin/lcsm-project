@@ -1,6 +1,5 @@
 #include <Core/CoreScene.h>
 #include <Core/Project.h>
-#include <Support/Strings.h>
 #include <lcsm/LCSMCircuit.h>
 #include <lcsm/Verilog/Module.h>
 
@@ -55,7 +54,7 @@ bool Project::isVerilogExists(const QString &name) const
 QString Project::createEmptyCircuit(const QString &n)
 {
 	m_circuits[n] = lcsm::LCSMCircuit(n.toStdString());
-	m_scenes[n] = CoreScene(std::addressof(m_circuits[n]), std::addressof(m_options));
+	m_scenes[n] = CoreScene(this, std::addressof(m_circuits[n]), std::addressof(m_options));
 	return n;
 }
 
@@ -65,7 +64,7 @@ QString Project::importCircuitFromFile(const QString &fn)
 	lcsm::LCSMCircuit circuit = lcsm::LCSMCircuit::fromFile(filename);
 	const QString name = QString::fromStdString(circuit.name());
 	m_circuits[name] = std::move(circuit);
-	m_scenes[name] = CoreScene(std::addressof(m_circuits[name]), std::addressof(m_options));
+	m_scenes[name] = CoreScene(this, std::addressof(m_circuits[name]), std::addressof(m_options));
 	return name;
 }
 
@@ -114,3 +113,10 @@ void Project::removeCircuitOrVerilog(const QString &name)
 }
 
 void Project::save() {}
+
+void Project::exportToFile(const QString &name, const QString &fn)
+{
+	const std::string &filename = fn.toStdString();
+	const lcsm::LCSMCircuit &circuit = getCircuitOf(name);
+	circuit.dumpToFile(filename);
+}

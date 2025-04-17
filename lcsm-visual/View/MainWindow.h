@@ -113,6 +113,7 @@ class MainWindow : public QMainWindow
 	void onAddToSceneVerilog(const QString &name);
 	void onAddToSceneLibrary(const QString &name);
 	void onRemove(const QString &item);
+	void onExportToFile(const QString &item);
 
 	void onShowItem(Item *item);
 	void onRemoveItem();

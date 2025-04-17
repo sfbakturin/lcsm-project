@@ -37,7 +37,8 @@ static constexpr QSize DEFAULT_WINDOW_SIZE(640, 480);
 
 static constexpr unsigned DESIGN_EXPLORER_LIST_OPTION_BASE =
 	DesignExplorerList::ListOption::AddeableToCircuit | DesignExplorerList::ListOption::Removeable;
-static constexpr unsigned DESIGN_EXPLORER_OPTIONS_CIRCUIT = DESIGN_EXPLORER_LIST_OPTION_BASE | DesignExplorerList::ListOption::Openable;
+static constexpr unsigned DESIGN_EXPLORER_OPTIONS_CIRCUIT =
+	DESIGN_EXPLORER_LIST_OPTION_BASE | DesignExplorerList::ListOption::Openable | DesignExplorerList::ListOption::ExportableToFile;
 static constexpr unsigned DESIGN_EXPLORER_OPTIONS_VERILOG = DESIGN_EXPLORER_LIST_OPTION_BASE;
 static constexpr unsigned DESIGN_EXPLORER_OPTIONS_LIBRARY = DesignExplorerList::ListOption::AddeableToCircuit;
 
@@ -230,6 +231,16 @@ void MainWindow::onRemove(const QString &item)
 	m_project->removeCircuitOrVerilog(item);
 }
 
+void MainWindow::onExportToFile(const QString &item)
+{
+	QString filename = QFileDialog::getSaveFileName(this, tr("Export to file..."), QDir::homePath());
+	if (filename.isEmpty())
+	{
+		return;
+	}
+	m_project->exportToFile(item, filename);
+}
+
 void MainWindow::onShowItem(Item *item)
 {
 	m_designPropertiesList->setCurrentItem(item);
@@ -330,6 +341,7 @@ void MainWindow::initWindowWidgets()
 		connect(m_designProjectVerilogList, SIGNAL(addToScene(QString)), SLOT(onAddToSceneVerilog(QString)));
 		connect(m_designProjectCircuitList, SIGNAL(remove(QString)), SLOT(onRemove(QString)));
 		connect(m_designProjectVerilogList, SIGNAL(remove(QString)), SLOT(onRemove(QString)));
+		connect(m_designProjectCircuitList, SIGNAL(exportToFile(QString)), SLOT(onExportToFile(QString)));
 
 		m_designExplorerProjectTab->addTab(m_designProjectCircuitList, tr("Circuit"));
 		m_designExplorerProjectTab->addTab(m_designProjectVerilogList, tr("Verilog"));

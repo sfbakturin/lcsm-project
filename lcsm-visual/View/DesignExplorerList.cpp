@@ -44,6 +44,11 @@ DesignExplorerList::DesignExplorerList(unsigned option, QWidget *parent) :
 	{
 		m_removeAction = m_contextMenu->addAction(tr("Remove"));
 	}
+
+	if (option & DesignExplorerList::ListOption::ExportableToFile)
+	{
+		m_exportToFileAction = m_contextMenu->addAction(tr("Export to file..."));
+	}
 }
 
 void DesignExplorerList::add(const QString &text)
@@ -95,6 +100,10 @@ void DesignExplorerList::onShowContextMenu(const QPoint &p)
 		{
 			m_model->removeRow(index.row());
 			emit remove(item);
+		}
+		else if (selected == m_exportToFileAction)
+		{
+			emit exportToFile(item);
 		}
 	}
 }
