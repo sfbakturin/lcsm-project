@@ -44,27 +44,21 @@ static LCSMCircuit generator()
 	model::Transistor *n2 = circuit.createTransistor("n2", model::Transistor::Type::N);
 
 	// Make connections.
-	circuit.connect(a, n1, model::Transistor::Port::Base);
-	circuit.connect(a, p1, model::Transistor::Port::Base);
-
-	circuit.connect(b, n2, model::Transistor::Port::Base);
-	circuit.connect(b, p2, model::Transistor::Port::Base);
-
-	circuit.connect(ground, n1, model::Transistor::Port::SrcA);
-
 	circuit.connect(power, p1, model::Transistor::Port::SrcB);
 	circuit.connect(power, p2, model::Transistor::Port::SrcB);
 
-	circuit.connect(n1, model::Transistor::Port::SrcB, n2, model::Transistor::Port::SrcA);
+	model::Wire *wa = circuit.connect(a, n1, model::Transistor::Port::Base);
+	model::Wire *wb = circuit.connect(b, n2, model::Transistor::Port::Base);
 
-	model::Wire *w1 = circuit.connect(n2, model::Transistor::Port::SrcB, c);
-	w1->setName("w1");
+	circuit.connect(wa, p1, model::Transistor::Port::Base);
+	circuit.connect(wb, p2, model::Transistor::Port::Base);
 
-	model::Wire *w2 = circuit.connect(p1, model::Transistor::Port::SrcA, c);
-	w2->setName("w2");
+	circuit.connect(ground, n2, model::Transistor::Port::SrcA);
+	circuit.connect(n2, model::Transistor::Port::SrcB, n1, model::Transistor::Port::SrcA);
 
-	model::Wire *w3 = circuit.connect(p2, model::Transistor::Port::SrcA, c);
-	w3->setName("w3");
+	model::Wire *w = circuit.connect(n1, model::Transistor::Port::SrcB, p1, model::Transistor::Port::SrcA);
+	circuit.connect(p2, model::Transistor::Port::SrcA, w);
+	circuit.connect(w, c);
 
 	return circuit;
 }
@@ -104,9 +98,9 @@ static void test(LCSMCircuit &circuit)
 	Component *n2B = circuit.find("n2");
 	Component *p1A = circuit.find("p1");
 	Component *p2B = circuit.find("p2");
-	Component *w1 = circuit.find("w1");
+	/*Component *w1 = circuit.find("w1");
 	Component *w2 = circuit.find("w2");
-	Component *w3 = circuit.find("w3");
+	Component *w3 = circuit.find("w3");*/
 
 	// Indexes.
 	const Identifier aId = a->id();
@@ -116,13 +110,19 @@ static void test(LCSMCircuit &circuit)
 	const Identifier n2BId = n2B->id();
 	const Identifier p1AId = p1A->id();
 	const Identifier p2BId = p2B->id();
-	const Identifier w1Id = w1->id();
+	/*const Identifier w1Id = w1->id();
 	const Identifier w2Id = w2->id();
-	const Identifier w3Id = w3->id();
+	const Identifier w3Id = w3->id();*/
 
 	// Testing data.
 	// clang-format off
 	const std::vector< TestData > testdatas = {
+		{ { T }, { T }, { F } },
+		{ { T }, { F }, { T } },
+
+		{ { T }, { T }, { F } },
+		{ { F }, { T }, { T } },
+
 		{ { F }, { F }, { T } },
 		{ { F }, { T }, { T } },
 		{ { T }, { F }, { T } },
@@ -168,9 +168,9 @@ static void test(LCSMCircuit &circuit)
 		const DataBits &transistor2BSrcA = state.valueOf(p2BId, 1);
 		const DataBits &transistor2BSrcB = state.valueOf(p2BId, 2);
 
-		const DataBits &w1Actual = state.valueOf(w1Id);
+		/*const DataBits &w1Actual = state.valueOf(w1Id);
 		const DataBits &w2Actual = state.valueOf(w2Id);
-		const DataBits &w3Actual = state.valueOf(w3Id);
+		const DataBits &w3Actual = state.valueOf(w3Id);*/
 
 		// Printout.
 		std::cout << "<a = " << aActual << ">, <b = " << bActual << "> --> <c = " << cActual << ">\n";
@@ -178,9 +178,9 @@ static void test(LCSMCircuit &circuit)
 		std::cout << "<n2[base = " << transistorBBase << ", srcA = " << transistorBSrcA << ", srcB = " << transistorBSrcB << "]\n";
 		std::cout << "<p1[base = " << transistor2ABase << ", srcA = " << transistor2ASrcA << ", srcB = " << transistor2ASrcB << "]\n";
 		std::cout << "<p2[base = " << transistor2BBase << ", srcA = " << transistor2BSrcA << ", srcB = " << transistor2BSrcB << "]\n";
-		std::cout << "<w1 = " << w1Actual << ">\n";
+		/*std::cout << "<w1 = " << w1Actual << ">\n";
 		std::cout << "<w2 = " << w2Actual << ">\n";
-		std::cout << "<w3 = " << w3Actual << ">\n";
+		std::cout << "<w3 = " << w3Actual << ">\n";*/
 
 		assertEquals(aActual, inA);
 		assertEquals(bActual, inB);

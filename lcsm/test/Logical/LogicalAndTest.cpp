@@ -43,22 +43,21 @@ static LCSMCircuit getLogicalAndNotCircuit()
 	model::Transistor *n2 = circuit.createTransistor("n2", model::Transistor::Type::N);
 
 	// Make connections.
-	circuit.connect(a, n1, model::Transistor::Port::Base);
-	circuit.connect(a, p1, model::Transistor::Port::Base);
-
-	circuit.connect(b, n2, model::Transistor::Port::Base);
-	circuit.connect(b, p2, model::Transistor::Port::Base);
-
-	circuit.connect(ground, n1, model::Transistor::Port::SrcA);
-
 	circuit.connect(power, p1, model::Transistor::Port::SrcB);
 	circuit.connect(power, p2, model::Transistor::Port::SrcB);
 
-	circuit.connect(n1, model::Transistor::Port::SrcB, n2, model::Transistor::Port::SrcA);
+	model::Wire *wa = circuit.connect(a, n1, model::Transistor::Port::Base);
+	model::Wire *wb = circuit.connect(b, n2, model::Transistor::Port::Base);
 
-	circuit.connect(n2, model::Transistor::Port::SrcB, c);
-	circuit.connect(p1, model::Transistor::Port::SrcA, c);
-	circuit.connect(p2, model::Transistor::Port::SrcA, c);
+	circuit.connect(wa, p1, model::Transistor::Port::Base);
+	circuit.connect(wb, p2, model::Transistor::Port::Base);
+
+	circuit.connect(ground, n2, model::Transistor::Port::SrcA);
+	circuit.connect(n2, model::Transistor::Port::SrcB, n1, model::Transistor::Port::SrcA);
+
+	model::Wire *w = circuit.connect(n1, model::Transistor::Port::SrcB, p1, model::Transistor::Port::SrcA);
+	circuit.connect(p2, model::Transistor::Port::SrcA, w);
+	circuit.connect(w, c);
 
 	return circuit;
 }
@@ -80,8 +79,11 @@ static LCSMCircuit getLogicalNotCircuit()
 	circuit.connect(input, transistorN, model::Transistor::Port::Base);
 	circuit.connect(power, transistorP, model::Transistor::Port::SrcB);
 	circuit.connect(ground, transistorN, model::Transistor::Port::SrcA);
-	circuit.connect(transistorP, model::Transistor::Port::SrcA, output);
-	circuit.connect(transistorN, model::Transistor::Port::SrcB, output);
+
+	model::Wire *wire = circuit.connect(transistorP, model::Transistor::Port::SrcA, transistorN, model::Transistor::Port::SrcB);
+	circuit.connect(wire, output);
+	/*circuit.connect(transistorP, model::Transistor::Port::SrcA, output);
+	circuit.connect(transistorN, model::Transistor::Port::SrcB, output);*/
 
 	return circuit;
 }
@@ -145,6 +147,7 @@ static void test(LCSMCircuit &circuit)
 	LCSMCircuitView viewAndNot = circuit.findCircuit("LogicalAndNot");
 	Component *aViewAndNot = viewAndNot.findInput("a");
 	Component *bViewAndNot = viewAndNot.findInput("b");
+	Component *cViewAndNot = viewAndNot.findOutput("c");
 
 	// Indexes.
 	const Identifier aId = a->id();
@@ -152,6 +155,7 @@ static void test(LCSMCircuit &circuit)
 	const Identifier cId = c->id();
 	const Identifier aViewAndNotId = aViewAndNot->id();
 	const Identifier bViewAndNotId = bViewAndNot->id();
+	const Identifier cViewAndNotId = cViewAndNot->id();
 
 	// Testing data.
 	// clang-format off
@@ -206,17 +210,20 @@ static void test(LCSMCircuit &circuit)
 		const DataBits &aActual = state.valueOf(aId);
 		const DataBits &bActual = state.valueOf(bId);
 		const DataBits &cActual = state.valueOf(cId);
-		const DataBits &aViewOrNotActual = state.valueOf(aViewAndNotId);
-		const DataBits &bViewOrNotActual = state.valueOf(bViewAndNotId);
+		const DataBits &aViewAndNotActual = state.valueOf(aViewAndNotId);
+		const DataBits &bViewAndNotActual = state.valueOf(bViewAndNotId);
+		const DataBits &cViewAndNotActual = state.valueOf(cViewAndNotId);
 
 		assertEquals(aActual, inA);
 		assertEquals(bActual, inB);
-		assertEquals(aViewOrNotActual, inA);
-		assertEquals(bViewOrNotActual, inB);
+		assertEquals(aViewAndNotActual, inA);
+		assertEquals(bViewAndNotActual, inB);
 		assertEquals(cActual, ref);
 
 		// Printout.
 		std::cout << "<a = " << aActual << ">, <b = " << bActual << "> --> <c = " << cActual << ">\n";
+		std::cout << "<a [and-not] = " << aViewAndNotActual << ">, <b [and-not] = " << bViewAndNotActual
+				  << "> --> <c [and-not] = " << cViewAndNotActual << ">\n";
 	}
 }
 

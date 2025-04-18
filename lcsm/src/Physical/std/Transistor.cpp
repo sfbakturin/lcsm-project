@@ -153,6 +153,7 @@ void lcsm::physical::Transistor::invoke(const Timestamp &now, std::deque< lcsm::
 
 	// Values from wires.
 	lcsm::DataBits valueBase = m_context->getValue(0);
+	const lcsm::DataBits oldValueBase = valueBase;
 	lcsm::DataBits valueSrcA = m_context->getValue(1);
 	lcsm::DataBits valueSrcB = m_context->getValue(2);
 
@@ -270,6 +271,15 @@ void lcsm::physical::Transistor::invoke(const Timestamp &now, std::deque< lcsm::
 			}
 		}
 		else
+		{
+			// Pollute the circuit in sources directions.
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srca.get()));
+			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srcb.get()));
+		}
+	}
+	else
+	{
+		if (oldValueBase != newValueBase)
 		{
 			// Pollute the circuit in sources directions.
 			events.emplace_back(lcsm::CreatePolluteValueInstruction(this, m_srca.get()));
